@@ -1,25 +1,22 @@
 'use client'
-import React from 'react'
-import supabase from '@/lib/supabaseClient'
-import { redirect } from 'next/navigation'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
+import { useAuth } from '@/lib/hooks/useAuth'
+import { useRouter } from 'next/navigation'
 
 const SignUp = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
+    const router = useRouter()
+    const { signUp } = useAuth()
     
     const handleSignUp = async () => {
-        const {data, error} = await supabase.auth.signUp({
-            email,
-            password
-        })
-        if(error){
-            setError(error.message)
-        }   
-        else{
-            redirect('/sign-in')
+        const { data, error: signUpError } = await signUp(email, password)
+        if (signUpError) {
+            setError(signUpError.message)
+        } else {
+            router.push('/sign-in')
         }
     }
 
