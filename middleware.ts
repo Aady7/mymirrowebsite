@@ -1,7 +1,7 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// This function can be marked `async` if using `await` inside
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request: {

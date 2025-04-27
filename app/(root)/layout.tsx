@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/useAuth'
-import Navigation from '@/app/components/Navigation'
+import Navigation from '@/app/components/rootNav'
 
 export default function ProtectedLayout({
   children,
