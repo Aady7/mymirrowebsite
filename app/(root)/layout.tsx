@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/useAuth'
 import Navigation from '@/app/components/rootNav'
+import supabase from '@/lib/supabaseClient'
 
 export default function ProtectedLayout({
   children,
@@ -30,6 +31,20 @@ export default function ProtectedLayout({
     }
     
     checkAuth()
+    async function fetchData(){
+      const{data, error}= await supabase
+      .from('products')
+      .select('*')
+      if (error) {
+        console.error('Error fetching data:', error)
+      } else {
+        console.log('Data fetched:', data)
+      }
+    }
+    fetchData()
+
+    
+    
   }, [])
 
   if (isLoading) {

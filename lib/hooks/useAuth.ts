@@ -23,7 +23,7 @@ export const useAuth = () => {
       console.log('Sign in successful:', data)
 
       // Manually redirect after successful sign-in
-      window.location.href = '/style-quiz'
+      router.push('/style-quiz');
       return { data, error: null }
       
     } catch (error) {
@@ -53,8 +53,9 @@ export const useAuth = () => {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       
-      // Force navigation to sign-in page
-      window.location.href = '/sign-in'
+      // Force navigation to sign-in page\
+      router.push('/sign-in')
+      
     } catch (error) {
       console.error('Error signing out:', error)
     }
