@@ -30,7 +30,13 @@ const RootNav = () => {
             </Link>
           </div>
         </div>
-        <div className="flex justify-end">
+        <div className="flex justify-end space-x-4">
+          <button
+            onClick={() => router.push('/mobile-sign-in')}
+            className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+          >
+            Sign in with mobile
+          </button>
           <button
             onClick={() => router.push('/sign-in')}
             className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
@@ -44,9 +50,6 @@ const RootNav = () => {
             Sign up
           </button>
         </div>
-        
-          
-        
       </div>
     </div>
   </nav>

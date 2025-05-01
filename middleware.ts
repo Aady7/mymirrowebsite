@@ -46,6 +46,7 @@ export async function middleware(request: NextRequest) {
   const isPublicPath = path === '/' || 
                        path === '/sign-in' || 
                        path === '/sign-up' || 
+                       path === '/mobile-sign-in' ||
                        path.startsWith('/api/auth')
 
   // If user is logged in but trying to access a public page, redirect to style-quiz
@@ -67,6 +68,7 @@ export const config = {
     '/',
     '/sign-in',
     '/sign-up',
+    '/mobile-sign-in',
     '/style-quiz/:path*',
     '/recommendations/:path*',
     '/api/:path*'

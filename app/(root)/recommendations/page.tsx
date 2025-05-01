@@ -68,7 +68,7 @@ const Recommendations = () => {
       {loading ? (
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-          <p className="ml-4 text-gray-600">Loading products...</p>
+          <p className="ml-4 text-gray-100">Loading products...</p>
         </div>
       ) : (
         <>
@@ -79,7 +79,7 @@ const Recommendations = () => {
               
               return (
                 <div key={product.id} className="border rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
-                  <Link href={product.url} target="_blank" rel="noopener noreferrer">
+                  <Link href={`/product/${product.id}`}>
                     <div className="relative h-120 w-full overflow-hidden bg-gray-100">
                       {images.length > 0 ? (
                         <img 
@@ -106,7 +106,7 @@ const Recommendations = () => {
                       </div>
                     </div>
                     
-                    <p className="text-gray-600 mb-3 line-clamp-2">{product.title}</p>
+                    <p className="text-gray-100 mb-3 line-clamp-2">{product.title}</p>
                     
                     <div className="flex items-center mb-3">
                       <span className="text-lg font-bold text-gray-900">₹{product.price}</span>
@@ -134,12 +134,10 @@ const Recommendations = () => {
                     )}
                     
                     <Link 
-                      href={product.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
+                      href={`/product/${product.id}`}
                       className="mt-2 block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300"
                     >
-                      View Product
+                      View Details
                     </Link>
                   </div>
                 </div>

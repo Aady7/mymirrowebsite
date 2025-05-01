@@ -31,18 +31,7 @@ export default function ProtectedLayout({
     }
     
     checkAuth()
-    async function fetchData(){
-      const{data, error}= await supabase
-      .from('products')
-      .select('*')
-      if (error) {
-        console.error('Error fetching data:', error)
-      } else {
-        console.log('Data fetched:', data)
-      }
-    }
-    fetchData()
-
+    
     
     
   }, [])
@@ -52,7 +41,7 @@ export default function ProtectedLayout({
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-100">Loading...</p>
         </div>
       </div>
     )
