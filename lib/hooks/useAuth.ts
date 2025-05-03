@@ -1,6 +1,7 @@
 import { useRouter } from 'next/navigation'
 import { supabase } from '../supabase'
 import { AuthError } from '@supabase/supabase-js'
+import { use } from 'react'
 
 export const useAuth = () => {
   const router = useRouter()
@@ -42,6 +43,23 @@ export const useAuth = () => {
       if (error) {
         return { data: null, error }
       }
+      // adding user to the database
+      const { user } = data
+      const { error: insertError } = await supabase
+        .from('users')
+        .insert([
+          {
+            email: user?.email,
+            userid:user?.id,              
+            created_at: new Date().toISOString(),
+          },
+        ])
+        if (insertError) {
+          console.error('Error inserting user into database:', insertError)
+          return { data: null, error: insertError }
+        }
+      console.log('User inserted into database:', user?.id)
+      console.log('Sign up successful:', data)
       return { data, error: null }
     } catch (error) {
       return { data: null, error: error as AuthError }
