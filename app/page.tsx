@@ -1,6 +1,5 @@
-import React from 'react'
 import RootNav from './components/authNav'
-
+//this is my page
 const Page = () => {
   return (
     <div>
