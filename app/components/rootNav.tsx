@@ -28,6 +28,12 @@ export default function Navigation() {
               >
                 Recommendations
               </Link>
+              <Link
+                href="/cart"
+                className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-gray-300"
+              >
+                Cart
+              </Link>
             </div>
           </div>
           <div className="flex items-center">

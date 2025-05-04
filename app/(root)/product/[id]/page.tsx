@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import supabase from '@/lib/supabaseClient'
 import Image from 'next/image'
+import { useAuth } from '@/lib/hooks/useAuth'
 
 import Link from 'next/link'
 
@@ -21,13 +22,22 @@ interface Product {
   specifications: string
 }
 
+interface CartItem {
+  productId: number | undefined
+  size: string
+  quantity: number
+  addedAt: string
+}
+
 const ProductDetail = () => {
   const { id } = useParams()
   const [product, setProduct] = useState<Product | null>(null)
   const [loading, setLoading] = useState(true)
   const [selectedImage, setSelectedImage] = useState(0)
-   
-
+  const [selectedSize, setSelectedSize] = useState<string | null>(null)
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const { getSession } = useAuth()
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -49,6 +59,77 @@ const ProductDetail = () => {
 
     fetchProduct()
   }, [id])
+
+  const handleAddToCart = async () => {
+    if (!selectedSize) {
+      setError('Please select a size')
+      return
+    }
+
+    setIsAddingToCart(true)
+    setError(null)
+
+    try {
+      const { session } = await getSession()
+      if (!session) {
+        setError('Please sign in to add items to cart')
+        return
+      }
+
+      // Get current cart items
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('cartitems')
+        .eq('userid', session.user.id)
+        .single()
+
+      if (userError) throw userError
+
+      // Parse existing cart items or initialize empty array
+      const currentCartItems = userData?.cartitems ? JSON.parse(userData.cartitems) : []
+      
+      // Check if the product with the same size already exists in cart
+      const existingItemIndex = currentCartItems.findIndex(
+        (item: CartItem) => item.productId === product?.id && item.size === selectedSize
+      )
+
+      let updatedCartItems: CartItem[]
+
+      if (existingItemIndex !== -1) {
+        // If item exists, update its quantity
+        updatedCartItems = currentCartItems.map((item: CartItem, index: number) => 
+          index === existingItemIndex
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      } else {
+        // If item doesn't exist, add new item
+        const newCartItem = {
+          productId: product?.id,
+          size: selectedSize,
+          quantity: 1,
+          addedAt: new Date().toISOString()
+        }
+        updatedCartItems = [...currentCartItems, newCartItem]
+      }
+
+      // Update user's cart in database
+      const { error: updateError } = await supabase
+        .from('users')
+        .update({ cartitems: JSON.stringify(updatedCartItems) })
+        .eq('userid', session.user.id)
+
+      if (updateError) throw updateError
+
+      // Show success message
+      alert('Item added to cart successfully!')
+    } catch (error) {
+      console.error('Error adding to cart:', error)
+      setError('Failed to add item to cart. Please try again.')
+    } finally {
+      setIsAddingToCart(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -143,18 +224,26 @@ const ProductDetail = () => {
           </div>
 
           {/* Sizes */}
-          <div>
+          <div className="mt-6">
             <h3 className="text-lg font-medium text-gray-100 mb-3">Available Sizes</h3>
             <div className="flex flex-wrap gap-2">
               {sizes.map((size: string, index: number) => (
                 <button
                   key={index}
-                  className="px-4 py-2 border rounded-md hover:border-indigo-600 hover:text-indigo-600 transition-colors"
+                  onClick={() => setSelectedSize(size)}
+                  className={`px-4 py-2 border rounded-md transition-colors ${
+                    selectedSize === size
+                      ? 'border-indigo-600 bg-indigo-600 text-white'
+                      : 'hover:border-indigo-600 hover:text-indigo-600'
+                  }`}
                 >
                   {size}
                 </button>
               ))}
             </div>
+            {error && selectedSize === null && (
+              <p className="text-red-500 mt-2">{error}</p>
+            )}
           </div>
 
           {/* Specifications */}
@@ -170,18 +259,25 @@ const ProductDetail = () => {
             </div>
           </div>
 
-          {/* Buy Now Button */}
-          <div className="pt-4">
+          {/* Action Buttons */}
+          <div className="flex gap-4 pt-4">
+            <button
+              onClick={handleAddToCart}
+              disabled={isAddingToCart}
+              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isAddingToCart ? 'Adding to Cart...' : 'Add to Cart'}
+            </button>
             <Link
-           href={`/checkout/${product.id}`}
-              
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300"
+              href={`/checkout`}
+              className="flex-1 text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300"
             >
               Buy Now
             </Link>
           </div>
+          {error && selectedSize !== null && (
+            <p className="text-red-500 mt-2">{error}</p>
+          )}
         </div>
       </div>
     </div>
