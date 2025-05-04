@@ -2,7 +2,8 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/useAuth'
-import Navigation from '@/app/components/Navigation'
+import Navigation from '@/app/components/rootNav'
+import supabase from '@/lib/supabaseClient'
 
 export default function ProtectedLayout({
   children,
@@ -30,6 +31,9 @@ export default function ProtectedLayout({
     }
     
     checkAuth()
+    
+    
+    
   }, [])
 
   if (isLoading) {
@@ -37,7 +41,7 @@ export default function ProtectedLayout({
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className="mt-4 text-gray-100">Loading...</p>
         </div>
       </div>
     )
