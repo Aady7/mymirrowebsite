@@ -1,7 +1,6 @@
+import { AuthError } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 import { supabase } from '../supabase'
-import { AuthError } from '@supabase/supabase-js'
-import { use } from 'react'
 
 export const useAuth = () => {
   const router = useRouter()
@@ -24,7 +23,7 @@ export const useAuth = () => {
       console.log('Sign in successful:', data)
 
       // Manually redirect after successful sign-in
-      router.push('/style-quiz');
+      router.push('/recommendations');
       return { data, error: null }
       
     } catch (error) {

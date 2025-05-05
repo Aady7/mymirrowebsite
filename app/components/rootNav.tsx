@@ -1,6 +1,6 @@
 'use client'
-import Link from 'next/link'
 import { useAuth } from '@/lib/hooks/useAuth'
+import Link from 'next/link'
 
 export default function Navigation() {
   const { signOut } = useAuth()
@@ -39,7 +39,7 @@ export default function Navigation() {
           <div className="flex items-center">
             <button
               onClick={signOut}
-              className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+              className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
             >
               Sign Out
             </button>
