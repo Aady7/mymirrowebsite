@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 
+
 const SignUp = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -12,11 +13,18 @@ const SignUp = () => {
     const { signUp } = useAuth()
     
     const handleSignUp = async () => {
-        const { data, error: signUpError } = await signUp(email, password)
+        const { data, error: signUpError } = await signUp(email, password) 
+
+        //check
+        console.log(data)  
+
         if (signUpError) {
             setError(signUpError.message)
         } else {
-            router.push('/sign-in')
+            document.cookie='newly_signed_up=true; path=/';
+
+            router.push('/style-quiz')
+
         }
     }
 

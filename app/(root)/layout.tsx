@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/useAuth'
 import Navigation from '@/app/components/rootNav'
-import supabase from '@/lib/supabaseClient'
+
 
 export default function ProtectedLayout({
   children,

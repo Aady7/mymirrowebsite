@@ -72,7 +72,7 @@ const MobileSignIn = () => {
         setOtpSent(true)
       }
     } catch (err) {
-      setError('An error occurred while sending OTP')
+      setError('An error occurred while sending OTP',)
     } finally {
       setIsLoading(false)
     }

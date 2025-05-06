@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 
+
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({
     request: {
@@ -49,10 +50,39 @@ export async function middleware(request: NextRequest) {
                        path === '/mobile-sign-in' ||
                        path.startsWith('/api/auth')
 
+ //checking if the user is newly signed up or not
+ const newlySignedUp=request.cookies.get('newly_signed_up')?.value === "true"  
+
+ if(newlySignedUp)
+ {
+  //allowing access to /style-quiz even if the user is not logged in
+  if(!path.startsWith('/style-quiz'))
+  {
+    const url=new URL('/style-quiz',request.url);
+    response=NextResponse.redirect(url);
+  }
+
+  //clear the cookie so that it doesent presist
+  response.cookies.set(
+    {
+      name:'newly_singed_up',
+      value:'',
+      path:'/',
+      maxAge:0
+    }
+  )
+
+  return response
+ }
+
+
   // If user is logged in but trying to access a public page, redirect to style-quiz
   if (isPublicPath && session) {
     return NextResponse.redirect(new URL('/style-quiz', request.url))
   }
+
+  
+  
 
   // If user is not logged in and trying to access a protected page, redirect to sign-in
   if (!isPublicPath && !session) {

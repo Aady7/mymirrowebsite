@@ -1,8 +1,10 @@
-import React from 'react'
+'use client'
 
 const StyleQuiz = () => {
+
   return (
-    <div >StyleQuiz</div>
+    //<StyleQuiz/>
+   <div>This is my style Quize pages</div>
   )
 }
 

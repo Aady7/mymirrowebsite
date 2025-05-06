@@ -1,3 +1,5 @@
+
+import StyleQuiz from './(root)/style-quiz/page'
 import RootNav from './components/authNav'
 //this is my page
 const Page = () => {
@@ -5,7 +7,9 @@ const Page = () => {
     <div>
      
       <RootNav />
-      <div>Page</div>
+      <StyleQuiz/>
+     
+     
     </div>
   )
 }
