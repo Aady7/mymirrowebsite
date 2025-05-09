@@ -36,44 +36,24 @@ export async function middleware(request: NextRequest) {
       },
     }
   )
-
   // Get the session
   const { data: { session } } = await supabase.auth.getSession()
 
   // Get the URL pathname
   const path = request.nextUrl.pathname
 
+ 
   // Define public paths that don't require authentication
-  const isPublicPath = path === '/' || 
+  const isPublicPath =
+                       path === '/' ||
                        path === '/sign-in' || 
                        path === '/sign-up' || 
                        path === '/mobile-sign-in' ||
                        path.startsWith('/api/auth')
 
- //checking if the user is newly signed up or not
- const newlySignedUp=request.cookies.get('newly_signed_up')?.value === "true"  
 
- if(newlySignedUp)
- {
-  //allowing access to /style-quiz even if the user is not logged in
-  if(!path.startsWith('/style-quiz'))
-  {
-    const url=new URL('/style-quiz',request.url);
-    response=NextResponse.redirect(url);
-  }
 
-  //clear the cookie so that it doesent presist
-  response.cookies.set(
-    {
-      name:'newly_singed_up',
-      value:'',
-      path:'/',
-      maxAge:0
-    }
-  )
-
-  return response
- }
+  
 
 
   // If user is logged in but trying to access a public page, redirect to style-quiz

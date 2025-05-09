@@ -1,10 +1,10 @@
 
+
 import TestimonialSection from "@/app/components/testimonialSection";
 import { Button } from "@/components/ui/button";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import Link from "next/link";
-import RootNav from "./components/authNav";
 
 const page = async () => {
   // Create a Supabase client in your server component
@@ -17,16 +17,14 @@ const page = async () => {
 
   return (
     <>
-      <RootNav />
+     
       <div>
         <div className="relative overflow-hidden">
           {" "}
           {/* This wrapper handles edge cases */}
           <section
-            className="relative h-screen w-[100vw] left-[calc(-50vw+50%)] flex items-center justify-center bg-cover bg-fixed bg-center"
+            className="container-section container mx-auto relative h-screen w-[100vw] left-[calc(-50vw+50%)] flex items-center justify-center bg-cover bg-fixed bg-center"
             style={{
-              margin: 0,
-              padding: 0,
               backgroundImage:
                 "url('https://www.instyle.com/thmb/mBCPAq2-Xjj2aPdIkv36nQd0-6Y=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/052623-style-tips-lead-051015daa6224e0b834cf55b2082f158.jpg')",
             }}
@@ -35,12 +33,12 @@ const page = async () => {
             <div className="absolute inset-0 bg-black opacity-50"></div>
 
             {/* Content */}
-            <div className="relative z-10 text-center text-white px-4 w-full max-w-7xl mx-auto">
+            <div className="relative z-10 text-center text-white px-4 w-full">
               {/* Lines and Heading */}
               <div className="flex flex-col items-center mb-4">
                 <div className="w-1/4 border-t-4 border-white mb-5"></div>
                 <h1 className="text-3xl md:text-6xl font-bold text-white px-4 pt-10 pb-10 text-center">
-                  No more styling hassle
+                  No more <i>styling  </i> hassle
                 </h1>
                 <div className="w-1/4 border-t-4 border-white mt-4 pt-5"></div>
               </div>

@@ -1,10 +1,15 @@
 'use client'
 
+
+
 const StyleQuiz = () => {
 
-  return (
-    //<StyleQuiz/>
+  return (<>
+  
+  
+   
    <div>This is my style Quize pages</div>
+   </>
   )
 }
 

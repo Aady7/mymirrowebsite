@@ -1,8 +1,8 @@
 'use client'
-import React, { useState } from 'react'
-import Link from 'next/link'
 import { useAuth } from '@/lib/hooks/useAuth'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 
 const SignUp = () => {
@@ -21,9 +21,9 @@ const SignUp = () => {
         if (signUpError) {
             setError(signUpError.message)
         } else {
-            document.cookie='newly_signed_up=true; path=/';
-
-            router.push('/style-quiz')
+           
+          router.push('/style-quiz')
+           
 
         }
     }
