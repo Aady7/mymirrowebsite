@@ -58,7 +58,7 @@ export default function Navigation() {
               onClick={signOut}
               className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
             >
-              Sign Out
+              Sign Out 
             </button>
           </div>
 
