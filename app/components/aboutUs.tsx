@@ -41,9 +41,9 @@ const AboutUs = () => {
         {/* Image */}
         <div className="w-full md:w-1/2 flex justify-center">
           <img
-            src="https://louisphilippe.abfrl.in/blog/wp-content/uploads/2022/06/Ready-to-Wear-Wedding-outfits-for-Men.jpg"
+            src=""
             alt="About MyMirro"
-            className="w-full max-w-[600px] md:w-[79%] h-[300px] sm:h-[400px] md:h-[800px] object-cover rounded-lg"
+            className="w-full max-w-[600px] bg-yellow-300 md:w-[79%] h-[300px] sm:h-[400px] md:h-[800px] object-cover rounded-lg"
           />
         </div>
       </div>
@@ -117,12 +117,13 @@ const AboutUs = () => {
       </div>
 
       {/*founders section*/}
-      <div className="px-4 mt-25 sm:px-6">
+      <div className="px-4 mt-25 sm:px-2">
         {" "}
         {/* Container with side padding */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-5 mt-10">
+        <div className="grid  sm:grid-cols-4 gap-3 sm:gap-5 mt-10">
           {/* Mayank bhaiya ka Image 1 */}
-          <div className="aspect-square overflow-hidden rounded-lg">
+         
+          <div className="aspect-square flex-col space-y-3 rounded-lg">
             <Image
               src="/image1.jpg"
               alt="Mayank Bhaiya"
@@ -130,10 +131,13 @@ const AboutUs = () => {
               height={300}
               className="w-full h-full bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
             />
+
+            <p className="text-lg font-semibold">Mayank</p>
+            <p className="text-sm text-black">Chief executive officer</p>
           </div>
 
           {/* Piyush bahiya ka Image 2 */}
-          <div className="aspect-square overflow-hidden rounded-lg">
+          <div className="aspect-square flex-col space-y-3 rounded-lg">
             <Image
               src="/image2.jpg"
               alt="Piyush bhaiya"
@@ -141,10 +145,12 @@ const AboutUs = () => {
               height={300}
               className="w-full h-full  bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
             />
+             <p className="text-lg font-semibold">Piyush Pratap Singh</p>
+            <p className="text-sm text-black">Chief Business officer</p>
           </div>
 
           {/* Akhil bhaiya ka Image 3 */}
-          <div className="aspect-square overflow-hidden rounded-lg">
+          <div className="aspect-square flex-col space-y-3 rounded-lg">
             <Image
               src="/image3.jpg"
               alt="Akhil bhaiya"
@@ -152,10 +158,12 @@ const AboutUs = () => {
               height={300}
               className="w-full h-full  bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
             />
+             <p className="text-lg font-semibold">Akhil Singh</p>
+            <p className="text-sm text-black">Chief technology officer</p>
           </div>
 
           {/* Harshit bhaiya ka Image 4 */}
-          <div className="aspect-square overflow-hidden rounded-lg">
+          <div className="aspect-square flex-col space-y-3 rounded-lg">
             <Image
               src="/image4.jpg"
               alt="Harshit bhiya"
@@ -163,6 +171,8 @@ const AboutUs = () => {
               height={300}
               className="w-full h-full  bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
             />
+             <p className="text-lg font-semibold">Harshit</p>
+            <p className="text-sm text-black">Chief Experience & Operations officer</p>
           </div>
         </div>
       </div>
