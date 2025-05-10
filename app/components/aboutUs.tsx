@@ -100,8 +100,8 @@ const AboutUs = () => {
 
       {/*team section*/}
       <div>
-        <div className="flex flex-col mt-30  justify-between">
-          <h1 className="font-['Boston'] test-left md:text-7xl font-bold text-3xl">
+        <div className="flex flex-col mt-30 px-2 justify-between">
+          <h1 className="font-['Boston']  test-left md:text-7xl font-bold text-3xl">
             Our Team
           </h1>
           <p className="pt-6 font-['Boston'] text-xl">
