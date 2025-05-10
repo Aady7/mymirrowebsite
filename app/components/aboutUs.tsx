@@ -8,32 +8,33 @@ const AboutUs = () => {
           <h1 className="font-['Boston'] text-3xl md:text-7xl font-bold text-left">
             Get to know us
           </h1>
-          <p className="font-['Boston'] text-xl md:text-xl text-left">
+          <p className="font-['Boston'] text-lg md:text-lg text-left leading-tight m-0">
             I was just trying to buy a pair of shoes — something stylish,
             something that felt like me. But the deeper I went, the more lost I
             felt. Endless tabs. No real guidance. And no idea what would
             actually go with what. By the time I found something I liked, I
             didn't even want it anymore.
             <br />
-            <br />
+            <br/>
+            
             So I started asking around. Turns out, I wasn't the only one. People
             told me: <br />
             “I never find anything that fits right.” <br />
             “I return half the things I buy.” <br />
             “I don't know what actually suits me.”
             <br />
-            <br />
+            <br/>
             That's when it clicked — it's not the people who are the problem.
             It's the system.
             <br />
-            <br />
+            <br/>
             We created MyMirro to change that. MyMirro isn't about transactions.
             It's about transformation — into someone who feels confident,
             stylish, and completely themselves. <br />
             <br />
             We're not just another marketplace. We're your fashion partner.{" "}
             <br />
-            <br />
+           <br/>
             And this is just the beginning.
           </p>
         </div>
@@ -43,7 +44,7 @@ const AboutUs = () => {
           <img
             src=""
             alt="About MyMirro"
-            className="w-full max-w-[600px] bg-yellow-300 md:w-[79%] h-[300px] sm:h-[400px] md:h-[800px] object-cover rounded-lg"
+            className="w-full max-w-[600px] bg-yellow-300 md:w-[79%] h-[300px] sm:h-[400px] md:h-[600px] object-cover rounded-lg"
           />
         </div>
       </div>
@@ -54,7 +55,7 @@ const AboutUs = () => {
           <h1 className="font-['Boston'] text-3xl md:text-7xl font-bold text-left">
             Our mission
           </h1>
-          <p className=" pt-7 text-xl font-['Boston'] md:text-xl text-left">
+          <p className=" pt-7 leading-tight text-xl font-['Boston'] md:text-lg text-left">
             At MyMirro, we don’t just sell clothes—we help you express yourself
             through fashion. Shopping should be exciting, effortless, and
             tailored to you. Our goal is to be your personal fashion stylist,
@@ -72,7 +73,7 @@ const AboutUs = () => {
           <h1 className="font-['Boston'] text-xl md:text-7xl font-bold text-left">
             What makes us different?
           </h1>
-          <p className=" text-xl font-['Boston'] pt-7 md:text-xl text-left">
+          <p className=" text-xl leading-tight font-['Boston'] pt-7 md:text-lg text-left">
             Unlike other platforms, MyMirro isn’t just another shopping site. We
             offer:
             <br /> - Personalized fashion advice—real designers helping you
