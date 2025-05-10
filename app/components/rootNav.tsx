@@ -45,6 +45,12 @@ export default function Navigation() {
             >
               Cart
             </Link>
+            <Link
+              href="/aboutpage"
+              className="text-gray-700 hover:text-indigo-600 transition font-medium"
+            >
+              AboutUs
+            </Link>
           </div>
           {/*Sigout*/}
           <div className="flex items-center">
@@ -106,6 +112,12 @@ export default function Navigation() {
            <Link href="/cart" className="block text-gray-700 hover:text-indigo-600">
              Cart
            </Link>
+           <Link
+              href="/aboutpage"
+              className="text-gray-700 hover:text-indigo-600 transition font-medium"
+            >
+              AboutUs
+            </Link>
            <button
              onClick={signOut}
              className="block w-full text-left text-indigo-700 hover:text-red-500 mt-2"
