@@ -1,7 +1,7 @@
 import { useRouter } from 'next/navigation'
 import { supabase } from '../supabase'
 import { AuthError } from '@supabase/supabase-js'
-import { use } from 'react'
+
 
 export const useAuth = () => {
   const router = useRouter()

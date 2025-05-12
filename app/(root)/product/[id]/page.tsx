@@ -196,14 +196,14 @@ const ProductDetail = () => {
         {/* Product Details */}
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-100">{product.title}</h1>
-            <p className="text-lg text-gray-100 mt-2">by {product.name}</p>
+            <h1 className="text-3xl font-bold text-slate-800">{product.title}</h1>
+            <p className="text-lg text-slate-600 mt-2">by {product.name}</p>
           </div>
 
           <div className="flex items-center space-x-4">
             <div className="flex items-center bg-green-100 px-3 py-1 rounded">
               <span className="text-lg font-medium text-green-800">{product.overallRating}</span>
-              <svg className="w-5 h-5 text-yellow-400 ml-1" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="w-5 h-5 text-yellow-500 ml-1" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
               </svg>
             </div>
@@ -211,10 +211,10 @@ const ProductDetail = () => {
 
           <div className="space-y-2">
             <div className="flex items-center">
-              <span className="text-2xl font-bold text-gray-100">₹{product.price}</span>
+              <span className="text-2xl font-bold text-slate-800">₹{product.price}</span>
               {product.mrp > product.price && (
                 <>
-                  <span className="text-lg text-gray-100 line-through ml-3">₹{product.mrp}</span>
+                  <span className="text-lg text-slate-500 line-through ml-3">₹{product.mrp}</span>
                   <span className="ml-3 text-lg font-medium text-green-600">
                     {Math.round(((product.mrp - product.price) / product.mrp) * 100)}% off
                   </span>
@@ -225,7 +225,7 @@ const ProductDetail = () => {
 
           {/* Sizes */}
           <div className="mt-6">
-            <h3 className="text-lg font-medium text-gray-100 mb-3">Available Sizes</h3>
+            <h3 className="text-lg font-medium text-slate-800 mb-3">Available Sizes</h3>
             <div className="flex flex-wrap gap-2">
               {sizes.map((size: string, index: number) => (
                 <button
@@ -233,27 +233,24 @@ const ProductDetail = () => {
                   onClick={() => setSelectedSize(size)}
                   className={`px-4 py-2 border rounded-md transition-colors ${
                     selectedSize === size
-                      ? 'border-indigo-600 bg-indigo-600 text-white'
-                      : 'hover:border-indigo-600 hover:text-indigo-600'
+                      ? 'border-blue-600 bg-blue-600 text-white'
+                      : 'border-slate-200 text-slate-700 hover:border-blue-600 hover:text-blue-600'
                   }`}
                 >
                   {size}
                 </button>
               ))}
             </div>
-            {error && selectedSize === null && (
-              <p className="text-red-500 mt-2">{error}</p>
-            )}
           </div>
 
           {/* Specifications */}
           <div>
-            <h3 className="text-lg font-medium text-gray-100 mb-3">Specifications</h3>
+            <h3 className="text-lg font-medium text-slate-800 mb-3">Specifications</h3>
             <div className="space-y-2">
               {Object.entries(specifications).map(([key, value]) => (
-                <div key={key} className="flex justify-between py-2 border-b">
-                  <span className="text-gray-100">{key}</span>
-                  <span className="text-gray-100">{value as string}</span>
+                <div key={key} className="flex justify-between py-2 border-b border-slate-200">
+                  <span className="text-slate-600">{key}</span>
+                  <span className="text-slate-700">{value as string}</span>
                 </div>
               ))}
             </div>
@@ -264,24 +261,22 @@ const ProductDetail = () => {
             <button
               onClick={handleAddToCart}
               disabled={isAddingToCart}
-              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isAddingToCart ? 'Adding to Cart...' : 'Add to Cart'}
             </button>
             <Link
               href={`/checkout`}
-              className="flex-1 text-center bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300"
+              className="flex-1 text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300"
             >
               Buy Now
             </Link>
           </div>
-          {error && selectedSize !== null && (
-            <p className="text-red-500 mt-2">{error}</p>
-          )}
+          {error && <p className="text-red-600 mt-2">{error}</p>}
         </div>
       </div>
     </div>
   )
 }
 
-export default ProductDetail 
+export default ProductDetail
