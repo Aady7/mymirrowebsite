@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
-import supabase from '@/lib/supabaseClient'
+import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -100,10 +100,10 @@ const CartPage = () => {
     }
   }
 
-  const handleQuantityChange = async (productId: number, newQuantity: number, itemSize:string) => {
+  const handleQuantityChange = async (productId: number, newQuantity: number, itemSize: string) => {
     if (newQuantity < 1) return
 
-    const updatedItems = cartItems.map(item => 
+    const updatedItems = cartItems.map(item =>
       item.productId === productId && item.size === itemSize
         ? { ...item, quantity: newQuantity }
         : item
@@ -112,7 +112,7 @@ const CartPage = () => {
     await updateCart(updatedItems)
   }
 
-  const handleRemoveItem = async (productId: number, size:string) => {
+  const handleRemoveItem = async (productId: number, size: string) => {
     const updatedItems = cartItems.filter(item => item.productId !== productId || item.size !== size)
     await updateCart(updatedItems)
   }
@@ -161,14 +161,14 @@ const CartPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-6">
           {cartItems.map((item) => {
             const product = products[item.productId]
             const images = product ? JSON.parse(product.productImages) : []
-            
+
             return (
               <div key={`${item.productId}-${item.size}`} className="flex gap-6 p-6 border rounded-lg">
                 {/* Product Image */}
@@ -193,7 +193,7 @@ const CartPage = () => {
                   </Link>
                   <p className="text-gray-600">{product?.name}</p>
                   <p className="text-gray-600 mt-1">Size: {item.size}</p>
-                  
+
                   <div className="flex items-center mt-2">
                     <span className="text-lg font-bold">₹{product?.price}</span>
                     {product?.mrp && product.mrp > product.price && (
@@ -237,18 +237,18 @@ const CartPage = () => {
         <div className="lg:col-span-1">
           <div className="border rounded-lg p-6">
             <h2 className="text-xl font-bold mb-4">Order Summary</h2>
-            
+
             <div className="space-y-4">
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span>₹{calculateTotal()}</span>
               </div>
-              
+
               <div className="flex justify-between">
                 <span>Shipping</span>
                 <span>Free</span>
               </div>
-              
+
               <div className="border-t pt-4">
                 <div className="flex justify-between font-bold">
                   <span>Total</span>
@@ -256,13 +256,13 @@ const CartPage = () => {
                 </div>
               </div>
             </div>
-            <Link   href={"/checkout"}>
+            <Link href={"/checkout"}>
 
-            <button
-              className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300"
-            >
-              Proceed to Checkout
-            </button>
+              <button
+                className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300"
+              >
+                Proceed to Checkout
+              </button>
             </Link>
           </div>
         </div>

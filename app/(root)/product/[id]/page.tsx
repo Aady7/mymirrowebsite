@@ -1,7 +1,7 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import supabase from '@/lib/supabaseClient'
+import { supabase } from '@/lib/supabase'
 import Image from 'next/image'
 import { useAuth } from '@/lib/hooks/useAuth'
 
@@ -87,7 +87,7 @@ const ProductDetail = () => {
 
       // Parse existing cart items or initialize empty array
       const currentCartItems = userData?.cartitems ? JSON.parse(userData.cartitems) : []
-      
+
       // Check if the product with the same size already exists in cart
       const existingItemIndex = currentCartItems.findIndex(
         (item: CartItem) => item.productId === product?.id && item.size === selectedSize
@@ -97,7 +97,7 @@ const ProductDetail = () => {
 
       if (existingItemIndex !== -1) {
         // If item exists, update its quantity
-        updatedCartItems = currentCartItems.map((item: CartItem, index: number) => 
+        updatedCartItems = currentCartItems.map((item: CartItem, index: number) =>
           index === existingItemIndex
             ? { ...item, quantity: item.quantity + 1 }
             : item
@@ -170,7 +170,7 @@ const ProductDetail = () => {
               </div>
             )}
           </div>
-          
+
           {/* Image Thumbnails */}
           {images.length > 1 && (
             <div className="flex gap-4 overflow-x-auto pb-2">
@@ -178,9 +178,8 @@ const ProductDetail = () => {
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${
-                    selectedImage === index ? 'border-indigo-600' : 'border-transparent'
-                  }`}
+                  className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 ${selectedImage === index ? 'border-indigo-600' : 'border-transparent'
+                    }`}
                 >
                   <img
                     src={image}
@@ -231,11 +230,10 @@ const ProductDetail = () => {
                 <button
                   key={index}
                   onClick={() => setSelectedSize(size)}
-                  className={`px-4 py-2 border rounded-md transition-colors ${
-                    selectedSize === size
-                      ? 'border-blue-600 bg-blue-600 text-white'
-                      : 'border-slate-200 text-slate-700 hover:border-blue-600 hover:text-blue-600'
-                  }`}
+                  className={`px-4 py-2 border rounded-md transition-colors ${selectedSize === size
+                    ? 'border-blue-600 bg-blue-600 text-white'
+                    : 'border-slate-200 text-slate-700 hover:border-blue-600 hover:text-blue-600'
+                    }`}
                 >
                   {size}
                 </button>

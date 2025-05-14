@@ -5,7 +5,6 @@ import { useAuth } from '@/lib/hooks/useAuth'
 import Navigation from '@/app/components/rootNav'
 import { supabase } from '@/lib/supabase'
 
-
 export default function ProtectedLayout({
   children,
 }: {
@@ -18,25 +17,42 @@ export default function ProtectedLayout({
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { session, error } = await getSession()
+        const { data: { session }, error } = await supabase.auth.getSession()
+
         if (!session || error) {
+          console.log('No session found, redirecting to sign-in')
           router.push('/sign-in')
-          
-    
           return
         }
-        console.log(session);
+
+        const { data: { user }, error: userError } = await supabase.auth.getUser()
+        if (!user || userError) {
+          console.log('Invalid session, redirecting to sign-in')
+          router.push('/sign-in')
+          return
+        }
+
+        console.log('Valid session found:', session)
         setIsLoading(false)
       } catch (error) {
         console.error('Error checking auth:', error)
         router.push('/sign-in')
       }
     }
-    
+
     checkAuth()
-    
-    
-    
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        setIsLoading(false)
+      } else if (event === 'SIGNED_OUT') {
+        router.push('/sign-in')
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   if (isLoading) {
