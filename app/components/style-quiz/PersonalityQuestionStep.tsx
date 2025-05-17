@@ -18,7 +18,7 @@ const PersonalityQuestionStep: React.FC<PersonalityQuestionStepProps> = ({
 
     return (
         <div>
-            <label className="block text-sm font-medium text-gray-700 mb-4">{question.label}</label>
+            <label className="block text-sm md:text-base font-medium text-gray-700 mb-4">{question.label}</label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {question.options.map(option => (
                     <label key={option} className="flex items-center justify-center">
@@ -30,7 +30,7 @@ const PersonalityQuestionStep: React.FC<PersonalityQuestionStepProps> = ({
                             onChange={handleChange}
                             className="hidden"
                         />
-                        <div className={`w-full py-3 px-4 rounded-lg text-center cursor-pointer transition-all ${formValues[question.key] === option
+                        <div className={`w-full py-3 px-4 rounded-lg text-center cursor-pointer transition-all text-sm md:text-base ${formValues[question.key] === option
                             ? 'bg-[#007e90] text-white'
                             : 'bg-white text-gray-700 border-2 border-gray-200'
                             }`}>

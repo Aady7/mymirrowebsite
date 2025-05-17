@@ -29,7 +29,7 @@ const BodyTypeStep: React.FC<BodyTypeStepProps> = ({ formValues, handleChange })
                             className="w-full h-full object-cover"
                         />
                     </div>
-                    <span className="mt-2 text-sm font-medium text-gray-700 capitalize">{type}</span>
+                    <span className="mt-2 text-xs md:text-sm font-medium text-gray-700 capitalize">{type}</span>
                 </label>
             ))}
         </div>
