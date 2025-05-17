@@ -1,7 +1,6 @@
 import { useRouter } from 'next/navigation'
 import { supabase } from '../supabase'
 import { AuthError } from '@supabase/supabase-js'
-import { use } from 'react'
 
 export const useAuth = () => {
   const router = useRouter()
@@ -10,7 +9,6 @@ export const useAuth = () => {
     try {
       console.log('Attempting to sign in...')
       
-      // Sign in with Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -23,7 +21,6 @@ export const useAuth = () => {
 
       console.log('Sign in successful:', data)
 
-      // Manually redirect after successful sign-in
       router.push('/style-quiz');
       return { data, error: null }
       
@@ -43,7 +40,6 @@ export const useAuth = () => {
       if (error) {
         return { data: null, error }
       }
-      // adding user to the database
       const { user } = data
       const { error: insertError } = await supabase
         .from('users')
@@ -71,7 +67,6 @@ export const useAuth = () => {
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       
-      // Force navigation to sign-in page\
       router.push('/sign-in')
       
     } catch (error) {
