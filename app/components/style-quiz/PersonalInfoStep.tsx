@@ -1,10 +1,9 @@
 import React from 'react';
-import { formatPhoneNumber } from '@/app/utils/styleQuizUtils';
 
 interface PersonalInfoStepProps {
     formValues: {
         name?: string;
-        
+
         gender?: string;
     };
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
@@ -23,7 +22,7 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({ formValues, handleC
                     placeholder="Enter your name"
                 />
             </div>
-           
+
             <div className="flex space-x-4">
                 {['male', 'female', 'other'].map(g => (
                     <label key={g} className="flex-1 flex items-center justify-center">

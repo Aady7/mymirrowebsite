@@ -16,7 +16,7 @@ export interface FormValues {
     outfitPlanning?: string;
     complimentOn?: string;
     otp?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }
 
  export  interface StyleQuizData {
@@ -42,7 +42,7 @@ export interface FormValues {
     selfieface?: string;
     outfitplanning?: string;
     complimenton?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   }
   
 
