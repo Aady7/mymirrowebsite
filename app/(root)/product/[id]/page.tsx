@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import Image from 'next/image'
 import { useAuth } from '@/lib/hooks/useAuth'
 
 import Link from 'next/link'

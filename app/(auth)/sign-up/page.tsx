@@ -1,8 +1,9 @@
 'use client'
-import React, { useState } from 'react'
-import Link from 'next/link'
 import { useAuth } from '@/lib/hooks/useAuth'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
+
 
 const SignUp = () => {
     const [email, setEmail] = useState('')
@@ -12,11 +13,18 @@ const SignUp = () => {
     const { signUp } = useAuth()
     
     const handleSignUp = async () => {
-        const { data, error: signUpError } = await signUp(email, password)
+        const { data, error: signUpError } = await signUp(email, password) 
+
+        //check
+        console.log(data)  
+
         if (signUpError) {
             setError(signUpError.message)
         } else {
-            router.push('/sign-in')
+           
+          router.push('/style-quiz')
+           
+
         }
     }
 
