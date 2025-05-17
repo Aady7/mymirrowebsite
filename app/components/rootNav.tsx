@@ -53,7 +53,7 @@ export default function Navigation() {
             </Link>
           </div>
           {/*Sigout*/}
-          <div className="flex items-center">
+        {/*   <div className="flex items-center">
             <button
               onClick={signOut}
               className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
@@ -61,6 +61,7 @@ export default function Navigation() {
               Sign Out 
             </button>
           </div>
+          */}
 
           {/*Mobile */}
           <div className='sm:hidden'>

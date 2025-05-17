@@ -133,11 +133,29 @@
   min-width: 0; /* Prevents flex/grid items from overflowing */
 }
 @font-face {
-  font-family: 'BostonWanted';
-  src: url('/fonts/BostonWanted.woff2') format('woff2');
-  font-weight: normal;
+  font-family: 'Boston';
+  src: url('/fonts/Boston.woff2') format('woff2');
+  font-weight: 300;
   font-style: normal;
 }
+
+/*Tarot section css*/
+.perspective {
+  perspective: 1000px;
+}
+
+.transform-style {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
 
 /*homepage 1st section */
 .container-section {
