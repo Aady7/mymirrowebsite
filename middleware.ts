@@ -45,8 +45,7 @@ export async function middleware(request: NextRequest) {
 
 		// Define public paths that don't require authentication
 		const isPublicPath =
-			path === "/" ||
-			path === "/homepage" ||
+			path === "/" || // Root is now the homepage
 			path === "/sign-in" ||
 			path === "/sign-up" ||
 			path === "/mobile-sign-in" ||
@@ -83,7 +82,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
 	matcher: [
 		"/",
-		"/homepage",
 		"/sign-in",
 		"/sign-up",
 		"/mobile-sign-in",
