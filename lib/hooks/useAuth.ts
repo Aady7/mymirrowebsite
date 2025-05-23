@@ -9,7 +9,6 @@ export const useAuth = () => {
     try {
       console.log('Attempting to sign in...')
       
-      // Sign in with Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -42,7 +41,6 @@ export const useAuth = () => {
       if (error) {
         return { data: null, error }
       }
-      // adding user to the database
       const { user } = data
       const { error: insertError } = await supabase
         .from('users')
@@ -67,16 +65,20 @@ export const useAuth = () => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      
-      // Force navigation to sign-in page\
-      router.push('/sign-in')
-      
+      // Remove userId from localStorage
+      localStorage.removeItem('userId');
+  
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+  
+      // Redirect to sign-in page
+      router.push('/sign-in');
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error('Error signing out:', error);
     }
-  }
+  };
+  
 
   const getSession = async () => {
     try {

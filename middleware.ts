@@ -49,6 +49,7 @@ export async function middleware(request: NextRequest) {
                        path === '/sign-in' || 
                        path === '/sign-up' || 
                        path === '/mobile-sign-in' ||
+                       path === '/style-quiz' || 
                        path.startsWith('/api/auth')
 
 
@@ -58,7 +59,7 @@ export async function middleware(request: NextRequest) {
 
   // If user is logged in but trying to access a public page, redirect to style-quiz
   if (isPublicPath && session) {
-    return NextResponse.redirect(new URL('/style-quiz', request.url))
+    return NextResponse.redirect(new URL('/recommendations', request.url))
   }
 
   
@@ -66,6 +67,7 @@ export async function middleware(request: NextRequest) {
 
   // If user is not logged in and trying to access a protected page, redirect to sign-in
   if (!isPublicPath && !session) {
+    
     return NextResponse.redirect(new URL('/sign-in', request.url))
   }
 

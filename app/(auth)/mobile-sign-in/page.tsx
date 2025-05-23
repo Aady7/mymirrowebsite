@@ -106,7 +106,7 @@ const MobileSignIn = () => {
       if (error) {
         setError(error.message)
       } else {
-        router.push('/style-quiz')
+        router.push('/recommendations')
       }
     } catch (err) {
       setError('An error occurred while verifying OTP')
