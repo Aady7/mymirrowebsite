@@ -3,12 +3,12 @@ import Image from "next/image";
 const AboutUs = () => {
   return (
     <div>
-      <div className="flex flex-col mt-10 space-x-6 md:flex-row gap-8 items-start max-w-7xl mx-auto px-4 py-12">
+      <div className="flex flex-col space-x-6 md:flex-row gap-8 items-start max-w-7xl mx-auto px-4 py-12">
         <div className="md:w-1/2 space-y-6">
-          <h1 className="font-['Boston'] text-3xl md:text-7xl font-bold text-left">
+          <h1 className=" font-bold text-4xl md:text-7xl font-['Boston'] ">
             Get to know us
           </h1>
-          <p className="font-['Boston'] text-lg md:text-lg text-left leading-tight m-0">
+          <p className="font-light text-lg md:text-lg text-left tracking-wide leading-[1.5] m-0">
             I was just trying to buy a pair of shoes — something stylish,
             something that felt like me. But the deeper I went, the more lost I
             felt. Endless tabs. No real guidance. And no idea what would
@@ -42,7 +42,7 @@ const AboutUs = () => {
         {/* Image */}
         <div className="w-full md:w-1/2 flex justify-center">
           <img
-            src=""
+            src="/assets/about-1.png"
             alt="About MyMirro"
             className="w-full max-w-[600px] bg-yellow-300 md:w-[79%] h-[300px] sm:h-[400px] md:h-[600px] object-cover rounded-lg"
           />
@@ -50,12 +50,12 @@ const AboutUs = () => {
       </div>
 
       {/*nex section*/}
-      <div className="flex flex-col mt-10 space-x-6 md:flex-row gap-8 items-start max-w-7xl mx-auto px-4 py-12">
-        <div className="md:w-1/2 space-y-6">
+      <div className="flex flex-col mt-2 space-x-6 md:flex-row gap-8 items-start max-w-7xl mx-auto px-4 py-4">
+        <div className="md:w-1/2 space-y-2">
           <h1 className="font-['Boston'] text-3xl md:text-7xl font-bold text-left">
             Our mission
           </h1>
-          <p className=" pt-7 leading-tight text-xl font-['Boston'] md:text-lg text-left">
+          <p className=" pt-4 leading-tight text-lg font-light font-['Boston'] md:text-lg text-left">
             At MyMirro, we don’t just sell clothes—we help you express yourself
             through fashion. Shopping should be exciting, effortless, and
             tailored to you. Our goal is to be your personal fashion stylist,
@@ -70,10 +70,10 @@ const AboutUs = () => {
           </p>
         </div>
         <div className="w-full md:w-1/2  ">
-          <h1 className="font-['Boston'] text-xl md:text-7xl font-bold text-left">
+          <h1 className="font-['Boston'] text-3xl md:text-7xl font-bold text-left">
             What makes us different?
           </h1>
-          <p className=" text-xl leading-tight font-['Boston'] pt-7 md:text-lg text-left">
+          <p className=" text-lg font-light leading-tight font-['Boston'] pt-7 md:text-lg text-left">
             Unlike other platforms, MyMirro isn’t just another shopping site. We
             offer:
             <br /> - Personalized fashion advice—real designers helping you
@@ -86,25 +86,25 @@ const AboutUs = () => {
       </div>
 
       {/*Image section*/}
-      <div className="flex mt-20 items-center">
-        <div>
+      <div className="flex mt-10 items-center p-3 rounded-lg">
+        <div className="w-full">
           <Image
-            src="" //images
+            src="/assets/about-2.png" //images
             alt="mymirro"
-            width={1900}
+            width={2000}
             height={800}
-            className="w-full h-[300px] bg-amber-300 sm:h-[500px] md:h-[500px] object-cover"
+            className="w-full h-[300px] sm:h-[500px] md:h-[500px] object-cover"
           />
         </div>
       </div>
 
       {/*team section*/}
       <div>
-        <div className="flex flex-col mt-30 px-2 justify-between">
+        <div className="flex flex-col mt-15 px-3 justify-between">
           <h1 className="font-['Boston']  test-left md:text-7xl font-bold text-3xl">
             Our Team
           </h1>
-          <p className="pt-6 font-['Boston'] text-xl">
+          <p className="pt-4 font-['Boston'] font-light leading-6 text-lg">
             Our strength lies in our individuality. We’re a passionate team of
             four individuals who <br />
             love fashion, technology, and solving real problems. Our diverse
@@ -118,7 +118,7 @@ const AboutUs = () => {
       </div>
 
       {/*founders section*/}
-      <div className="px-4 mt-25 sm:px-2">
+      <div className="px-4 mt-15 sm:px-2">
         {" "}
         {/* Container with side padding */}
         <div className="grid  sm:grid-cols-4 gap-3 sm:gap-5 mt-10">
@@ -126,11 +126,11 @@ const AboutUs = () => {
          
           <div className="aspect-square flex-col space-y-3 rounded-lg">
             <Image
-              src="/image1.jpg"
+              src="/assets/mayanksir.jpg"
               alt="Mayank Bhaiya"
               width={300}
               height={300}
-              className="w-full h-full bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
+              className="w-full h-[250px] max-w-[350px] mx-auto object-cover hover:scale-105 transition-transform duration-300"
             />
 
             <p className="text-lg font-semibold">Mayank</p>
@@ -140,11 +140,11 @@ const AboutUs = () => {
           {/* Piyush bahiya ka Image 2 */}
           <div className="aspect-square flex-col space-y-3 rounded-lg">
             <Image
-              src="/image2.jpg"
+              src="/assets/ppiyush.avif"
               alt="Piyush bhaiya"
               width={300}
               height={300}
-              className="w-full h-full  bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
+              className="w-full h-[250]  bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
             />
              <p className="text-lg font-semibold">Piyush Pratap Singh</p>
             <p className="text-sm text-black">Chief Business officer</p>
@@ -153,11 +153,11 @@ const AboutUs = () => {
           {/* Akhil bhaiya ka Image 3 */}
           <div className="aspect-square flex-col space-y-3 rounded-lg">
             <Image
-              src="/image3.jpg"
+              src="/assets/akhilBhaiya.avif"
               alt="Akhil bhaiya"
               width={300}
               height={300}
-              className="w-full h-full  bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
+              className="w-full h-[250]  bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
             />
              <p className="text-lg font-semibold">Akhil Singh</p>
             <p className="text-sm text-black">Chief technology officer</p>
@@ -166,11 +166,11 @@ const AboutUs = () => {
           {/* Harshit bhaiya ka Image 4 */}
           <div className="aspect-square flex-col space-y-3 rounded-lg">
             <Image
-              src="/image4.jpg"
+              src="/assets/harshit.jpg"
               alt="Harshit bhiya"
               width={300}
               height={300}
-              className="w-full h-full  bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
+              className="w-full h-[250]  bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
             />
              <p className="text-lg font-semibold">Harshit</p>
             <p className="text-sm text-black">Chief Experience & Operations officer</p>

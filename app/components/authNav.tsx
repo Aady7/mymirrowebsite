@@ -1,5 +1,5 @@
 'use client'
-import React from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
@@ -12,7 +12,7 @@ const RootNav = () => {
         <div className="flex">
           <div className="flex-shrink-0 flex items-center">
             <Link href="/style-quiz" className="text-xl font-bold text-indigo-600">
-              Style Quiz
+              <Image src="/assets/logo.png"  alt='logo' width={600} height={300}  />
             </Link>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:space-x-8">

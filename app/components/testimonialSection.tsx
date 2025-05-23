@@ -1,31 +1,32 @@
 "use client"; // Indicate that this component uses client-side code
 
-
 const testimonials = [
   {
     id: 1,
     rating: 5,
     content:
-      "This product has changed my life! Highly recommend it to everyone.",
+      "Honestly, MyMirro changed the way I see fashion. Their recommendations were spot on and completely transformed my look. Now, I feel more confident in what I wear! ",
     image: "/path/to/image1.jpg",
-    name: "John Doe",
-    title: "CEO, Company A",
+    name: "Ritika Verma",
+    title: "",
   },
   {
     id: 2,
     rating: 4,
-    content: "Great quality and fantastic support. Will buy again!",
+    content:
+      "I used to spend forever scrolling through endless products on other sites, never finding exactly what I wanted. MyMirro made it so easy by showing me exactly what I needed, no more endless browsing!",
     image: "/path/to/image2.jpg",
-    name: "Jane Smith",
-    title: "Manager, Company B",
+    name: "Aanya Gupta",
+    title: "",
   },
   {
     id: 3,
     rating: 5,
-    content: "Absolutely fantastic! Exceeded my expectations.",
+    content:
+      "The whole experience with MyMirro was amazing! From the styling advice to the quality of the clothes, everything was spot on. I felt like I had my own personal stylist the whole time!",
     image: "/path/to/image3.jpg",
-    name: "Alice Johnson",
-    title: "Designer, Company C",
+    name: "Rohit Mehta",
+    title: "",
   },
   {
     id: 4,
@@ -72,21 +73,20 @@ const testimonials = [
 const TestimonialSection = () => {
   return (
     <section
-      className="relative py-16 bg-fixed bg-cover bg-center w-screen max-w -mx-[calc((100vw-100%)/2)] min-h-[500px]"
+      className="relative py-16 bg-fixed bg-cover h-[600px] bg-center w-screen max-w -mx-[calc((100vw-100%)/2)] min-h-[500px]"
       style={{
-        backgroundImage:
-          "url('https://images.unsplash.com/photo-1583530738247-444ce8342b9a?auto=format&fit=crop&w=1920')",
+        backgroundImage: `url('/assets/testimonials.png')`,
       }}
     >
       <div className="absolute inset-0 bg-black opacity-50"></div>
-      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-3xl font-bold text-center text-white mb-12"></h2>
+      <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-2xl font-bold text-center text-white mb-1"></h2>
 
         <div className="flex flex-wrap -mx-4 justify-center">
           {testimonials.slice(0, 2).map((testimonial) => (
             <div
               key={testimonial.id}
-              className="w-full md:w-1/2 lg:w-1/3 px-4 mb-8"
+              className="w-full md:w-1/2 lg:w-1/3 px-4 mb-1"
             >
               <div className="flex flex-col items-center text-center bg-opacity-0 rounded-lg p-6 h-full">
                 {/* Rating Stars - Centered */}
@@ -106,17 +106,13 @@ const TestimonialSection = () => {
                 </div>
 
                 {/* Content - Limited to 3 lines */}
-                <p className="text-white italic mb-6 line-clamp-3 max-w-md">
+                <p className="text-white text-sm mb-2  font-light tracking-wider leading-5 max-w-md">
                   "{testimonial.content}"
                 </p>
 
                 {/* Image and Name - Centered */}
                 <div className="flex flex-col items-center">
-                  <img
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="w-12 h-12 rounded-full object-cover mb-2"
-                  />
+                
                   <div className="text-center">
                     <p className="text-white font-semibold">
                       {testimonial.name}

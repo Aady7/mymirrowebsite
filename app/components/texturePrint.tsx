@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { FaIndianRupeeSign } from "react-icons/fa6";
-import LooksSection from "./looksTwo";
+
+import LooksSectionThree from "./looksThree";
 
 export default function TexturePrint() {
   return (
-    <div className="w-full px-4 py-1 max-w-md mx-auto">
+    <div className="w-full px-4 py-1 max-w-md mx-auto font-['Boston']">
       {/* Header */}
       <div className="text-center mb-2">
         <h1
@@ -62,7 +63,7 @@ export default function TexturePrint() {
 
       <div>
         <div className="w-full mt-8">
-          <h1 className="font-[Boston] font-thin text-xs text-left">
+          <h1 className="font-[Boston] font-thin text-sm text-left">
             DESCRIPTION
           </h1>
         </div>
@@ -83,21 +84,21 @@ export default function TexturePrint() {
       <hr className="border-thin w-[100%] border-black mt-7" />
 
       {/*Style with it*/}
-      <div className="text-center mt-10 ">
+      <div className="text-center mt-8 ">
         <h1 className="font-thin" style={{ fontSize: "20px", fontWeight: 100 }}>
-          STYLE WITH IT
+          STYLE IT WITH
         </h1>
       </div>
 
       {/*lookThreeSection*/}
-      <LooksSection />
+      <LooksSectionThree />
 
       {/* Horizontal Line */}
-      <hr className="border-thin w-[100%] border-black mt-8" />
+      <hr className="border-thin w-[100%] border-black" />
 
       {/*you may also like section]*/}
       <div>
-        <div className="text-center mt-10 mb-2">
+        <div className="text-center mt-8 mb-2">
           <h1
             className="font-thin"
             style={{ fontSize: "20px", fontWeight: 100 }}
