@@ -11,9 +11,7 @@ const page = async () => {
   const supabase = createServerComponentClient({ cookies });
 
   // Get the session from Supabase
-  const {
-   // data: { session },
-  } = await supabase.auth.getSession();
+  await supabase.auth.getSession();
 
   return (
     <>
@@ -140,12 +138,12 @@ const page = async () => {
               </Link>
             </div>
 
-          
+
           </div>
           {/* Stylist section */}
-          <Stylist/>
+          <Stylist />
         </section>
-        
+
 
         {/* Assuming TestimonialSection is already responsive */}
         <TestimonialSection />
