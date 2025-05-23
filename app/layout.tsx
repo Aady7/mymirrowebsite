@@ -1,3 +1,4 @@
+import { Navigation } from "lucide-react";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Footer from "./components/footer";
@@ -31,7 +32,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased` } 
       >
       
-
+       
         <Provider>
         {children}
         </Provider>

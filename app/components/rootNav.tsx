@@ -1,5 +1,6 @@
 'use client'
 import { useAuth } from '@/lib/hooks/useAuth'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
 
@@ -16,7 +17,7 @@ export default function Navigation() {
           {/* Logo / Brand */}
           <div className="flex-shrink-0">
             <Link href="/style-quiz" className="text-2xl font-bold text-indigo-600">
-              Style Quiz
+              <Image src="/assets/logo.png"  alt='logo' width={100} height={30}  />
             </Link>
           </div>
           {/* DeskTop Navigation*/}
@@ -28,7 +29,7 @@ export default function Navigation() {
               Quiz
             </Link>
             <Link
-              href="/homepage"
+              href="/"
               className="text-gray-700 hover:text-indigo-600 transition font-medium"
             >
               Home
@@ -101,16 +102,18 @@ export default function Navigation() {
         {/*Mobile Dropdown*/}
         {isOpen && (
            <div className="sm:hidden mt-2 space-y-2">
-           <Link href="/style-quiz" className="block text-gray-700 hover:text-indigo-600">
-             Quiz
-           </Link>
-           <Link href="/homepage" className="block text-gray-700 hover:text-indigo-600">
+
+            <Link href="/" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300">
              Home
            </Link>
-           <Link href="/recommendations" className="block text-gray-700 hover:text-indigo-600">
+           <Link href="/style-quiz" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300">
+             Quiz
+           </Link>
+           
+           <Link href="/recommendations" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300">
              Recommendations
            </Link>
-           <Link href="/cart" className="block text-gray-700 hover:text-indigo-600">
+           <Link href="/cart" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300">
              Cart
            </Link>
            <Link
