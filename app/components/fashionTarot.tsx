@@ -12,17 +12,19 @@ const FashionTarot = () => {
       {/* Header */}
       <div className="mt-8 p-3">
         <h1 className="font-['Boston'] text-xl flex items-center justify-center">
-          FASHION TAROT CARD
-        </h1>
-        <p className=" pt-2 text-xs flex items-center font-thin justify-center text-center">
+          FASHION TAROT CARD 
+        </h1>           
+
+        <p className=" pt-2  flex items-center text-center font-[Boston] text-[14px] not-italic font-normal leading-normal justify-center">
           Uncover your style spirit — each card reveals a <br />
           fashion truth based on your personality.
-        </p>
+        </p>                                                  
       </div>
 
+
       {/* Tarot Cards */}
-      <div className="mt-6 px-4">
-        <div className="flex flex-row gap-8">
+      <div className="mt-6 px-10">
+        <div className="flex flex-row gap-10">
           {/* Tarot Card 1 */}
           <div
             className="w-[152px] h-[240px] perspective cursor-pointer"
@@ -88,6 +90,7 @@ const FashionTarot = () => {
           </div>
         </div>
       </div>
+      
     </>
   );
 };

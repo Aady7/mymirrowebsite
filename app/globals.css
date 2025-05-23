@@ -156,12 +156,9 @@
   transform: rotateY(180deg);
 }
 
+/* swiper styles sections*/
+@import 'swiper/css';
+@import 'swiper/css/navigation';
+@import 'swiper/css/pagination';
 
-/*homepage 1st section */
-.container-section {
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 100vw !important;
-  max-width: none !important;
- 
-}
+
