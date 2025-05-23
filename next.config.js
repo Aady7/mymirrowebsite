@@ -11,6 +11,17 @@ const nextConfig = {
 	// Add options to help with the build process
 	output: "standalone",
 	poweredByHeader: false,
+
+	// Override the default webpack config to ignore problematic manifests
+	webpack: (config, { isServer }) => {
+		// Fix for the client reference manifest issue
+		if (isServer) {
+			config.ignoreWarnings = [
+				{ module: /app\/\(root\)\/page_client-reference-manifest\.js$/ },
+			];
+		}
+		return config;
+	},
 };
 
 module.exports = nextConfig;
