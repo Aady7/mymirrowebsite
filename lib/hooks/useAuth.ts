@@ -65,15 +65,20 @@ export const useAuth = () => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-      
-      router.push('/sign-in')
-      
+      // Remove userId from localStorage
+      localStorage.removeItem('userId');
+  
+      // Sign out from Supabase
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+  
+      // Redirect to sign-in page
+      router.push('/sign-in');
     } catch (error) {
-      console.error('Error signing out:', error)
+      console.error('Error signing out:', error);
     }
-  }
+  };
+  
 
   const getSession = async () => {
     try {

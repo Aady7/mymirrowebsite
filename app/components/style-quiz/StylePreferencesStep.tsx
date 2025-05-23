@@ -11,7 +11,7 @@ const StylePreferencesStep: React.FC<StylePreferencesStepProps> = ({ formValues,
     return (
         <div className="space-y-8">
             <div>
-                <label className="block text-sm font-medium text-gray-700 mb-4">
+                <label className="block text-[25px] text-gray-700 mb-4">
                     How adventurous are you with your outfits?
                 </label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -30,7 +30,7 @@ const StylePreferencesStep: React.FC<StylePreferencesStepProps> = ({ formValues,
                                 className="hidden"
                             />
                             <div
-                                className={`w-full py-3 px-4 rounded-lg text-center cursor-pointer transition-all ${
+                                className={`w-full py-3 px-4 rounded-lg text-center cursor-pointer transition-all text-[14px] ${
                                     formValues.outfitAdventurous?.includes(level)
                                         ? 'bg-[#007e90] text-white'
                                         : 'bg-white text-gray-700 border-2 border-gray-200'
