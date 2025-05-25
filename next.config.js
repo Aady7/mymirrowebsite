@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+<<<<<<< HEAD
 const nextConfig = {
 	/* config options here */
 	typescript: {
@@ -22,6 +23,20 @@ const nextConfig = {
 		}
 		return config;
 	},
+=======
+
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  /* config options here */
+  typescript: {
+    // !! WARN !!
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    // This is a temporary workaround to fix the build error with params type
+    ignoreBuildErrors: true,
+  },
+>>>>>>> ec45561c96134cd09fa7cbcc366872a97be62dc8
 };
 
 module.exports = nextConfig;
