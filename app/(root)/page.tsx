@@ -1,18 +1,19 @@
 import Stylist from "@/app/components/stylist";
 import TestimonialSection from "@/app/components/testimonialSection";
 import { Button } from "@/components/ui/button";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
+import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 
-const page = async () => {
-  // Create a Supabase client in your server component
-  const supabase = createServerComponentClient({ cookies });
+// Create a single supabase client for the entire app
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+);
 
+const page = async () => {
   // Get the session from Supabase
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const { data } = await supabase.auth.getSession();
+  const session = data.session;
 
   return (
     <>
@@ -60,7 +61,7 @@ const page = async () => {
 
         <section className="py-14 bg-white w-full">
           <div className="max-w-7xl mx-auto px-2">
-            <h2 className="text-3xl font-bold text-center mb-6"></h2>
+            <h2 className="text-3xl font-bold text-center mb-6" aria-label="Features"></h2>
 
             {/* Feature 1 */}
             <div className="flex flex-col md:flex-row items-center mb-10 gap-8 md:gap-15 px-3">
