@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import { productList } from "../utils/productList";
+import { productList } from "@/app/utils/productList";
 
 const LooksSectionThree = () => {
   

@@ -1,19 +1,11 @@
 'use client'
 
-
-
-
 const StyleQuiz = () => {
-
-  return (<>
-  
- {/*<StylistSays/> */}
-  
-   
-  {/*<UrbanShift/>    <TexturePrint/>*/}
-  
-   <div>This is my style Quize pages</div>
-   </>
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6">Style Quiz</h1>
+      <div>This is my style Quiz page</div>
+    </div>
   )
 }
 

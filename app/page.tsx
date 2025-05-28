@@ -1,4 +1,4 @@
-import Stylist from "@/app/components/stylist";
+import Stylist from "@/app/components/recommendations/stylist";
 import TestimonialSection from "@/app/components/testimonialSection";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@supabase/supabase-js";

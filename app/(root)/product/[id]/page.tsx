@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/lib/hooks/useAuth'
+import { addToCart } from '@/lib/utils/cart'
 
 import Link from 'next/link'
 
@@ -75,53 +76,17 @@ const ProductDetail = () => {
         return
       }
 
-      // Get current cart items
-      const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('cartitems')
-        .eq('userid', session.user.id)
-        .single()
-
-      if (userError) throw userError
-
-      // Parse existing cart items or initialize empty array
-      const currentCartItems = userData?.cartitems ? JSON.parse(userData.cartitems) : []
-
-      // Check if the product with the same size already exists in cart
-      const existingItemIndex = currentCartItems.findIndex(
-        (item: CartItem) => item.productId === product?.id && item.size === selectedSize
+      const { success, error } = await addToCart(
+        session.user.id,
+        product?.id as number,
+        selectedSize
       )
 
-      let updatedCartItems: CartItem[]
-
-      if (existingItemIndex !== -1) {
-        // If item exists, update its quantity
-        updatedCartItems = currentCartItems.map((item: CartItem, index: number) =>
-          index === existingItemIndex
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
+      if (success) {
+        alert('Item added to cart successfully!')
       } else {
-        // If item doesn't exist, add new item
-        const newCartItem = {
-          productId: product?.id,
-          size: selectedSize,
-          quantity: 1,
-          addedAt: new Date().toISOString()
-        }
-        updatedCartItems = [...currentCartItems, newCartItem]
+        setError(error || 'Failed to add item to cart')
       }
-
-      // Update user's cart in database
-      const { error: updateError } = await supabase
-        .from('users')
-        .update({ cartitems: JSON.stringify(updatedCartItems) })
-        .eq('userid', session.user.id)
-
-      if (updateError) throw updateError
-
-      // Show success message
-      alert('Item added to cart successfully!')
     } catch (error) {
       console.error('Error adding to cart:', error)
       setError('Failed to add item to cart. Please try again.')

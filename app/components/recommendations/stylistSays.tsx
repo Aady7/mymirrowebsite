@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import FashionTarot from "./fashionTarot";
 import Stylist from "./stylist";
+import { looksData } from "@/app/utils/lookData";
 
 const StylistSays = () => {
   return (
@@ -84,7 +85,7 @@ const StylistSays = () => {
             </div>
           </div>
           <span className="flex items-end justify-end mt-1">
-            <Link href="/looks/urban">
+            <Link href="/looks/urbanShift">
               <Button className="bg-black rounded-none w-25 h-5">
                 {" "}
                 VIEW MORE
@@ -122,7 +123,7 @@ const StylistSays = () => {
             </div>
           </div>
           <span className="flex items-end justify-end mt-1">
-            <Link href="/looks/urban">
+            <Link href="/looks/minimalElegance">
               <Button className="bg-black rounded-none w-25 h-5">
                 {" "}
                 VIEW MORE
@@ -145,7 +146,7 @@ const StylistSays = () => {
               </div>
             </div>
             <span className="flex items-end justify-end mt-1">
-              <Link href="/looks/urban">
+              <Link href="/looks/streetCore">
                 <Button className="bg-black rounded-none w-25 h-5">
                   {" "}
                   VIEW MORE
