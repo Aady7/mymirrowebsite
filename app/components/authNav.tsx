@@ -12,7 +12,7 @@ const RootNav = () => {
         <div className="flex">
           <div className="flex-shrink-0 flex items-center">
             <Link href="/style-quiz" className="text-xl font-bold text-indigo-600">
-              <Image src="/assets/logo.png"  alt='logo' width={600} height={300}  />
+              <Image src="/assets/logo.png"  alt='logo' width={150} height={75}  />
             </Link>
           </div>
           <div className="hidden sm:ml-6 sm:flex sm:space-x-8">

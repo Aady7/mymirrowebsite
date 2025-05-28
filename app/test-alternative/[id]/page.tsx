@@ -1,5 +1,5 @@
-import StylistSays from '@/app/components/stylistSays'
-import TexturePrint from '@/app/components/texturePrint'
+import StylistSays from '@/app/components/recommendations/stylistSays'
+import TexturePrint from '@/app/components/product-page/texturePrint'
 import React from 'react'
 
 export default function Page({ params }: { params: { id: string } }) {

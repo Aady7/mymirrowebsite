@@ -1,5 +1,5 @@
 'use client'
-import StylistSays from '@/app/components/stylistSays'
+import StylistSays from "@/app/components/recommendations/stylistSays"
 const Recommendations = () => {
   return (
       <StylistSays/>

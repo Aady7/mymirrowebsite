@@ -210,11 +210,11 @@ export const STYLE_PREFERENCE_IMAGES = {
       Shorts: '/stylequizimages/GotoStyle/MaleAthleiseure/image127.png',   
     },
     female: {
-      option_1: '/stylequizimages/GotoStyle/FemaleAthleisure/image98.png',
-      option_2: '/stylequizimages/GotoStyle/FemaleAthleisure/image99.png',
+      'Crop Top': '/stylequizimages/GotoStyle/FemaleAthleisure/image98.png',
+      'Tanks': '/stylequizimages/GotoStyle/FemaleAthleisure/image99.png',
       'Sports Bra': '/stylequizimages/GotoStyle/FemaleAthleisure/image100.png',
-      option_4: '/stylequizimages/GotoStyle/FemaleAthleisure/image101.png',
-      option_5: '/stylequizimages/GotoStyle/FemaleAthleisure/image102.png',
+      'Co-ords & Onesies': '/stylequizimages/GotoStyle/FemaleAthleisure/image101.png',
+      'Leggings': '/stylequizimages/GotoStyle/FemaleAthleisure/image102.png',
       Joggers: '/stylequizimages/GotoStyle/FemaleAthleisure/image104.png',
       Shorts: '/stylequizimages/GotoStyle/FemaleAthleisure/image105.png',
     }
