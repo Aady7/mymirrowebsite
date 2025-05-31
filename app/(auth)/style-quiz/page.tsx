@@ -618,7 +618,6 @@ const StyleQuiz: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
-      <AuthNav />
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Desktop Sidebar */}
         <aside className="hidden md:block w-1/3 bg-[#007e90] text-white p-5 overflow-y-auto h-[calc(100vh-64px)]">

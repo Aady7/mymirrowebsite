@@ -50,6 +50,7 @@ export async function middleware(request: NextRequest) {
 			path === "/sign-up" ||
 			path === "/mobile-sign-in" ||
 			path === "/style-quiz" ||
+			path === "/aboutpage" ||
 			path.startsWith("/api/auth") ||
 			path.startsWith("/aboutpage");
 
@@ -82,6 +83,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
 	matcher: [
 		"/",
+		"/aboutpage",
 		"/sign-in",
 		"/sign-up",
 		"/mobile-sign-in",

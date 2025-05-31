@@ -172,13 +172,15 @@ const LookPage = () => {
               </div>
 
               <div className="flex flex-row gap-1 mt-4 mx-3">
-                <button
-                  onClick={() => handleAddProductToCart(index)}
-                  disabled={loading[index]}
-                  className="flex items-center h-6 w-10 justify-center gap-2 bg-black text-white rounded-none disabled:bg-gray-400"
-                >
-                  <FaCartArrowDown className="w-3" />
-                </button>
+                {lookData.products.length > 1 && (
+                  <button
+                    onClick={() => handleAddProductToCart(index)}
+                    disabled={loading[index]}
+                    className="flex items-center h-6 w-10 justify-center gap-2 bg-black text-white rounded-none disabled:bg-gray-400"
+                  >
+                    <FaCartArrowDown className="w-3" />
+                  </button>
+                )}
                 <Link href={`/looks/${id}/${index + 1}`}>
                   <button className="bg-black h-6 w-25 text-white text-xs rounded-none">
                     View Product

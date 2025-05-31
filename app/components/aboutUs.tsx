@@ -19,9 +19,9 @@ const AboutUs = () => {
             
             So I started asking around. Turns out, I wasn't the only one. People
             told me: <br />
-            “I never find anything that fits right.” <br />
-            “I return half the things I buy.” <br />
-            “I don't know what actually suits me.”
+            "I never find anything that fits right." <br />
+            "I return half the things I buy." <br />
+            "I don't know what actually suits me."
             <br />
             <br/>
             That's when it clicked — it's not the people who are the problem.
@@ -56,17 +56,17 @@ const AboutUs = () => {
             Our mission
           </h1>
           <p className=" pt-4 leading-tight text-lg font-light font-['Boston'] md:text-lg text-left">
-            At MyMirro, we don’t just sell clothes—we help you express yourself
+            At MyMirro, we don't just sell clothes—we help you express yourself
             through fashion. Shopping should be exciting, effortless, and
             tailored to you. Our goal is to be your personal fashion stylist,
             ensuring that you always look and feel your best.
             <br />
             <br />
             We understand that online shopping can feel overwhelming—so much
-            choice, yet never quite what you’re looking for. That’s why we
+            choice, yet never quite what you're looking for. That's why we
             handpick outfits based on your unique preferences, body type, and
-            style. Whether you need guidance, don’t have the time, or simply
-            want a better way to shop—we’ve got you covered.
+            style. Whether you need guidance, don't have the time, or simply
+            want a better way to shop—we've got you covered.
           </p>
         </div>
         <div className="w-full md:w-1/2  ">
@@ -74,10 +74,10 @@ const AboutUs = () => {
             What makes us different?
           </h1>
           <p className=" text-lg font-light leading-tight font-['Boston'] pt-7 md:text-lg text-left">
-            Unlike other platforms, MyMirro isn’t just another shopping site. We
+            Unlike other platforms, MyMirro isn't just another shopping site. We
             offer:
             <br /> - Personalized fashion advice—real designers helping you
-            style yourself effortlessly. <br />- Curated recommendations—you’ll
+            style yourself effortlessly. <br />- Curated recommendations—you'll
             only see outfits that truly match your style and personality.
             <br /> - Time-saving simplicity—no more endless scrolling, just the
             best picks for you.
@@ -85,15 +85,16 @@ const AboutUs = () => {
         </div>
       </div>
 
-      {/*Image section*/}
-      <div className="flex mt-10 items-center p-3 rounded-lg">
-        <div className="w-full">
+      {/* Image section */}
+      <div className="relative mt-10 w-screen left-[50%] right-[50%] mx-[-50vw] lg:h-screen">
+        <div className="w-full h-full">
           <Image
-            src="/assets/about-2.png" //images
-            alt="mymirro"
+            src="/assets/about-2.png"
+            alt="MyMirro"
             width={2000}
             height={800}
-            className="w-full h-[300px] sm:h-[500px] md:h-[500px] object-cover"
+            className="w-full h-[300px] sm:h-[500px] md:h-[500px] lg:h-screen xl:h-screen object-cover"
+            priority
           />
         </div>
       </div>
@@ -105,7 +106,7 @@ const AboutUs = () => {
             Our Team
           </h1>
           <p className="pt-4 font-['Boston'] font-light leading-6 text-lg">
-            Our strength lies in our individuality. We’re a passionate team of
+            Our strength lies in our individuality. We're a passionate team of
             four individuals who <br />
             love fashion, technology, and solving real problems. Our diverse
             expertise allows us to

@@ -51,7 +51,7 @@ const page = async () => {
                 <br /> perfect look!
               </p>
               <Link href="/style-quiz">
-                <Button className="px-6 py-3 h-14 w-50 bg-pink-200 text-black font-thin  rounded-xl">
+                <Button className="px-6 py-3 h-14 w-50 bg-pink-200 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
                   Take your style quiz now!
                 </Button>
               </Link>
@@ -67,10 +67,10 @@ const page = async () => {
             <div className="flex flex-col md:flex-row items-center mb-10 gap-8 md:gap-15 px-3">
               {/* Text Column */}
               <div className="md:w-3/5 md:pl-15 mt-2 md:mt-0 space-y-2 text-left">
-                <h3 className="text-4xl md:text-6xl font-bold ">
+                <h3 className="text-4xl md:text-6xl font-bold hover:text-gray-700 transition-colors duration-300">
                   Fashion Made Effortless
                 </h3>
-                <p className="  font-light text-sm">
+                <p className="font-light text-sm">
                   MyMirro delivers handpicked looks,
                   <br /> curated just for you
                 </p>
@@ -81,7 +81,7 @@ const page = async () => {
                 <img
                   src="/assets/home1.jpeg"
                   alt="Feature 1"
-                  className="w-[100%] h-[250px] md:h-[500px] object-cover rounded-lg"
+                  className="w-[100%] h-[250px] md:h-[500px] object-cover rounded-lg transition-transform duration-300 hover:scale-[1.02]"
                 />
               </div>
             </div>
@@ -90,11 +90,11 @@ const page = async () => {
             <div className="flex flex-col md:flex-row items-center mb-10 gap-10 px-4 ">
               {/* Text Column – Top Right on Mobile */}
               <div className="w-full md:w-3/5 md:pr-12 mt-14 md:mt-0 space-y-4 flex flex-col items-end text-right">
-                <h3 className="text-3xl md:text-6xl font-bold text-black">
+                <h3 className="text-3xl md:text-6xl font-bold text-black hover:text-gray-700 transition-colors duration-300">
                   Too many choices, yet nothing to
                   <br /> wear?
                 </h3>
-                <p className=" font-light text-sm">
+                <p className="font-light text-sm">
                   We simplify style.
                   <br />
                   Get personalized outfits without the stress.
@@ -106,7 +106,7 @@ const page = async () => {
                 <img
                   src="/assets/home2.jpeg"
                   alt="Feature 1"
-                  className="w-full h-[250px] md:h-[500px] object-cover rounded-xl"
+                  className="w-full h-[250px] md:h-[500px] object-cover rounded-xl transition-transform duration-300 hover:scale-[1.02]"
                 />
               </div>
             </div>
@@ -115,10 +115,10 @@ const page = async () => {
             <div className="flex flex-col md:flex-row items-center mb-10 gap-8 md:gap-15 px-3">
               {/* Text Column */}
               <div className="md:w-3/5 md:pl-15 mt-15 md:mt-0 space-y-4 text-left">
-                <h3 className="text-4xl md:text-6xl font-bold ">
-                  Not sure whats trendind or what suits you ?
+                <h3 className="text-4xl md:text-6xl font-bold hover:text-gray-700 transition-colors duration-300">
+                  Not sure what's trending or what suits you?
                 </h3>
-                <p className="  font-light text-sm">
+                <p className="font-light text-sm">
                   Our fashion experts handpick styles <br />
                   tailored to you curated just for you
                 </p>
@@ -129,12 +129,12 @@ const page = async () => {
                 <img
                   src="/assets/home3.jpeg"
                   alt="Feature 1"
-                  className="w-[100%] h-[250px] md:h-[500px] object-cover rounded-lg"
+                  className="w-[100%] h-[250px] md:h-[500px] object-cover rounded-lg transition-transform duration-300 hover:scale-[1.02]"
                 />
               </div>
 
               <Link href="/style-quiz">
-                <Button className="px-6 py-3 h-14 w-50 bg-pink-200 text-black font-thin mt-4 rounded-xl">
+                <Button className="px-6 py-3 h-14 w-50 bg-pink-200 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin mt-4 rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
                   Take your style quiz now!
                 </Button>
               </Link>

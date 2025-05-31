@@ -107,7 +107,7 @@ export default function ProductPage() {
       </div>
 
       {/*lookThreeSection*/}
-      <LooksSectionThree />
+      <LooksSectionThree currentProductId={product.id} />
 
       {/* Horizontal Line */}
       <hr className="border-thin w-[100%] border-black" />

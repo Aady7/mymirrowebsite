@@ -3,12 +3,27 @@ import { useAuth } from '@/lib/hooks/useAuth'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 export default function Navigation() {
   const { signOut } = useAuth()
+  const router = useRouter()
    
   //state change to desktop to mobile or mobile to desktop
-  const [isOpen,setIsOpen]=useState(false);
+  const [isOpen, setIsOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  const handleSignOut = async () => {
+    try {
+      setIsLoading(true)
+      await signOut()
+      router.push('/sign-in')
+    } catch (error) {
+      console.error('Error signing out:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
@@ -17,10 +32,10 @@ export default function Navigation() {
           {/* Logo / Brand */}
           <div className="flex-shrink-0">
             <Link href="/style-quiz" className="text-2xl font-bold text-indigo-600">
-              <Image src="/assets/logo.png"  alt='logo' width={100} height={30}  />
+              <Image src="/assets/logo.png" alt='logo' width={100} height={30} />
             </Link>
           </div>
-          {/* DeskTop Navigation*/}
+          {/* Desktop Navigation*/}
           <div className="hidden sm:flex space-x-6">
             <Link
               href="/style-quiz"
@@ -53,23 +68,24 @@ export default function Navigation() {
               AboutUs
             </Link>
           </div>
-          {/*Sigout*/}
-        {/*   <div className="flex items-center">
+
+          {/* Desktop Sign Out Button */}
+          <div className="hidden sm:flex items-center">
             <button
-              onClick={signOut}
-              className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium cursor-pointer"
+              onClick={handleSignOut}
+              disabled={isLoading}
+              className="text-gray-700 hover:text-indigo-600 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 ease-in-out"
             >
-              Sign Out 
+              {isLoading ? 'Signing out...' : 'Sign Out'}
             </button>
           </div>
-          */}
 
-          {/*Mobile */}
+          {/*Mobile Menu Button */}
           <div className='sm:hidden'>
             <button 
-            onClick={()=>setIsOpen(!isOpen)}
-            className='text-gray-700 focus:outline-none'
-            arial-label='Toggle Menu'
+              onClick={() => setIsOpen(!isOpen)}
+              className='text-gray-700 focus:outline-none'
+              aria-label='Toggle Menu'
             >
               <svg
                 className="w-6 h-6"
@@ -93,42 +109,39 @@ export default function Navigation() {
                   />
                 )}
               </svg>
-
             </button>
-
           </div>
         </div>
 
         {/*Mobile Dropdown*/}
         {isOpen && (
-           <div className="sm:hidden mt-2 space-y-2">
-
-            <Link href="/" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300">
-             Home
-           </Link>
-           <Link href="/style-quiz" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300">
-             Quiz
-           </Link>
-           
-           <Link href="/recommendations" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300">
-             Recommendations
-           </Link>
-           <Link href="/cart" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300">
-             Cart
-           </Link>
-           <Link
+          <div className="sm:hidden mt-2 space-y-2 pb-3">
+            <Link href="/" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md">
+              Home
+            </Link>
+            <Link href="/style-quiz" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md">
+              Quiz
+            </Link>
+            <Link href="/recommendations" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md">
+              Recommendations
+            </Link>
+            <Link href="/cart" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md">
+              Cart
+            </Link>
+            <Link
               href="/aboutpage"
-              className="text-gray-700 hover:text-indigo-600 transition font-medium"
+              className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
             >
               AboutUs
             </Link>
-           <button
-             onClick={signOut}
-             className="block w-full text-left text-indigo-700 hover:text-red-500 mt-2"
-           >
-             Sign Out
-           </button>
-         </div>
+            <button
+              onClick={handleSignOut}
+              disabled={isLoading}
+              className="block w-full text-left text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
+            >
+              {isLoading ? 'Signing out...' : 'Sign Out'}
+            </button>
+          </div>
         )}
       </div>
     </nav>

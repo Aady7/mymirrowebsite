@@ -10,24 +10,24 @@ const FashionTarot = () => {
   return (
     <>
       {/* Header */}
-      <div className="mt-8 p-3">
-        <h1 className="font-['Boston'] text-xl flex items-center justify-center">
+      <div className="mt-8 p-3 md:mt-12 lg:mt-16 md:max-w-[80%] lg:max-w-[70%] mx-auto">
+        <h1 className="font-['Boston'] text-xl md:text-2xl lg:text-3xl flex items-center justify-center">
           FASHION TAROT CARD 
         </h1>           
 
-        <p className=" pt-2  flex items-center text-center font-[Boston] text-[14px] not-italic font-normal leading-normal justify-center">
-          Uncover your style spirit — each card reveals a <br />
+        <p className="pt-2 flex items-center text-center font-[Boston] text-[14px] md:text-[16px] lg:text-[18px] not-italic font-normal leading-normal justify-center">
+          Uncover your style spirit — each card reveals a <br className="md:hidden" />
           fashion truth based on your personality.
         </p>                                                  
       </div>
 
 
       {/* Tarot Cards */}
-      <div className="mt-6 px-10">
-        <div className="flex flex-row gap-10">
+      <div className="mt-6 px-10 md:mt-10 lg:mt-12 md:px-0">
+        <div className="flex flex-row gap-10 md:gap-16 lg:gap-20 justify-center">
           {/* Tarot Card 1 */}
           <div
-            className="w-[152px] h-[240px] perspective cursor-pointer"
+            className="w-[152px] h-[240px] md:w-[200px] md:h-[320px] lg:w-[250px] lg:h-[400px] perspective cursor-pointer"
             onClick={() => setIsFlipped1(!isFlipped1)}
           >
             <div
@@ -59,7 +59,7 @@ const FashionTarot = () => {
 
           {/* Tarot Card 2 */}
           <div
-            className="w-[156px] h-[240px] perspective cursor-pointer"
+            className="w-[156px] h-[240px] md:w-[200px] md:h-[320px] lg:w-[250px] lg:h-[400px] perspective cursor-pointer"
             onClick={() => setIsFlipped2(!isFlipped2)}
           >
             <div
