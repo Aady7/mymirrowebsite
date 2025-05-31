@@ -10,7 +10,7 @@ interface Product {
   };
 }
 
-interface Look {
+export interface Look {
   title: string;
   lookNumber: number;
   products: Product[];

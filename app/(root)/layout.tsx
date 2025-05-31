@@ -2,7 +2,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/useAuth'
-import Navigation from '@/app/components/rootNav'
 import { supabase } from '@/lib/supabase'
 
 export default function ProtectedLayout({
@@ -68,7 +67,6 @@ export default function ProtectedLayout({
 
   return (
     <div className='bg-white'>
-      <Navigation />
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 font-sans text-gray-800">
         <div className="prose prose-lg max-w-none">
           {children}

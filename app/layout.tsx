@@ -4,7 +4,7 @@ import { Inter } from "next/font/google";
 import Footer from "./components/footer";
 import Provider from './components/provider';
 import "./globals.css";
-
+import ConditionalNav from './components/ConditionalNav';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -26,12 +26,11 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased`} 
       >
-      
-       
         <Provider>
-        {children}
+          <ConditionalNav />
+          {children}
         </Provider>
-       
+        
         {/*footer*/}
         <Footer/>
       </body>
