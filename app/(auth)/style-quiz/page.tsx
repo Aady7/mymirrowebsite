@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect, ChangeEvent, FormEvent, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import { generateFitTags, generatePersonalityTags, generatePatternTags } from '@/app/utils/usermapping';
+import { generateFitTags, generatePersonalityTags, generatePrintTags } from '@/app/utils/usermapping';
 import { useRouter } from 'next/navigation';
 import { PERSONALITY_QUESTIONS, handleSendOtp, handleVerifyOtp } from '@/app/utils/styleQuizUtils';
 import PersonalInfoStep from '@/app/components/style-quiz/PersonalInfoStep';
@@ -17,7 +17,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import AuthNav from '@/app/components/authNav';
 import DynamicStylePreferenceStep from '@/app/components/style-quiz/DynamicStylePreferenceStep';
 import ColorAnalyzer from '@/app/components/style-quiz/ColorAnalysis';
-
 type DynamicStep = { style: string; options: string[] };
 
 const STATIC_STEPS = [
@@ -132,7 +131,7 @@ const StyleQuiz: React.FC = () => {
       setIsSubmitting(true);
       setError(null);
 
-      if (!formValues.name  || !formValues.gender) {
+      if (!formValues.name || !formValues.gender) {
         throw new Error('Please fill in all required fields');
       }
 
@@ -142,15 +141,17 @@ const StyleQuiz: React.FC = () => {
       });
 
       const personalityTags = generatePersonalityTags({
-        alarmRings: formValues.alarmResponse?.toLowerCase() || '',
-        friendCancels: formValues.cancelPlansResponse?.toLowerCase() || '',
-        friendsLate: formValues.friendsLateResponse?.toLowerCase() || '',
-        selfieFace: formValues.selfieFace?.toLowerCase() || '',
-        planOutfit: formValues.outfitPlanning?.toLowerCase() || '',
-        peopleCompliment: formValues.complimentOn?.toLowerCase() || ''
+        weekendPreference: formValues.weekendPreference,
+        shoppingStyle: formValues.shoppingStyle,
+        workspaceStyle: formValues.workspaceStyle,
+        friendCompliments: formValues.friendCompliments,
+        workOutfit: formValues.workOutfit,
+        wardrobeContent: formValues.wardrobeContent
       });
 
-      const patternTags = generatePatternTags({
+    
+
+      const printCharacteristics = generatePrintTags({
         gender: formValues.gender,
         personalityTags,
         styleTypes: formValues.goToStyle || []
@@ -158,9 +159,14 @@ const StyleQuiz: React.FC = () => {
 
       const userTags = [{
         personality_tags: personalityTags,
-        pattern_tags: patternTags,
         fit_tags: fitTags,
+        print_type_tags: printCharacteristics.printTypes,
+        print_scale_tags: printCharacteristics.printScales,
+        print_density_tags: printCharacteristics.printDensities,
+        pattern_placement_tags: printCharacteristics.patternPlacements,
+        surface_texture_tags: printCharacteristics.surfaceTextures
       }];
+      console.log("userTags",userTags);
 
       const cleanedData: StyleQuizData = {
         userId,
@@ -177,12 +183,12 @@ const StyleQuiz: React.FC = () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         usertags: userTags,
-        alarmresponse: formValues.alarmResponse,
-        cancelplansresponse: formValues.cancelPlansResponse,
-        friendslateresponse: formValues.friendsLateResponse,
-        selfieface: formValues.selfieFace,
-        outfitplanning: formValues.outfitPlanning,
-        complimenton: formValues.complimentOn
+        weekendPreference: formValues.weekendPreference,
+        shoppingStyle: formValues.shoppingStyle,
+        workspaceStyle: formValues.workspaceStyle,
+        friendCompliments: formValues.friendCompliments,
+        workOutfit: formValues.workOutfit,
+        wardrobeContent: formValues.wardrobeContent
       };
 
       dynamicSteps.forEach(({ style }) => {
@@ -388,7 +394,7 @@ const StyleQuiz: React.FC = () => {
         // Check if both social questions are answered after this update
         const updatedValues = {...formValues, [name]: value};
         const bothSocialQuestionsAnswered = 
-          !!updatedValues.cancelPlansResponse && !!updatedValues.friendsLateResponse;
+          !!updatedValues.shoppingStyle && !!updatedValues.workspaceStyle;
         
         if (!bothSocialQuestionsAnswered) {
           console.log("Not auto-advancing yet - waiting for both social questions to be answered");
@@ -411,7 +417,7 @@ const StyleQuiz: React.FC = () => {
         // Check if both fashion questions are answered after this update
         const updatedValues = {...formValues, [name]: value};
         const bothFashionQuestionsAnswered = 
-          !!updatedValues.outfitPlanning && !!updatedValues.complimentOn;
+          !!updatedValues.workOutfit && !!updatedValues.wardrobeContent;
         
         if (!bothFashionQuestionsAnswered) {
           console.log("Not auto-advancing yet - waiting for both fashion questions to be answered");
