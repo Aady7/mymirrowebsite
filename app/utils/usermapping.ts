@@ -1,26 +1,37 @@
 import { FIT_MAPPING_DATA, FitMappingEntry } from "../data/mappingData";
 import { QuestionMappingEntry, QUESTION_MAPPING_DATA } from "../data/mappingData";
-import  {PATTERN_MAPPING_DATA, PatternMappingEntry } from "../data/mappingData"
+
+import { PATTERN_CHARACTERISTICS_DATA, PatternCharacteristicsEntry } from "../data/mappingData";
 
 interface FitTagsInput {
   gender: string;
   bodyType: string;
 }
 
-interface PersonalityMapInput{
-    alarmRings: string;
-    friendCancels: string;
-    friendsLate: string;
-    selfieFace: string;
-    planOutfit: string;
-    peopleCompliment: string;
+interface PersonalityMapInput {
+  weekendPreference?: string;
+  shoppingStyle?: string;
+  workspaceStyle?: string;
+  friendCompliments?: string;
+  workOutfit?: string;
+  wardrobeContent?: string;
 }
 
-interface PatternTagsInput {
+type PatternCharacteristicsTagsInput = {
   gender: string;
   personalityTags: string[];
   styleTypes: string[];
-}
+};
+
+type PatternCharacteristicsOutput = {
+  printTypes: string[];
+  printScales: string[];
+  printDensities: string[];
+  patternPlacements: string[];
+  surfaceTextures: string[];
+};
+
+
 
 export function generateFitTags({ gender, bodyType }: FitTagsInput): string[] {
   // Convert inputs to lowercase for consistent matching
@@ -29,30 +40,35 @@ export function generateFitTags({ gender, bodyType }: FitTagsInput): string[] {
 
   // Filter the mapping data to get all fits for the given gender and body type
   const matchingFits = FIT_MAPPING_DATA.filter(
-    (entry) =>
+    (entry) => 
       entry.gender === normalizedGender &&
       entry.bodyType === normalizedBodyType
   );
 
   // Extract unique fits
   const fitTags = [...new Set(matchingFits.map((entry) => entry.fit))];
-
- 
   
-  // Combine specific and universal tags, ensure uniqueness
-  return [...new Set([...fitTags])];
+  // Return unique tags
+  return fitTags;
 }
 
 
-export function generatePersonalityTags({ alarmRings, friendCancels, friendsLate, selfieFace, planOutfit, peopleCompliment }: PersonalityMapInput): string[] {
+export function generatePersonalityTags({ 
+  weekendPreference,
+  shoppingStyle,
+  workspaceStyle,
+  friendCompliments,
+  workOutfit,
+  wardrobeContent
+}: PersonalityMapInput): string[] {
   // Convert inputs to lowercase for consistent matching
-  const normalizedInputs = {
-    alarmRings: alarmRings.toLowerCase(),
-    friendCancels: friendCancels.toLowerCase(),
-    friendsLate: friendsLate.toLowerCase(),
-    selfieFace: selfieFace.toLowerCase(),
-    planOutfits: planOutfit.toLowerCase(),
-    peopleCompliment: peopleCompliment.toLowerCase()
+  const normalizedInputs: { [key: string]: string } = {
+    weekendPreference: weekendPreference?.toLowerCase() || '',
+    shoppingStyle: shoppingStyle?.toLowerCase() || '',
+    workspaceStyle: workspaceStyle?.toLowerCase() || '',
+    friendCompliments: friendCompliments?.toLowerCase() || '',
+    workOutfit: workOutfit?.toLowerCase() || '',
+    wardrobeContent: wardrobeContent?.toLowerCase() || ''
   };
 
   // Create a map to count occurrences of each personality tag
@@ -60,15 +76,19 @@ export function generatePersonalityTags({ alarmRings, friendCancels, friendsLate
 
   // Process each answer and accumulate personality tag counts
   Object.entries(normalizedInputs).forEach(([questionKey, answer]) => {
+    if (!answer) return; // Skip empty answers
+
     // Find the matching question entry
     const matchingEntry = QUESTION_MAPPING_DATA.find(
-      entry => entry.questionKey === questionKey && entry.option === answer
+      entry => entry.questionKey === questionKey && entry.option.toLowerCase() === answer
     );
 
     // If we found a match, count its personality tags
     if (matchingEntry) {
       matchingEntry.personalityTags.forEach(tag => {
-        tagCounts[tag] = (tagCounts[tag] || 0) + 1;
+        // Primary tags (first in the array) get more weight
+        const weight = matchingEntry.personalityTags.indexOf(tag) === 0 ? 2 : 1;
+        tagCounts[tag] = (tagCounts[tag] || 0) + weight;
       });
     }
   });
@@ -83,36 +103,66 @@ export function generatePersonalityTags({ alarmRings, friendCancels, friendsLate
       return a[0].localeCompare(b[0]);
     })
     .map(([tag]) => tag);
+    console.log(sortedTags.slice(0,2));
 
-  // Return the top 2 personality tags (or all if less than 2)
-  return sortedTags.slice(0, 2);
+  // Return the top 2  personality tags (since we have more questions now)
+  return sortedTags.slice(0,2);
+ 
 }
 
-export function generatePatternTags({ gender, personalityTags, styleTypes }: PatternTagsInput): string[] {
-  // Normalize inputs
-  const normalizedGender = gender.toLowerCase() === 'male' ? 'men' : 'women';
-  const normalizedStyleTypes = styleTypes.map(style => style.toLowerCase());
 
-  // Get all pattern entries for this gender and style types
-  const relevantPatterns = PATTERN_MAPPING_DATA.filter(entry => 
-    entry.gender === normalizedGender && 
-    normalizedStyleTypes.includes(entry.styleType) &&
-    personalityTags.includes(entry.personalityTag)
+
+export function generatePrintTags({
+  gender,
+  personalityTags,
+  styleTypes
+}: PatternCharacteristicsTagsInput): PatternCharacteristicsOutput {
+  // Normalize inputs
+  const normalizedGender = gender.toLowerCase();
+  const normalizedPersonalityTags = personalityTags.map(tag => tag.toLowerCase());
+  const normalizedStyleTypes = styleTypes.map(style => style.toLowerCase());
+ 
+  console.log("Input:", { normalizedGender, normalizedPersonalityTags, normalizedStyleTypes });
+
+  // Get all matching entries where either personality or style matches
+  const matchingPrintTags = PATTERN_CHARACTERISTICS_DATA.filter(
+    (entry) =>
+      entry.gender === normalizedGender && (
+        // Match if ANY of the personality tags match OR ANY of the style types match
+        normalizedPersonalityTags.some(tag => entry.personality === tag) ||
+        normalizedStyleTypes.some(style => entry.fashionStyle === style)
+      )
   );
 
-  // Extract all patterns and remove duplicates
-  const allPatterns = relevantPatterns.reduce((acc, entry) => {
-    entry.patterns.forEach(pattern => {
-      if (!acc.includes(pattern)) {
-        acc.push(pattern);
-      }
-    });
-    return acc;
-  }, [] as string[]);
+  console.log("matchingPrintTags:", matchingPrintTags);
 
-  return allPatterns;
+  // Initialize result with empty arrays
+  const result: PatternCharacteristicsOutput = {
+    printTypes: [],
+    printScales: [],
+    printDensities: [],
+    patternPlacements: [],
+    surfaceTextures: []
+  };
+
+  // Aggregate all characteristics
+  for (const entry of matchingPrintTags) {
+    if (entry.printType) result.printTypes.push(...entry.printType);
+    if (entry.printScale) result.printScales.push(...entry.printScale);
+    if (entry.printDensity) result.printDensities.push(...entry.printDensity);
+    if (entry.patternPlacement) result.patternPlacements.push(...entry.patternPlacement);
+    if (entry.surfaceTexture) result.surfaceTextures.push(...entry.surfaceTexture);
+  }
+
+  // Deduplicate and return
+  const finalResult = {
+    printTypes: [...new Set(result.printTypes)],
+    printScales: [...new Set(result.printScales)],
+    printDensities: [...new Set(result.printDensities)],
+    patternPlacements: [...new Set(result.patternPlacements)],
+    surfaceTextures: [...new Set(result.surfaceTextures)]
+  };
+
+  console.log("Final result:", finalResult);
+  return finalResult;
 }
-
-
-
-

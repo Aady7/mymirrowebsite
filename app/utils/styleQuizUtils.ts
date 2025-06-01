@@ -81,71 +81,71 @@ export const SIZE_OPTIONS = {
 
 export const PERSONALITY_QUESTIONS = [
   {
-    key: 'alarmResponse',
-    label: 'Your alarm rings. You...',
+    key: 'weekendPreference',
+    label: "It's finally the weekend! What's your ideal Saturday evening?",
     options: [
-      'Snooze 5 times',
-      'Jump out like a hero',
-      'Check WhatsApp or Insta first',
-      'Mentally plan your outfit',
+      'PJ bottoms, OTT binge, snack delivery',
+      'Trying the café that blew up on Reels this week',
+      'Evening run club / badminton game, then coconut water',
+      'Tickets to an indie stand-up or art gig you found on BookMyShow'
     ],
-    group: 'morning'
+    group: 'lifestyle'
   },
   {
-    key: 'cancelPlansResponse',
-    label: 'Your friend cancels plans. You...',
+    key: 'shoppingStyle',
+    label: 'When shopping online, how do you usually make your final choice?',
     options: [
-      'Feel secretly relieved - solo time hits different',
-      'Still getting ready. Plans or no plans',
-      'Spam them with memes and voice notes',
-      'That is my cue to finish a side project',
+      'Premium brand that screams success',
+      'Eye-catching, one-of-a-kind collab to flex creativity',
+      'Reliable classic label you\'ve trusted for years',
+      'Spreadsheet of specs, coupon codes, top reviews—then checkout'
     ],
     group: 'social1'
   },
   {
-    key: 'friendsLateResponse',
-    label: 'Your friends are running late. You are',
+    key: 'workspaceStyle',
+    label: 'Your work or study desk usually looks like:',
     options: [
-      'Already there, slightly annoyed but chill',
-      'Oh crap. I completely lost track of time',
-      'Texting "on my way"… while still wrapped in a blanket',
-      'Chilling. Music on, snacks ready. I like the wait',
+      'Clean, neutral desk with only the essentials',
+      'Cushions, snack bowl, foot-rest—comfort paradise',
+      'Sleek gadgets, wireless everything—LinkedIn-ad vibe',
+      'Random gifts, ticket stubs, action figures—fun chaos'
     ],
     group: 'social1'
   },
   {
-    key: 'selfieFace',
-    label: 'Go-to selfie face?',
+    key: 'friendCompliments',
+    label: 'Your friends typically compliment you most on:',
     options: [
-      'Smirk or pout',
-      'Laughing candid',
-      'Serious side profile',
-      'Not into selfies',
+      'Always knowing what\'s trending and the newest cool spots',
+      'Being calm, dependable, and rooted',
+      'Your bold ideas and adventurous spirit',
+      'Your organised, thoughtful, Google-Sheet-for-everything approach'
     ],
-    group: 'selfie'
+    group: 'personality'
   },
   {
-    key: 'outfitPlanning',
-    label: 'How often do you plan outfits?',
+    key: 'workOutfit',
+    label: 'Big work presentation tomorrow—your outfit vibe?',
     options: [
-      'Just for events',
-      'Every. Single. Day.',
-      'Whatever is clean',
-      'Mood-based chaos',
+      'Tailored blazer, crisp shirt—power stance',
+      'Lightweight cotton set—polished yet breathable',
+      'Statement jacket / saree detail that shows personality',
+      'Timeless white kurta-pyjama or sober suit'
     ],
-    group: 'fashion1'
+    group: 'style'
   },
   {
-    key: 'complimentOn',
-    label: 'What do people compliment you on?',
+    key: 'wardrobeContent',
+    label: 'If someone flung open your wardrobe, they\'d mostly see:',
     options: [
-      'Love your style — always bold',
-      'You are such a vibe booster',
-      'You are so honest and grounded',
-      'You have a really calming presence',
+      'Designer labels or premium pieces you treasure',
+      'Neutral basics that mix-and-match effortlessly',
+      'Curated ethnic + western classics, all paired up',
+      'Eclectic thrift finds, DIY patches—totally you'
     ],
-    group: 'fashion1'
-  },
+    group: 'style'
+  }
 ];
 
 export const STYLE_IMAGES = {
