@@ -29,8 +29,9 @@ const PersonalityQuestionStep: React.FC<PersonalityQuestionStepProps> = ({
 
     const handleOptionSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         handleChange(e);
-        if (onOptionSelect && formValues[currentQuestion.key] !== e.target.value) {
-            // Add a small delay to allow the radio button state to update
+        // Check if all questions in the group are answered
+        const allGroupQuestionsAnswered = groupedQuestions.every(q => formValues[q.key]);
+        if (onOptionSelect && allGroupQuestionsAnswered) {
             setTimeout(onOptionSelect, 300);
         }
     };

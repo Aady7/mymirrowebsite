@@ -21,10 +21,9 @@ type DynamicStep = { style: string; options: string[] };
 
 const STATIC_STEPS = [
   "Personal Info",
-  "Mornings Be Like..",
-  "Social Situationsn 101",
-  "Say Cheese (or Don't)",
-  "Fashion and Vibe check",
+  "Your Main Character Energy",
+  "Your Wardrobe Aesthetic",
+  "Your Boss Mode Vibes",
   "Form Check",
   "Fit Check",
   "Your Style DNA",
@@ -135,10 +134,17 @@ const StyleQuiz: React.FC = () => {
         throw new Error('Please fill in all required fields');
       }
 
+      console.log("Form values for fit tags:", {
+        gender: formValues.gender,
+        bodyType: formValues.bodyType || 'rectangle'
+      });
+
       const fitTags = generateFitTags({
         gender: formValues.gender,
         bodyType: formValues.bodyType || 'rectangle'
       });
+
+      console.log("Generated fit tags:", fitTags);
 
       const personalityTags = generatePersonalityTags({
         weekendPreference: formValues.weekendPreference,
@@ -149,24 +155,34 @@ const StyleQuiz: React.FC = () => {
         wardrobeContent: formValues.wardrobeContent
       });
 
-    
-
       const printCharacteristics = generatePrintTags({
         gender: formValues.gender,
         personalityTags,
         styleTypes: formValues.goToStyle || []
       });
 
+      // Parse color analysis data if it exists
+      let colorAnalysisData = null;
+      if (formValues.colorAnalysis) {
+        try {
+          colorAnalysisData = JSON.parse(formValues.colorAnalysis);
+          console.log("Color Analysis Data:", colorAnalysisData);
+        } catch (e) {
+          console.error("Error parsing color analysis data:", e);
+        }
+      }
+
       const userTags = [{
         personality_tags: personalityTags,
-        fit_tags: fitTags,
+        fit_tags_upper: fitTags.upperWear,
+        fit_tags_lower: fitTags.lowerWear,
+        fit_tags_full: fitTags.fullBody,
         print_type_tags: printCharacteristics.printTypes,
         print_scale_tags: printCharacteristics.printScales,
         print_density_tags: printCharacteristics.printDensities,
         pattern_placement_tags: printCharacteristics.patternPlacements,
         surface_texture_tags: printCharacteristics.surfaceTextures
       }];
-      console.log("userTags",userTags);
 
       const cleanedData: StyleQuizData = {
         userId,
@@ -188,7 +204,8 @@ const StyleQuiz: React.FC = () => {
         workspaceStyle: formValues.workspaceStyle,
         friendCompliments: formValues.friendCompliments,
         workOutfit: formValues.workOutfit,
-        wardrobeContent: formValues.wardrobeContent
+        wardrobeContent: formValues.wardrobeContent,
+        colorAnalysis: colorAnalysisData // Add color analysis data directly to the main object
       };
 
       dynamicSteps.forEach(({ style }) => {
@@ -196,6 +213,11 @@ const StyleQuiz: React.FC = () => {
         if (formValues[key]) {
           cleanedData[key] = formValues[key];
         }
+      });
+
+      console.log("Sending data to Supabase:", {
+        ...cleanedData,
+        colorAnalysis: colorAnalysisData // Log color analysis data separately for clarity
       });
 
       const { error: supabaseError } = await supabase
@@ -222,31 +244,27 @@ const StyleQuiz: React.FC = () => {
   const isStepValid = useCallback((): boolean => {
     if (currentStep === 1) return !!formValues.name && !!formValues.gender;
     
-    // Handle personality questions (steps 2-5)
-    if (currentStep >= 2 && currentStep <= 5) {
+    // Handle personality questions (steps 2-4)
+    if (currentStep >= 2 && currentStep <= 4) {
       const personalityIdx = (() => {
         switch (currentStep) {
-          case 2: return 0; // Morning question
-          case 3: return 1; // Social questions (grouped)
-          case 4: return 3; // Selfie question
-          case 5: return 4; // Fashion questions (grouped)
+          case 2: return 0; // Personality group
+          case 3: return 2; // Social group
+          case 4: return 4; // Work group
           default: return 0;
         }
       })();
       
       const question = PERSONALITY_QUESTIONS[personalityIdx];
       
-      // If this is a grouped question, validate all questions in the group
-      if (question.group) {
-        const groupQuestions = PERSONALITY_QUESTIONS.filter(q => q.group === question.group);
-        return groupQuestions.every(q => !!formValues[q.key]);
-      }
-      return !!formValues[question.key];
+      // Validate all questions in the group
+      const groupQuestions = PERSONALITY_QUESTIONS.filter(q => q.group === question.group);
+      return groupQuestions.every(q => !!formValues[q.key]);
     }
 
-    if (currentStep === 6) return !!formValues.bodyType;
-    if (currentStep === 7) return !!formValues.upperWear && !!formValues.waistSize;
-    if (currentStep === 8) {
+    if (currentStep === 5) return !!formValues.bodyType;
+    if (currentStep === 6) return !!formValues.upperWear && !!formValues.waistSize;
+    if (currentStep === 7) {
       return Array.isArray(formValues.goToStyle) && formValues.goToStyle.length > 0;
     }
 
@@ -288,26 +306,23 @@ const StyleQuiz: React.FC = () => {
       setMaxCompletedStep(prev => Math.max(prev, currentStep));
 
       // Handle personality questions progression
-      if (currentStep >= 2 && currentStep <= 5) {
+      if (currentStep >= 2 && currentStep <= 4) {
         const currentQuestionIdx = (() => {
           switch (currentStep) {
-            case 2: return 0; // Morning question
-            case 3: return 1; // Social questions (grouped)
-            case 4: return 3; // Selfie question
-            case 5: return 4; // Fashion questions (grouped)
+            case 2: return 0; // Personality group
+            case 3: return 2; // Social group
+            case 4: return 4; // Work group
             default: return 0;
           }
         })();
 
         const currentQuestion = PERSONALITY_QUESTIONS[currentQuestionIdx];
         
-        // If this is a grouped question, skip to next section after all questions in group are answered
-        if (currentQuestion.group) {
-          const groupQuestions = PERSONALITY_QUESTIONS.filter(q => q.group === currentQuestion.group);
-          const allAnswered = groupQuestions.every(q => !!formValues[q.key]);
-          if (!allAnswered) {
-            return;
-          }
+        // Check if all questions in the group are answered
+        const groupQuestions = PERSONALITY_QUESTIONS.filter(q => q.group === currentQuestion.group);
+        const allAnswered = groupQuestions.every(q => !!formValues[q.key]);
+        if (!allAnswered) {
+          return;
         }
       }
 
@@ -389,18 +404,39 @@ const StyleQuiz: React.FC = () => {
       // Or if it's a dynamic style preference step (multiple options)
       const isDynamicStyleStep = currentStep > 8 && currentStep <= 8 + dynamicSteps.length;
       
+      if(currentStep===2){
+        const updatedValues = {...formValues, [name]: value};
+        const bothPersonalityQuestionsAnswered = 
+          !!updatedValues.weekendPreference  && !!updatedValues.friendCompliments;
+        if(!bothPersonalityQuestionsAnswered){
+          console.log("Not auto-advancing yet - waiting for both personality questions to be answered");
+          return; // Skip auto-next until both are answered
+        }
+      }
+      
       // Special handling for step 3 (social questions)
       if (currentStep === 3) {
         // Check if both social questions are answered after this update
         const updatedValues = {...formValues, [name]: value};
         const bothSocialQuestionsAnswered = 
-          !!updatedValues.shoppingStyle && !!updatedValues.workspaceStyle;
+          !!updatedValues.shoppingStyle && !!updatedValues.wardrobeContent;
         
         if (!bothSocialQuestionsAnswered) {
           console.log("Not auto-advancing yet - waiting for both social questions to be answered");
           return; // Skip auto-next until both are answered
         }
       }
+
+      if(currentStep===4){
+        const updatedValues = {...formValues, [name]: value};
+        const bothWorkQuestionsAnswered = 
+          !!updatedValues.workspaceStyle && !!updatedValues.workOutfit;
+        if(!bothWorkQuestionsAnswered){
+          console.log("Not auto-advancing yet - waiting for both work questions to be answered");
+          return; // Skip auto-next until both are answered
+        }
+      }
+
       if(currentStep==7){
         const updatedValues = {...formValues, [name]: value};
         const bothSizeQuestionsAnswered = 
@@ -456,14 +492,13 @@ const StyleQuiz: React.FC = () => {
         return <PersonalInfoStep formValues={formValues} handleChange={handleChange} />;
       }
       
-      // Handle personality questions (steps 2-5)
-      if (currentStep >= 2 && currentStep <= 5) {
+      // Handle personality questions (steps 2-4)
+      if (currentStep >= 2 && currentStep <= 4) {
         const personalityIdx = (() => {
           switch (currentStep) {
-            case 2: return 0; // Morning question
-            case 3: return 1; // Social questions (grouped)
-            case 4: return 3; // Selfie question
-            case 5: return 4; // Fashion questions (grouped)
+            case 2: return 0; // Personality group
+            case 3: return 2; // Social group
+            case 4: return 4; // Work group
             default: return 0;
           }
         })();
@@ -478,15 +513,15 @@ const StyleQuiz: React.FC = () => {
         );
       }
 
-      if (currentStep === 6) {
+      if (currentStep === 5) {
         return <BodyTypeStep formValues={formValues} handleChange={handleChange} />;
       }
 
-      if (currentStep === 7) {
+      if (currentStep === 6) {
         return <SizePreferencesStep formValues={formValues} handleChange={handleChange} />;
       }
 
-      if (currentStep === 8) {
+      if (currentStep === 7) {
         return (
           <div className="space-y-8">
             <GoToStyleStep formValues={formValues} handleChange={handleChange} />
@@ -702,25 +737,25 @@ const StyleQuiz: React.FC = () => {
                     {(() => {
                       if (currentStep === 1) {
                         return "Let's start with your basic details";
-                      } else if (currentStep >= 2 && currentStep <= 5) {
+                      } else if (currentStep >= 2 && currentStep <= 4) {
                         return "Help us understand your personality better";
-                      } else if (currentStep === 6) {
+                      } else if (currentStep === 5) {
                         return "Select the option that best describes your body type";
-                      } else if (currentStep === 7) {
+                      } else if (currentStep === 6) {
                         return "Tell us your preferred sizes for a perfect fit";
-                      } else if (currentStep === 8) {
+                      } else if (currentStep === 7) {
                         return "Choose the styles that match your vibe";
-                      } else if (currentStep === 8 + dynamicSteps.length + 1) {
+                      } else if (currentStep === 8) {
                         return "Share any additional preferences with us";
-                      } else if (currentStep === 8 + dynamicSteps.length + 2) {
+                      } else if (currentStep === 8 + dynamicSteps.length + 1) {
                         return "Help us to recommend the best products for you";
-                      } else if (currentStep === 8 + dynamicSteps.length + 3) {
+                      } else if (currentStep === 8 + dynamicSteps.length + 2) {
                         return "Almost there! Let's verify your phone number";
                        
-                      } else if (currentStep === 8 + dynamicSteps.length + 4) {
+                      } else if (currentStep === 8 + dynamicSteps.length + 3) {
                         return"Help us to know what's on your mind";
                      
-                      } else if (currentStep === 8 + dynamicSteps.length + 5 ){
+                      } else if (currentStep === 8 + dynamicSteps.length + 4) {
                         return "Enter the verification code sent to your phone";
                       }
                       else if (currentStep > 8 && currentStep <= 8 + dynamicSteps.length) {

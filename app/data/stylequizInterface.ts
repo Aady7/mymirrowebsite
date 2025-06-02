@@ -19,6 +19,7 @@ export interface FormValues {
     friendCompliments?: string;
     workOutfit?: string;
     wardrobeContent?: string;
+    
 }
 
 export interface StyleQuizData {
@@ -37,7 +38,9 @@ export interface StyleQuizData {
     updated_at: string;
     usertags: {
         personality_tags: string[];
-        fit_tags: string[];
+        fit_tags_upper: string[];
+        fit_tags_lower: string[];
+        fit_tags_full: string[];
         print_type_tags: string[];
         print_scale_tags: string[];
         print_density_tags: string[];

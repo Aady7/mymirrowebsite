@@ -33,6 +33,8 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
   const [showCamera, setShowCamera] = useState(false);
   const [isAnalysisComplete, setIsAnalysisComplete] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -155,6 +157,8 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
 
   const handleImageData = async (imageData: string) => {
     try {
+      setIsAnalyzing(true);
+      setApiError(null);
       const base64 = imageData.split(",")[1];
       console.log("base64", base64);
       const res = await fetch("https://color-analysis-production.up.railway.app/analyze", {
@@ -166,28 +170,41 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
       });
 
       if (!res.ok) {
-        console.error("Error:", res.statusText);
-        return;
+        throw new Error(`Failed to analyze image: ${res.statusText}`);
       }
 
       const data = await res.json();
       setResult(data);
       setIsAnalysisComplete(true);
       
+      // Create a more detailed analysis object
+      const analysisData = {
+        method: 'upload',
+        imageBase64: base64,
+        undertone: data.undertone,
+        contrast: data.contrast,
+        recommendedColors: data.recommended_colors,
+        isComplete: true,
+        timestamp: new Date().toISOString()
+      };
+
+      // Update form values with the complete analysis data
       const syntheticEvent = {
         target: {
           name: 'colorAnalysis',
-          value: JSON.stringify({
-            image: base64,
-            ...data,
-            isComplete: true
-          })
+          value: JSON.stringify(analysisData)
         }
       } as React.ChangeEvent<HTMLInputElement>;
       
       handleChange(syntheticEvent);
+      console.log("Color Analysis Data:", analysisData);
     } catch (error) {
       console.error("Error analyzing image:", error);
+      setApiError(error instanceof Error ? error.message : "Failed to analyze the image. Please try again.");
+      setIsAnalysisComplete(false);
+      setCapturedImage(null);
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
@@ -215,18 +232,24 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
     setSelectedTone(hex);
     setIsAnalysisComplete(true);
     
+    // Create a detailed manual selection object
+    const manualSelectionData = {
+      method: 'manual',
+      selectedHex: hex,
+      selectedToneName: SKIN_TONES.find(tone => tone.hex === hex)?.name || '',
+      isComplete: true,
+      timestamp: new Date().toISOString()
+    };
+    
     const syntheticEvent = {
       target: {
         name: 'colorAnalysis',
-        value: JSON.stringify({
-          manualSelection: true,
-          selectedTone: hex,
-          isComplete: true
-        })
+        value: JSON.stringify(manualSelectionData)
       }
     } as React.ChangeEvent<HTMLInputElement>;
     
     handleChange(syntheticEvent);
+    console.log("Manual Selection Data:", manualSelectionData);
   };
 
   const handleModeChange = (newMode: 'upload' | 'manual') => {
@@ -298,10 +321,33 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
           </button>
         </div>
 
+        {apiError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="text-sm font-medium text-red-800">{apiError}</p>
+                <p className="text-sm text-red-600 mt-1">Please try uploading your image again.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {mode === 'upload' && (
           <div className="space-y-6">
-            {/* Show preview if a photo was captured */}
-            {capturedImage ? (
+            {isAnalyzing ? (
+              <div className="flex flex-col items-center justify-center p-12 space-y-4">
+                <div className="w-16 h-16 border-4 border-[#007e90] border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-lg font-medium text-[#007e90]">Getting your color analysis done...</p>
+                <p className="text-sm text-gray-500 text-center">
+                  We're analyzing your skin tone and finding the perfect color palette for you.
+                  <br />
+                  This will just take a moment.
+                </p>
+              </div>
+            ) : capturedImage ? (
               <div className="flex flex-col items-center gap-6">
                 <img
                   src={capturedImage}
@@ -441,9 +487,11 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
               </div>
             )}
 
-            <p className="text-sm text-gray-500 italic text-center">
-              Not comfortable taking a photo? Switch to manual mode and choose your closest skin tone.
-            </p>
+            {!isAnalyzing && !apiError && (
+              <p className="text-sm text-gray-500 italic text-center">
+                Not comfortable taking a photo? Switch to manual mode and choose your closest skin tone.
+              </p>
+            )}
           </div>
         )}
 
@@ -470,35 +518,13 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
         )}
       </div>
 
-      {result && mode === 'upload' && (
-        <div className="space-y-4 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-medium text-gray-700 mb-2">Undertone</h3>
-              <p className="text-lg text-[#007e90]">{result.undertone}</p>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-medium text-gray-700 mb-2">Contrast</h3>
-              <p className="text-lg text-[#007e90]">{result.contrast}</p>
-            </div>
-          </div>
-          
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-medium text-gray-700 mb-4">Recommended Colors</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {result.recommended_colors.map((color, i) => (
-                <div key={i} className="flex items-center space-x-3 p-2 bg-white rounded-md">
-                  <span
-                    className="w-8 h-8 rounded-full border border-gray-200"
-                    style={{ backgroundColor: color.hex }}
-                  ></span>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-700">{color.hex}</p>
-                    <p className="text-xs text-gray-500">{color.explanation}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+      {isAnalysisComplete && !isAnalyzing && !apiError && (
+        <div className="bg-[#E8F4F6] p-6 rounded-lg">
+          <div className="flex items-center space-x-3">
+            <svg className="w-6 h-6 text-[#007e90]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <p className="text-[#007e90] font-medium">Color analysis complete! You can proceed to the next step.</p>
           </div>
         </div>
       )}
