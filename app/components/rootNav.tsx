@@ -16,6 +16,7 @@ export default function Navigation() {
   const handleSignOut = async () => {
     try {
       setIsLoading(true)
+      setIsOpen(false) // Close menu when signing out
       await signOut()
       router.push('/sign-in')
     } catch (error) {
@@ -25,13 +26,20 @@ export default function Navigation() {
     }
   }
 
+  // Function to handle link clicks
+  const handleLinkClick = () => {
+    setTimeout(() => {
+      setIsOpen(false)
+    }, 5000)
+  }
+
   return (
     <nav className="bg-white shadow-md sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16 items-center">
           {/* Logo / Brand */}
           <div className="flex-shrink-0">
-            <Link href="/style-quiz" className="text-2xl font-bold text-indigo-600">
+            <Link href="/style-quiz" onClick={handleLinkClick} className="text-2xl font-bold text-indigo-600">
               <Image src="/assets/logo.png" alt='logo' width={100} height={30} />
             </Link>
           </div>
@@ -116,20 +124,37 @@ export default function Navigation() {
         {/*Mobile Dropdown*/}
         {isOpen && (
           <div className="sm:hidden mt-2 space-y-2 pb-3">
-            <Link href="/" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md">
+            <Link 
+              href="/" 
+              onClick={handleLinkClick}
+              className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
+            >
               Home
             </Link>
-            <Link href="/style-quiz" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md">
+            <Link 
+              href="/style-quiz" 
+              onClick={handleLinkClick}
+              className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
+            >
               Quiz
             </Link>
-            <Link href="/recommendations" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md">
+            <Link 
+              href="/recommendations" 
+              onClick={handleLinkClick}
+              className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
+            >
               Recommendations
             </Link>
-            <Link href="/cart" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md">
+            <Link 
+              href="/cart" 
+              onClick={handleLinkClick}
+              className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
+            >
               Cart
             </Link>
             <Link
               href="/aboutpage"
+              onClick={handleLinkClick}
               className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
             >
               AboutUs
