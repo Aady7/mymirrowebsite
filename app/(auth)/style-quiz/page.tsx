@@ -268,13 +268,14 @@ const StyleQuiz: React.FC = () => {
       return Array.isArray(formValues.goToStyle) && formValues.goToStyle.length > 0;
     }
 
-    if (currentStep > 8 && currentStep <= 8 + dynamicSteps.length) {
-      const idx = currentStep - 9;
+    // Dynamic steps come right after Go To Style (step 7)
+    if (currentStep > 7 && currentStep <= 7 + dynamicSteps.length) {
+      const idx = currentStep - 8;
       const key = `preferred_${dynamicSteps[idx].style}`;
       return Array.isArray(formValues[key]) && formValues[key].length > 0;
     }
 
-    const minimalismStep = 8 + dynamicSteps.length + 1;
+    const minimalismStep = 7 + dynamicSteps.length + 1;
     const colorAnalysisStep = minimalismStep + 1;
     const otpSendStep = colorAnalysisStep + 1;
     const feedbackStep = otpSendStep + 1;
@@ -282,7 +283,6 @@ const StyleQuiz: React.FC = () => {
 
     if (currentStep === minimalismStep) return !!formValues.minimalistic;
     if (currentStep === colorAnalysisStep) {
-      // Check if color analysis is complete
       try {
         const colorAnalysisData = formValues.colorAnalysis ? JSON.parse(formValues.colorAnalysis as string) : null;
         return colorAnalysisData?.isComplete === true;
@@ -305,42 +305,21 @@ const StyleQuiz: React.FC = () => {
       setError(null);
       setMaxCompletedStep(prev => Math.max(prev, currentStep));
 
-      // Handle personality questions progression
-      if (currentStep >= 2 && currentStep <= 4) {
-        const currentQuestionIdx = (() => {
-          switch (currentStep) {
-            case 2: return 0; // Personality group
-            case 3: return 2; // Social group
-            case 4: return 4; // Work group
-            default: return 0;
-          }
-        })();
-
-        const currentQuestion = PERSONALITY_QUESTIONS[currentQuestionIdx];
-        
-        // Check if all questions in the group are answered
-        const groupQuestions = PERSONALITY_QUESTIONS.filter(q => q.group === currentQuestion.group);
-        const allAnswered = groupQuestions.every(q => !!formValues[q.key]);
-        if (!allAnswered) {
-          return;
-        }
+      // Generate dynamic steps right after Go To Style step (step 7)
+      if (currentStep === 7) {
+        const selected = formValues.goToStyle || [];
+        const generated = selected.map(style => ({
+          style,
+          options: Array.isArray(selected) ? selected.map((_, i) => `option_${i + 1}`) : []
+        }));
+        setDynamicSteps(generated);
       }
 
-      const minimalismStep = 8 + dynamicSteps.length + 1;
+      const minimalismStep = 7 + dynamicSteps.length + 1;
       const colorAnalysisStep = minimalismStep + 1;
       const otpSendStep = colorAnalysisStep + 1;
       const feedbackStep = otpSendStep + 1;
       const otpVerifyStep = feedbackStep + 1;
-    
-
-      if (currentStep === 8) {
-        const selected = formValues.goToStyle || [];
-        const generated = selected.map(style => ({
-          style,
-          options: Array.from({ length: 7 }, (_, i) => `option_${i + 1}`)
-        }));
-        setDynamicSteps(generated);
-      }
 
       if (currentStep === otpSendStep) {
         await handleSendOtpClick();
@@ -399,10 +378,10 @@ const StyleQuiz: React.FC = () => {
       ].includes(name);
 
       // Also skip if the step is the GoToStyle step (multiple checkboxes)
-      const isGoToStyleStep = currentStep === 8;
+      const isGoToStyleStep = currentStep === 7;
       
       // Or if it's a dynamic style preference step (multiple options)
-      const isDynamicStyleStep = currentStep > 8 && currentStep <= 8 + dynamicSteps.length;
+      const isDynamicStyleStep = currentStep > 7 && currentStep <= 7 + dynamicSteps.length;
       
       if(currentStep===2){
         const updatedValues = {...formValues, [name]: value};
@@ -437,7 +416,7 @@ const StyleQuiz: React.FC = () => {
         }
       }
 
-      if(currentStep==7){
+      if(currentStep==6){
         const updatedValues = {...formValues, [name]: value};
         const bothSizeQuestionsAnswered = 
           !!updatedValues.upperWear && !!updatedValues.waistSize;
@@ -448,18 +427,7 @@ const StyleQuiz: React.FC = () => {
         }
       }
       
-      // Special handling for step 5 (fashion questions)
-      if (currentStep === 5) {
-        // Check if both fashion questions are answered after this update
-        const updatedValues = {...formValues, [name]: value};
-        const bothFashionQuestionsAnswered = 
-          !!updatedValues.workOutfit && !!updatedValues.wardrobeContent;
-        
-        if (!bothFashionQuestionsAnswered) {
-          console.log("Not auto-advancing yet - waiting for both fashion questions to be answered");
-          return; // Skip auto-next until both are answered
-        }
-      }
+    
       
       if (!skipAutoNext && !isGoToStyleStep && !isDynamicStyleStep) {
         // Auto advance for most radio button selections
@@ -525,19 +493,19 @@ const StyleQuiz: React.FC = () => {
         return (
           <div className="space-y-8">
             <GoToStyleStep formValues={formValues} handleChange={handleChange} />
-           
           </div>
         );
       }
 
-
-      if (currentStep > 8 && currentStep <= 8 + dynamicSteps.length) {
-        const idx = currentStep - 9;
+      // Dynamic steps come immediately after Go To Style (step 7)
+      if (currentStep > 7 && currentStep <= 7 + dynamicSteps.length) {
+        const idx = currentStep - 8;
         const { style } = dynamicSteps[idx];
         return <DynamicStylePreferenceStep style={style} formValues={formValues} handleChange={handleChange} />;
       }
 
-      const minimalismStep = 8 + dynamicSteps.length + 1;
+      // Minimalistic step comes after dynamic steps
+      const minimalismStep = 7 + dynamicSteps.length + 1;
       const colorAnalysisStep = minimalismStep + 1;
       const otpSendStep = colorAnalysisStep + 1;
       const feedbackStep = otpSendStep + 1;
@@ -663,10 +631,14 @@ const StyleQuiz: React.FC = () => {
         {/* Desktop Sidebar */}
         <aside className="hidden md:block w-1/3 bg-[#007e90] text-white p-5 overflow-y-auto h-[calc(100vh-64px)]">
           <ul className="space-y-4 relative">
-            {STATIC_STEPS.concat(
-              dynamicSteps.map(step => getDynamicStepHeading(step.style)),
-              ['Style Personality',`Let's Get to Know Your Skin Tone` , 'Fashion Secrets Safe', 'The Final Bits', 'Almost There']
-            ).map((title, i) => (
+            {[...STATIC_STEPS, 
+              ...dynamicSteps.map(step => getDynamicStepHeading(step.style)),
+              'Style Personality',
+              `Let's Get to Know Your Skin Tone`,
+              'Fashion Secrets Safe',
+              'The Final Bits',
+              'Almost There'
+            ].map((title, i) => (
               <li
                 key={i}
                 className={`flex items-center ${i + 1 === currentStep
