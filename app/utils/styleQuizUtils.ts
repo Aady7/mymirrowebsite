@@ -128,10 +128,10 @@ export const PERSONALITY_QUESTIONS = [
     key: 'workOutfit',
     label: 'Big work presentation tomorrow—your outfit vibe?',
     options: [
-      'Tailored blazer, crisp shirt—power stance',
-      'Lightweight cotton set—polished yet breathable',
-      'Statement jacket / saree detail that shows personality',
-      'Timeless white kurta-pyjama or sober suit'
+      'Crisp formal shirt, sharp trousers, polished shoes',
+      'Comfortable polo and well-fitted trousers',
+      'Bold printed shirt with statement accessories',
+      'Simple white/black shirt with clean lines—let your work speak'
     ],
     group: 'work'
   },
@@ -139,11 +139,10 @@ export const PERSONALITY_QUESTIONS = [
     key: 'workspaceStyle',
     label: 'Your work or study desk usually looks like:',
     options: [
-      'Crisp formal shirt, sharp trousers, polished shoes',
-      'Comfortable polo and well-fitted trousers',
-      'Bold printed shirt with statement accessories',
-      'Simple white/black shirt with clean lines—let your work speak'
-
+      'Clean, neutral desk with only the essentials',
+      'Cushions, snack bowl, foot-rest—comfort paradise',
+      'Sleek gadgets, wireless everything—LinkedIn-ad vibe',
+      'Random gifts, ticket stubs, action figures—fun chaos',
     ],
     group: 'work'
   },
