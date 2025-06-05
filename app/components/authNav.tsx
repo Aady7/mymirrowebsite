@@ -58,17 +58,12 @@ const AuthNav = () => {
             {/* Desktop Sign In/Up Buttons */}
             <div className="hidden sm:flex items-center space-x-4">
               <button
-                onClick={() => router.push('/sign-in')}
+                onClick={() => router.push('/mobile-sign-in')}
                 className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
               >
                 Sign in
               </button>
-              <button
-                onClick={() => router.push('/sign-up')}
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
-              >
-                Sign up
-              </button>
+             
             </div>
 
             {/* Mobile Menu Button */}
@@ -130,17 +125,12 @@ const AuthNav = () => {
               </Link>
               <div className="border-t border-gray-200 pt-2 mt-2">
                 <button
-                  onClick={() => handleButtonClick('/sign-in')}
+                  onClick={() => handleButtonClick('/mobile-sign-in')}
                   className="block w-full text-left text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
                 >
                   Sign in
                 </button>
-                <button
-                  onClick={() => handleButtonClick('/sign-up')}
-                  className="block w-full text-left text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
-                >
-                  Sign up
-                </button>
+               
               </div>
             </div>
           )}

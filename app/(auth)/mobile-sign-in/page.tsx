@@ -10,6 +10,7 @@ const MobileSignIn = () => {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [otpSent, setOtpSent] = useState(false)
+  const [redirectingToQuiz, setRedirectingToQuiz] = useState(false)
   const router = useRouter()
 
   const formatPhoneNumber = (value: string) => {
@@ -43,6 +44,7 @@ const MobileSignIn = () => {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
+    setRedirectingToQuiz(false)
 
     // Clean the phone number before sending
     let cleanedPhone = phone.replace(/\D/g, '')
@@ -58,11 +60,28 @@ const MobileSignIn = () => {
     }
 
     try {
+      // First check if the phone number exists in users table
+      const { data: users, error: fetchError } = await supabase
+        .from('users')
+        .select('phoneNumber')
+        .eq('phoneNumber', cleanedPhone)
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      // If phone number doesn't exist in users table, redirect to style quiz
+      if (!users || users.length === 0) {
+        setRedirectingToQuiz(true);
+        setTimeout(() => {
+          router.push('/style-quiz');
+        }, 3000);
+        return;
+      }
+
       const { error } = await supabase.auth.signInWithOtp({
         phone: `+${cleanedPhone}`,
-        options:{shouldCreateUser: true, channel: 'sms'},
-        
-
+        options: { shouldCreateUser: true, channel: 'sms' },
       })
 
       if (error) {
@@ -72,7 +91,7 @@ const MobileSignIn = () => {
         setOtpSent(true)
       }
     } catch (err) {
-      setError('An error occurred while sending OTP',)
+      setError('An error occurred while sending OTP')
     } finally {
       setIsLoading(false)
     }
@@ -97,6 +116,22 @@ const MobileSignIn = () => {
     }
 
     try {
+      // Double check if the phone number exists in users table
+      const { data: users, error: fetchError } = await supabase
+        .from('users')
+        .select('phoneNumber')
+        .eq('phoneNumber', cleanedPhone)
+
+      if (fetchError) {
+        throw fetchError;
+      }
+
+      // If phone number doesn't exist in users table, redirect to style quiz
+      if (!users || users.length === 0) {
+        router.push('/style-quiz');
+        return;
+      }
+
       const { error } = await supabase.auth.verifyOtp({
         phone: `+${cleanedPhone}`,
         token: otp,
@@ -116,19 +151,38 @@ const MobileSignIn = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <h2 className="mt-6 text-center text-[25px] font-medium text-gray-900">
           Sign in with mobile number
         </h2>
+        <p className="mt-2 text-center text-[14px] text-gray-600">
+          Complete the style quiz to create your account
+        </p>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+        <div className="bg-white py-8 px-4 shadow-sm sm:rounded-lg sm:px-10 border border-gray-200">
+          {redirectingToQuiz && (
+            <div className="mb-6 p-4 bg-[#E8F4F6] border border-[#007e90] rounded-lg">
+              <div className="flex items-center space-x-3">
+                <svg className="w-5 h-5 text-[#007e90]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p className="text-[14px] font-medium text-[#007e90]">New User Detected!</p>
+                  <p className="text-[14px] text-[#007e90] mt-1">
+                    Please complete the style quiz to create your account. Redirecting you now...
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {!otpSent ? (
             <form className="space-y-6" onSubmit={handleSendOtp}>
               <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="phone" className="block text-[14px] font-medium text-gray-700">
                   Phone Number
                 </label>
                 <div className="mt-1">
@@ -139,26 +193,26 @@ const MobileSignIn = () => {
                     required
                     value={phone}
                     onChange={handlePhoneChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#007e90] focus:border-[#007e90] text-[14px]"
                     placeholder="+91 9876543210"
                     pattern="^(\+91[\s-]?)?[0]?[789]\d{9}$"
                     title="Please enter a valid Indian phone number"
                   />
                 </div>
-                <p className="mt-2 text-sm text-gray-500">
+                <p className="mt-2 text-[14px] text-gray-500">
                   Enter your mobile number 
                 </p>
               </div>
 
               {error && (
-                <div className="text-red-500 text-sm">{error}</div>
+                <div className="text-red-500 text-[14px]">{error}</div>
               )}
 
               <div>
                 <button
                   type="submit"
                   disabled={isLoading || !phone.match(/^(\+91[\s-]?)?[0]?[789]\d{9}$/)}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-[14px] font-medium text-white bg-[#007e90] hover:bg-[#006d7d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007e90] disabled:opacity-50 transition-colors"
                 >
                   {isLoading ? 'Sending...' : 'Send OTP'}
                 </button>
@@ -167,7 +221,7 @@ const MobileSignIn = () => {
           ) : (
             <form className="space-y-6" onSubmit={handleVerifyOtp}>
               <div>
-                <label htmlFor="otp" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="otp" className="block text-[14px] font-medium text-gray-700">
                   Enter OTP
                 </label>
                 <div className="mt-1">
@@ -178,7 +232,7 @@ const MobileSignIn = () => {
                     required
                     value={otp}
                     onChange={(e) => setOtp(e.target.value)}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#007e90] focus:border-[#007e90] text-[14px]"
                     placeholder="Enter 6-digit OTP"
                     pattern="\d{6}"
                     title="Please enter a 6-digit OTP"
@@ -187,40 +241,20 @@ const MobileSignIn = () => {
               </div>
 
               {error && (
-                <div className="text-red-500 text-sm">{error}</div>
+                <div className="text-red-500 text-[14px]">{error}</div>
               )}
 
               <div>
                 <button
                   type="submit"
                   disabled={isLoading || !otp.match(/^\d{6}$/)}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                  className="w-full flex justify-center py-2.5 px-4 border border-transparent rounded-lg shadow-sm text-[14px] font-medium text-white bg-[#007e90] hover:bg-[#006d7d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007e90] disabled:opacity-50 transition-colors"
                 >
                   {isLoading ? 'Verifying...' : 'Verify OTP'}
                 </button>
               </div>
             </form>
           )}
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or</span>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <Link
-                href="/sign-in"
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              >
-                Sign in with email
-              </Link>
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -18,7 +18,7 @@ export default function Navigation() {
       setIsLoading(true)
       setIsOpen(false) // Close menu when signing out
       await signOut()
-      router.push('/sign-in')
+      router.push('/mobile-sign-in')
     } catch (error) {
       console.error('Error signing out:', error)
     } finally {
