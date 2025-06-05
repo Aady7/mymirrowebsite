@@ -112,8 +112,26 @@ const StyleQuiz: React.FC = () => {
         console.log("verified otp");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         if (session && !sessionError) {
+          // Add user data to users table
+          const { error: userError } = await supabase
+            .from('users')
+            .upsert([{
+              userid: session?.user.id,
+              phoneNumber: session?.user.phone,
+              created_at: new Date().toISOString()
+            }],{
+              onConflict: 'userid',
+            });
+
+          if (userError) {
+            console.error('Error saving user data:', userError);
+            setError('Failed to save user data. Please try again.');
+            return;
+          }
+
           await sendFormData();
           router.push("/recommendations");
+          
         } else {
           setError('Session not available. Please try again.');
         }
@@ -626,7 +644,7 @@ const StyleQuiz: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-[calc(100vh-64px)] flex flex-col bg-white">
       <div className="flex-1 flex flex-col md:flex-row">
         {/* Desktop Sidebar */}
         <aside className="hidden md:block w-1/3 bg-[#007e90] text-white p-5 overflow-y-auto h-[calc(100vh-64px)]">
@@ -661,8 +679,8 @@ const StyleQuiz: React.FC = () => {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 flex flex-col h-[calc(100vh-64px)] md:h-[calc(100vh-64px)]">
-          <form onSubmit={(e: FormEvent) => { e.preventDefault(); nextStep(); }} className="flex-1 flex flex-col h-full">
+        <main className="flex-1 flex flex-col h-[calc(100vh-64px)]">
+          <form onSubmit={(e: FormEvent) => { e.preventDefault(); nextStep(); }} className="flex-1 flex flex-col">
             {/* Mobile Header */}
             <div className="md:hidden bg-[#007e90] text-white p-4">
               <div className="flex items-start gap-6">
@@ -771,10 +789,10 @@ const StyleQuiz: React.FC = () => {
               }
             `}</style>
 
-            {/* Content Area - Make explicitly scrollable with flex layout */}
+            {/* Content Area */}
             <div className="flex-1 min-h-0 relative">
               <div className="absolute inset-0 overflow-y-auto">
-                <div className="p-4 md:p-8 pb-24">
+                <div className="p-4 md:p-8 pb-32">
                   {error && (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                       <p className="text-sm md:text-base text-red-600">{error}</p>
@@ -789,7 +807,7 @@ const StyleQuiz: React.FC = () => {
             </div>
 
             {/* Navigation Buttons */}
-            <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-10">
+            <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
               <div className="max-w-3xl mx-auto px-4 py-4 md:px-8">
                 <div className="flex justify-between items-center">
                   <button
