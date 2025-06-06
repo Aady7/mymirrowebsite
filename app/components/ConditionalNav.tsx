@@ -4,6 +4,7 @@ import { useAuth } from '@/lib/hooks/useAuth'
 import { useEffect, useState } from 'react'
 import AuthNav from './authNav'
 import RootNav from './rootNav'
+import { supabase } from '@/lib/supabase'
 
 const ConditionalNav = () => {
   const { getSession } = useAuth()
@@ -11,6 +12,7 @@ const ConditionalNav = () => {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
+    // Initial auth check
     const checkAuth = async () => {
       try {
         const { session } = await getSession()
@@ -24,6 +26,18 @@ const ConditionalNav = () => {
     }
 
     checkAuth()
+
+    // Set up real-time auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event)
+      setIsAuthenticated(!!session)
+      setIsLoading(false)
+    })
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [getSession])
 
   if (isLoading) {

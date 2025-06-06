@@ -21,7 +21,7 @@ export const useAuth = () => {
 
       console.log('Sign in successful:', data)
 
-      // Manually redirect after successful sign-in
+      // Manually redirect after successful mobile-sign-in
       router.push('/recommendations');
       return { data, error: null }
       
@@ -44,13 +44,16 @@ export const useAuth = () => {
       const { user } = data
       const { error: insertError } = await supabase
         .from('users')
-        .insert([
+        .upsert([
           {
             email: user?.email,
             userid:user?.id,              
             created_at: new Date().toISOString(),
           },
-        ])
+        ], {
+          onConflict: 'userid',
+          ignoreDuplicates: false
+        })
         if (insertError) {
           console.error('Error inserting user into database:', insertError)
           return { data: null, error: insertError }
@@ -72,8 +75,8 @@ export const useAuth = () => {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
   
-      // Redirect to sign-in page
-      router.push('/sign-in');
+      // Redirect to mobile-sign-in page
+      router.push('/mobile-sign-in');
     } catch (error) {
       console.error('Error signing out:', error);
     }

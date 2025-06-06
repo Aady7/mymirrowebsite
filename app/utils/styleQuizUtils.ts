@@ -89,29 +89,7 @@ export const PERSONALITY_QUESTIONS = [
       'Evening run club / badminton game, then coconut water',
       'Tickets to an indie stand-up or art gig you found on BookMyShow'
     ],
-    group: 'lifestyle'
-  },
-  {
-    key: 'shoppingStyle',
-    label: 'When shopping online, how do you usually make your final choice?',
-    options: [
-      'Premium brand that screams success',
-      'Eye-catching, one-of-a-kind collab to flex creativity',
-      'Reliable classic label you\'ve trusted for years',
-      'Spreadsheet of specs, coupon codes, top reviews—then checkout'
-    ],
-    group: 'social1'
-  },
-  {
-    key: 'workspaceStyle',
-    label: 'Your work or study desk usually looks like:',
-    options: [
-      'Clean, neutral desk with only the essentials',
-      'Cushions, snack bowl, foot-rest—comfort paradise',
-      'Sleek gadgets, wireless everything—LinkedIn-ad vibe',
-      'Random gifts, ticket stubs, action figures—fun chaos'
-    ],
-    group: 'social1'
+    group: 'personality'
   },
   {
     key: 'friendCompliments',
@@ -125,15 +103,15 @@ export const PERSONALITY_QUESTIONS = [
     group: 'personality'
   },
   {
-    key: 'workOutfit',
-    label: 'Big work presentation tomorrow—your outfit vibe?',
+    key: 'shoppingStyle',
+    label: 'When shopping online, how do you usually make your final choice?',
     options: [
-      'Tailored blazer, crisp shirt—power stance',
-      'Lightweight cotton set—polished yet breathable',
-      'Statement jacket / saree detail that shows personality',
-      'Timeless white kurta-pyjama or sober suit'
+      'Premium brand that screams success',
+      'Eye-catching, one-of-a-kind collab to flex creativity',
+      'Reliable classic label you\'ve trusted for years',
+      'Spreadsheet of specs, coupon codes, top reviews—then checkout'
     ],
-    group: 'style'
+    group: 'social1'
   },
   {
     key: 'wardrobeContent',
@@ -144,8 +122,33 @@ export const PERSONALITY_QUESTIONS = [
       'Curated ethnic + western classics, all paired up',
       'Eclectic thrift finds, DIY patches—totally you'
     ],
-    group: 'style'
-  }
+    group: 'social1'
+  },
+  {
+    key: 'workOutfit',
+    label: 'Big work presentation tomorrow—your outfit vibe?',
+    options: [
+      'Crisp formal shirt, sharp trousers, polished shoes',
+      'Comfortable polo and well-fitted trousers',
+      'Bold printed shirt with statement accessories',
+      'Simple white/black shirt with clean lines—let your work speak'
+    ],
+    group: 'work'
+  },
+  {
+    key: 'workspaceStyle',
+    label: 'Your work or study desk usually looks like:',
+    options: [
+      'Clean, neutral desk with only the essentials',
+      'Cushions, snack bowl, foot-rest—comfort paradise',
+      'Sleek gadgets, wireless everything—LinkedIn-ad vibe',
+      'Random gifts, ticket stubs, action figures—fun chaos',
+    ],
+    group: 'work'
+  },
+
+  
+ 
 ];
 
 export const STYLE_IMAGES = {
