@@ -23,7 +23,7 @@ const FashionTarot = () => {
 
 
       {/* Tarot Cards */}
-      <div className="mt-6 px-10 md:mt-10 lg:mt-12 md:px-0">
+      <div className="mt-6 px-8 md:mt-10 lg:mt-12 md:px-0">
         <div className="flex flex-row gap-10 md:gap-16 lg:gap-20 justify-center">
           {/* Tarot Card 1 */}
           <div
@@ -38,7 +38,7 @@ const FashionTarot = () => {
               {/* Front */}
               <div className="absolute inset-0 backface-hidden">
                 <Image
-                  src="/assets/tarot-1.png"
+                  src="/assets/tarot-1.svg"
                   alt="The Color Seeker"
                   fill
                   className="object-cover rounded-2xl"
@@ -48,7 +48,7 @@ const FashionTarot = () => {
               {/* Back */}
               <div className="absolute inset-0 backface-hidden rotate-y-180">
                 <Image
-                  src="/assets/colorseekerdesc.png"
+                  src="/assets/colorseekerdesc.svg"
                   alt="Back of The Color Seeker"
                   fill
                   className="object-cover rounded-2xl"
@@ -70,7 +70,7 @@ const FashionTarot = () => {
               {/* Front */}
               <div className="absolute inset-0 backface-hidden">
                 <Image
-                  src="/assets/tarot-2.png"
+                  src="/assets/tarot-2.svg"
                   alt="The Minimalist"
                   fill
                   className="object-cover rounded-2xl"
