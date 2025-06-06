@@ -12,7 +12,7 @@ const testimonials = [
   },
   {
     id: 2,
-    rating: 4,
+    rating: 5,
     content:
       "I used to spend forever scrolling through endless products on other sites, never finding exactly what I wanted. MyMirro made it so easy by showing me exactly what I needed, no more endless browsing!",
     image: "/path/to/image2.jpg",
@@ -30,7 +30,7 @@ const testimonials = [
   },
   {
     id: 4,
-    rating: 4,
+    rating: 5,
     content: "Very satisfied with my purchase. Good value for money.",
     image: "/path/to/image4.jpg",
     name: "Bob Brown",
@@ -46,7 +46,7 @@ const testimonials = [
   },
   {
     id: 6,
-    rating: 4,
+    rating: 5,
     content: "Solid product with great features. Highly recommend!",
     image: "/path/to/image6.jpg",
     name: "Diana White",
