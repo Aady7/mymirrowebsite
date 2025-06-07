@@ -93,7 +93,7 @@ const FashionTarot = () => {
       </div>
 
       {/* Tarot Cards */}
-      <div className="mt-6 px-10 md:mt-10 lg:mt-12 md:px-0">
+      <div className="mt-6 px-8 md:mt-10 lg:mt-12 md:px-0">
         <div className="flex flex-row gap-10 md:gap-16 lg:gap-20 justify-center">
           {selectedCards.map((card, index) => (
             <div
