@@ -33,15 +33,16 @@ const StylistSays = () => {
 
             {/* Paragraph aligned under "U" by padding-left */}
             <p className="font-[Boston] text-[14px] md:text-[16px] not-italic font-normal leading-normal pl-[15px] pr-[2px] w-[280px] md:w-auto md:text-center md:px-0">
-              Handpicked outfit combinations tailored to your unique style
-              profile
+              Handpicked outfit combinations tailored to
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;your
+              unique style profile
             </p>
           </div>
 
           {/* Looks section container */}
           <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:mt-12">
             {/* Look 1 section */}
-            <div className="md:col-span-2 lg:col-span-1 p-6">
+            <div className="md:col-span-2 lg:col-span-1 p-7">
               <div className="flex flex-row gap-1 mt-8 md:mt-0">
                 {/* LEFT: LOOK 1 */}
                 <div className="flex flex-col w-1/2 md:w-full">
@@ -88,7 +89,7 @@ const StylistSays = () => {
               </div>
               <span className="flex items-end justify-end mt-1">
                 <Link href="/looks/urbanShift">
-                  <Button className="bg-black rounded-none w-25 h-5 md:h-8 md:px-6">
+                  <Button className="bg-black rounded-none w-25 h-6 md:h-8 md:px-6">
                     VIEW MORE
                   </Button>
                 </Link>
@@ -96,7 +97,7 @@ const StylistSays = () => {
             </div>
 
             {/* Look 2 section */}
-            <div className="md:col-span-1 p-6">
+            <div className="md:col-span-1 p-7">
               <div className="flex flex-row gap-1 mt-10 md:mt-0">
                 <div className="flex flex-col w-1/2 md:w-full">
                   <h3 className="text-sm font-semibold mb-1 md:text-lg">
@@ -129,7 +130,7 @@ const StylistSays = () => {
               </div>
               <span className="flex items-end justify-end mt-1">
                 <Link href="/looks/minimalElegance">
-                  <Button className="bg-black rounded-none w-25 h-5 md:h-8 md:px-6">
+                  <Button className="bg-black rounded-none w-25 h-6 md:h-8 md:px-6">
                     VIEW MORE
                   </Button>
                 </Link>
@@ -137,7 +138,7 @@ const StylistSays = () => {
             </div>
 
             {/* Look 3 section */}
-            <div className="md:col-span-1 p-6">
+            <div className="md:col-span-1 p-7">
               <div className="mt-6 md:mt-0">
                 <div className="flex flex-col w-full">
                   <h3 className="text-sm font-semibold mb-1 md:text-lg">
@@ -155,7 +156,7 @@ const StylistSays = () => {
                 </div>
                 <span className="flex items-end justify-end mt-1">
                   <Link href="/looks/streetCore">
-                    <Button className="bg-black rounded-none w-25 h-5 md:h-8 md:px-6">
+                    <Button className="bg-black rounded-none w-25 h-6 md:h-8 md:px-6">
                       VIEW MORE
                     </Button>
                   </Link>
