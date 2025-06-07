@@ -68,7 +68,8 @@ export const useAuth = () => {
 
   const signOut = async () => {
     try {
-      // Remove userId from localStorage
+      // Remove both styleQuizId and userId from localStorage
+      localStorage.removeItem('styleQuizId');
       localStorage.removeItem('userId');
   
       // Sign out from Supabase

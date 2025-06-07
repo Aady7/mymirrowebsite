@@ -1,7 +1,7 @@
-import { FIT_MAPPING_DATA, FitMappingEntry } from "../data/mappingData";
-import { QuestionMappingEntry, QUESTION_MAPPING_DATA } from "../data/mappingData";
+import { FIT_MAPPING_DATA, FitMappingEntry } from "@/app/data/mappingData";
+import { QuestionMappingEntry, QUESTION_MAPPING_DATA } from "@/app/data/mappingData";
 
-import { PATTERN_CHARACTERISTICS_DATA, PatternCharacteristicsEntry } from "../data/mappingData";
+import { PATTERN_CHARACTERISTICS_DATA, PatternCharacteristicsEntry } from "@/app/data/mappingData";
 
 interface FitTagsInput {
   gender: string;
