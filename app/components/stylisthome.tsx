@@ -32,7 +32,7 @@ const StylistHome = () => {
             <div className="flex flex-row items-center overflow-x-auto mt-6 px-4 gap-0 md:gap-4 lg:gap-8 md:justify-center md:overflow-visible">
               <div className="flex flex-col items-center w-[90px] md:w-[120px] lg:w-[150px]">
                 <Image
-                  src="/assets/quiz.png"
+                  src="/assets/quiz.svg"
                   alt="quiz photo"
                   width={80}
                   height={70}
@@ -47,7 +47,7 @@ const StylistHome = () => {
 
               <div className="flex flex-col items-center w-[90px] md:w-[120px] lg:w-[150px]">
                 <Image
-                  src="/assets/ai.png"
+                  src="/assets/ai.svg"
                   alt="ai photo"
                   width={80}
                   height={70}
@@ -62,7 +62,7 @@ const StylistHome = () => {
 
               <div className="flex flex-col items-center w-[90px] md:w-[120px] lg:w-[150px]">
                 <Image
-                  src="/assets/stylist.png"
+                  src="/assets/stylist.svg"
                   alt="stylist photo"
                   width={80}
                   height={70}

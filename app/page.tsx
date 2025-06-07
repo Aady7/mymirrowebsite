@@ -133,13 +133,25 @@ const page = async () => {
                   className="w-[100%] h-[250px] md:h-[500px] object-cover rounded-lg transition-transform duration-300 hover:scale-[1.02]"
                 />
               </div>
+            </div>
 
+            {/* Quiz Button - Mobile Only */}
+            <div className="flex md:hidden justify-center w-full mb-8">
               <Link href="/style-quiz">
-                <Button className="px-6 py-3 h-14 w-50 bg-pink-200 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin mt-4 rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Button className="px-6 py-3 h-14 w-50 bg-pink-200 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
                   Take your style quiz now!
                 </Button>
               </Link>
             </div>
+          </div>
+
+          {/* Quiz Button - Desktop Only */}
+          <div className="hidden md:flex justify-center mb-12">
+            <Link href="/style-quiz">
+              <Button className="px-6 py-3 h-14 w-50 bg-pink-200 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
+                Take your style quiz now!
+              </Button>
+            </Link>
           </div>
 
           {/* Stylist section */}
