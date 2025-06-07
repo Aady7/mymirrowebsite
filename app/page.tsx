@@ -1,4 +1,5 @@
 import Stylist from "@/app/components/recommendations/stylist";
+import StylistHome from "@/app/components/stylisthome";
 import TestimonialSection from "@/app/components/testimonialSection";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@supabase/supabase-js";
@@ -139,13 +140,11 @@ const page = async () => {
                 </Button>
               </Link>
             </div>
-
-
           </div>
-          {/* Stylist section */}
-          <Stylist />
-        </section>
 
+          {/* Stylist section */}
+          {!session ? <StylistHome /> : <Stylist />}
+        </section>
 
         {/* Assuming TestimonialSection is already responsive */}
         <TestimonialSection />

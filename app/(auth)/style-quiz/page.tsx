@@ -68,6 +68,7 @@ const StyleQuiz: React.FC = () => {
   const [formValues, setFormValues] = useState<FormValues>({ outfitAdventurous: [], goToStyle: [] });
   const [dynamicSteps, setDynamicSteps] = useState<DynamicStep[]>([]);
   const [userId, setUserId] = useState<string>('');
+  const[sessionID, setSessionID] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [otpSent, setOtpSent] = useState(false);
@@ -80,6 +81,13 @@ const StyleQuiz: React.FC = () => {
       localStorage.setItem('userId', id);
     }
     setUserId(id);
+
+    // Create or get styleQuizId
+    let quizId = localStorage.getItem('styleQuizId');
+    if (!quizId) {
+      quizId = crypto.randomUUID();
+      localStorage.setItem('styleQuizId', quizId);
+    }
   }, []);
 
   const handleSendOtpClick = async () => {
@@ -111,15 +119,21 @@ const StyleQuiz: React.FC = () => {
       } else {
         console.log("verified otp");
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
         if (session && !sessionError) {
-          // Add user data to users table
+          // Get the styleQuizId from localStorage
+          const styleQuizId = localStorage.getItem('styleQuizId');
+          
+          // Add user data to users table with styleQuizId
+          console.log("Updating user data with styleQuizId:", styleQuizId);
           const { error: userError } = await supabase
             .from('users')
             .upsert([{
               userid: session?.user.id,
               phoneNumber: session?.user.phone,
-              created_at: new Date().toISOString()
-            }],{
+              created_at: new Date().toISOString(),
+              styleQuizID: styleQuizId // Add the styleQuizId to users table
+            }], {
               onConflict: 'userid',
             });
 
@@ -202,10 +216,20 @@ const StyleQuiz: React.FC = () => {
         surface_texture_tags: printCharacteristics.surfaceTextures
       }];
 
-      const cleanedData: StyleQuizData = {
-        userId,
+      // Get the session to access user ID
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id || '';
+
+      interface DynamicStyleQuizData extends StyleQuizData {
+        [key: string]: any;
+      }
+
+      const styleQuizId = localStorage.getItem('styleQuizId');
+      
+      const cleanedData: DynamicStyleQuizData = {
+        styleQuizId,
         name: formValues.name.trim(),
-        phone: formValues.phone?.replace(/\D/g, '')||'',
+        phone: formValues.phone?.replace(/\D/g, '') || '',
         gender: formValues.gender,
         bodyType: formValues.bodyType,
         upperWear: formValues.upperWear,
@@ -223,7 +247,9 @@ const StyleQuiz: React.FC = () => {
         friendCompliments: formValues.friendCompliments,
         workOutfit: formValues.workOutfit,
         wardrobeContent: formValues.wardrobeContent,
-        colorAnalysis: colorAnalysisData // Add color analysis data directly to the main object
+        colorAnalysis: colorAnalysisData,
+        userId
+      
       };
 
       dynamicSteps.forEach(({ style }) => {
@@ -233,20 +259,17 @@ const StyleQuiz: React.FC = () => {
         }
       });
 
-      console.log("Sending data to Supabase:", {
-        ...cleanedData,
-        colorAnalysis: colorAnalysisData // Log color analysis data separately for clarity
-      });
+      console.log("Sending data to Supabase:", cleanedData);
 
-      const { error: supabaseError } = await supabase
+      // Upsert data using styleQuizId
+      const { error: insertError } = await supabase
         .from('style-quiz')
         .upsert([cleanedData], {
-          onConflict: 'userId',
-          ignoreDuplicates: false
+          onConflict: 'styleQuizId'
         });
 
-      if (supabaseError) {
-        throw new Error(supabaseError.message);
+      if (insertError) {
+        throw new Error(insertError.message);
       }
 
     } catch (error) {
@@ -255,7 +278,7 @@ const StyleQuiz: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [formValues, userId, dynamicSteps]);
+  }, [formValues, dynamicSteps]);
 
   const getTotalSteps = () => 8 + dynamicSteps.length + 5;
 
