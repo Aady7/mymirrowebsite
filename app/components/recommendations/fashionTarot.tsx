@@ -31,7 +31,7 @@ const FashionTarot = () => {
             onClick={() => setIsFlipped1(!isFlipped1)}
           >
             <div
-              className={`relative w-full h-full duration-700 transform-style preserve-3d ${
+              className={`relative w-full h-full duration-800 transform-style preserve-3d ${
                 isFlipped1 ? "rotate-y-180" : ""
               }`}
             >
