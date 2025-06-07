@@ -1,0 +1,15 @@
+[
+   
+    { "tag": "ex", "gender": "female", "image": "/assets/femaleTarrotCards/image40.svg" },
+    { "tag": "conf", "gender": "female", "image": "/assets/femaleTarrotCards/image41.svg" },
+    { "tag": "bold", "gender": "female", "image": "/assets/femaleTarrotCards/image42.svg" },
+    { "tag": "sc", "gender": "female", "image": "/assets/femaleTarrotCards/image43.svg" },
+    { "tag": "trad", "gender": "female", "image": "/assets/femaleTarrotCards/image44.svg" },
+    { "tag": "stat", "gender": "female", "image": "/assets/femaleTarrotCards/image45.svg" },
+    { "tag": "comf", "gender": "female", "image": "/assets/femaleTarrotCards/image46.svg" },
+    { "tag": "prac", "gender": "female", "image": "/assets/femaleTarrotCards/image47.svg" },
+    { "tag": "pl", "gender": "female", "image": "/assets/femaleTarrotCards/image51.svg" },
+    { "tag": "mini", "gender": "female", "image": "/assets/femaleTarrotCards/image52.svg" },
+    { "tag": "trend", "gender": "female", "image": "/assets/femaleTarrotCards/image53.svg" }
+  ]
+  

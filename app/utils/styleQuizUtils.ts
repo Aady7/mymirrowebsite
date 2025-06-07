@@ -49,6 +49,43 @@ export const handleVerifyOtp = async (phone: string, otp: string) => {
   return { error }
 }
 
+export const getStyleQuizData = async () => {
+  try {
+    // Get the current session
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.user) {
+      throw new Error('No authenticated user found');
+    }
+
+    // Get the user's styleQuizId from users table
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('styleQuizID')
+      .eq('userid', session.user.id)
+      .single();
+
+    if (userError || !userData?.styleQuizID) {
+      throw new Error('No style quiz data found for user');
+    }
+
+    // Fetch the style quiz data using styleQuizId
+    const { data: quizData, error: quizError } = await supabase
+      .from('style-quiz')
+      .select('*')
+      .eq('styleQuizId', userData.styleQuizID)
+      .single();
+
+    if (quizError) {
+      throw new Error('Error fetching style quiz data');
+    }
+
+    return { data: quizData, error: null };
+  } catch (error) {
+    console.error('Error in getStyleQuizData:', error);
+    return { data: null, error };
+  }
+};
+
 export const STATIC_STEPS = ['Your Info', 'Your Body Type', 'Size Preferences', 'Style Preferences', "Go-to Style"];
 
 export const BODY_TYPE_IMAGES = {

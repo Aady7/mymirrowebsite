@@ -1,4 +1,5 @@
 import Stylist from "@/app/components/recommendations/stylist";
+import StylistHome from "@/app/components/stylisthome";
 import TestimonialSection from "@/app/components/testimonialSection";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@supabase/supabase-js";
@@ -132,23 +133,38 @@ const page = async () => {
                   className="w-[100%] h-[350px] md:h-[500px] object-cover rounded-lg transition-transform duration-300 hover:scale-[1.02]"
                 />
               </div>
+            </div>
 
+            {/* Quiz Button - Mobile Only */}
+            <div className="flex md:hidden justify-center w-full mb-8">
               <Link href="/style-quiz">
-                <Button className="px-6 py-3 h-14 w-45 bg-pink-100 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin mt-4 rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
+
+                <Button className="px-6 py-3 h-14 w-50 bg-pink-200 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
+
                   Take your style quiz now!
                 </Button>
               </Link>
             </div>
-
-
           </div>
-           
+
+          {/* Quiz Button - Desktop Only */}
+          <div className="hidden md:flex justify-center mb-12">
+            <Link href="/style-quiz">
+              <Button className="px-6 py-3 h-14 w-50 bg-pink-200 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
+                Take your style quiz now!
+              </Button>
+            </Link>
+          </div>
+
+
+          {/* Stylist section */}
+          {!session ? <StylistHome /> : <Stylist />}
+
         </section>
         <div className="mt-[-3rem]"> 
         {/* Stylist section */}
           <Stylist/>
           </div>
-
 
         {/* Assuming TestimonialSection is already responsive */}
         <TestimonialSection />
