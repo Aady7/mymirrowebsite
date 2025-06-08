@@ -162,3 +162,25 @@
 @import 'swiper/css/pagination';
 
 
+/* three greed image css*/
+ .swiper-button-prev,
+.swiper-button-next {
+  color: white;
+  background-color: black;
+  border-radius: 9999px; /* full circle */
+  width: 30px;
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+  top: 35%; /* vertical center */
+  z-index: 10;
+  transition: background-color 0.3s ease;
+}
+
+.swiper-button-prev:hover,
+.swiper-button-next:hover {
+  background-color: #333;
+}
+

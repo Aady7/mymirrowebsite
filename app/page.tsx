@@ -59,7 +59,7 @@ const page = async () => {
           </section>
         </div>
 
-        <section className="py-14 bg-white w-full p-6">
+        <section className="py-14 bg-white w-full p-4">
           <div className="max-w-7xl mx-auto px-2">
             <h2 className="text-3xl font-bold text-center mb-6" aria-label="Features"></h2>
 

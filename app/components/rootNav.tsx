@@ -2,8 +2,8 @@
 import { useAuth } from '@/lib/hooks/useAuth'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 export default function Navigation() {
   const { signOut } = useAuth()
@@ -28,9 +28,9 @@ export default function Navigation() {
 
   // Function to handle link clicks
   const handleLinkClick = () => {
-    setTimeout(() => {
+ 
       setIsOpen(false)
-    }, 5000)
+     
   }
 
   return (
