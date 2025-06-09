@@ -33,11 +33,15 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
   const [showCamera, setShowCamera] = useState(false);
   const [isAnalysisComplete, setIsAnalysisComplete] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [imageSource, setImageSource] = useState<'camera' | 'gallery' | null>(null);
 
   // Cleanup effect to ensure camera is stopped when component unmounts
   useEffect(() => {
@@ -143,10 +147,12 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
         canvas.height = video.videoHeight;
         context.drawImage(video, 0, 0, canvas.width, canvas.height);
         const imageData = canvas.toDataURL('image/jpeg', 0.8);
-        setCapturedImage(imageData); // Store for preview
-        // Do not upload yet, wait for user confirmation
+        setCapturedImage(imageData);
+        setImageSource('camera');
         stopCamera();
-        console.log("Image captured");
+        // Automatically start upload
+        handleImageData(imageData);
+        console.log("Image captured and upload started");
       } else {
         setCameraError("Cannot capture image. Video not ready.");
       }
@@ -154,7 +160,13 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
   };
 
   const handleImageData = async (imageData: string) => {
+    // Create new AbortController for this request
+    const controller = new AbortController();
+    setAbortController(controller);
+
     try {
+      setIsAnalyzing(true);
+      setApiError(null);
       const base64 = imageData.split(",")[1];
       console.log("base64", base64);
       const res = await fetch("https://color-analysis-production.up.railway.app/analyze", {
@@ -163,31 +175,47 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
           "Content-Type": "application/json"
         },
         body: JSON.stringify({image:base64}),
+        signal: controller.signal
       });
 
       if (!res.ok) {
-        console.error("Error:", res.statusText);
-        return;
+        throw new Error(`Failed to analyze image: ${res.statusText}`);
       }
 
       const data = await res.json();
       setResult(data);
       setIsAnalysisComplete(true);
       
+      // Create a more detailed analysis object
+      const analysisData = {
+        method: 'upload',
+        imageBase64: base64,
+        undertone: data.undertone,
+        contrast: data.contrast,
+        recommendedColors: data.recommended_colors,
+        isComplete: true,
+        timestamp: new Date().toISOString()
+      };
+
+      // Update form values with the complete analysis data
       const syntheticEvent = {
         target: {
           name: 'colorAnalysis',
-          value: JSON.stringify({
-            image: base64,
-            ...data,
-            isComplete: true
-          })
+          value: JSON.stringify(analysisData)
         }
       } as React.ChangeEvent<HTMLInputElement>;
       
       handleChange(syntheticEvent);
+      console.log("Color Analysis Data:", analysisData);
     } catch (error) {
-      console.error("Error analyzing image:", error);
+      // Only set error if it's not an abort error
+      if (!(error instanceof DOMException && error.name === 'AbortError')) {
+        console.error("Error analyzing image:", error);
+        setApiError(error instanceof Error ? error.message : "Failed to analyze the image. Please try again.");
+      }
+    } finally {
+      setIsAnalyzing(false);
+      setAbortController(null);
     }
   };
 
@@ -202,31 +230,68 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
     if (!file) return;
 
     setIsAnalysisComplete(false);
+    setImageSource('gallery');
     const reader = new FileReader();
     reader.onloadend = () => {
       const imageData = reader.result as string;
+      setCapturedImage(imageData);
       handleImageData(imageData);
     };
 
     reader.readAsDataURL(file);
   };
 
+  const handleReupload = () => {
+    // Abort any ongoing API call
+    if (abortController) {
+      abortController.abort();
+    }
+    
+    // Reset states
+    setCapturedImage(null);
+    setIsAnalyzing(false);
+    setApiError(null);
+    setResult(null);
+    setIsAnalysisComplete(false);
+    
+    // Clear any previous analysis data
+    const syntheticEvent = {
+      target: {
+        name: 'colorAnalysis',
+        value: JSON.stringify({ isComplete: false })
+      }
+    } as React.ChangeEvent<HTMLInputElement>;
+    handleChange(syntheticEvent);
+    
+    // Reset file input value to allow selecting the same file again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
+  };
+
   const handleManualSelect = (hex: string) => {
     setSelectedTone(hex);
     setIsAnalysisComplete(true);
     
+    // Create a detailed manual selection object
+    const manualSelectionData = {
+      method: 'manual',
+      selectedHex: hex,
+      selectedToneName: SKIN_TONES.find(tone => tone.hex === hex)?.name || '',
+      isComplete: true,
+      timestamp: new Date().toISOString()
+    };
+    
     const syntheticEvent = {
       target: {
         name: 'colorAnalysis',
-        value: JSON.stringify({
-          manualSelection: true,
-          selectedTone: hex,
-          isComplete: true
-        })
+        value: JSON.stringify(manualSelectionData)
       }
     } as React.ChangeEvent<HTMLInputElement>;
     
     handleChange(syntheticEvent);
+    console.log("Manual Selection Data:", manualSelectionData);
   };
 
   const handleModeChange = (newMode: 'upload' | 'manual') => {
@@ -252,19 +317,32 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
     handleChange(syntheticEvent);
   };
 
-  // New: handle upload after preview
-  const handleUploadCaptured = () => {
-    if (capturedImage) {
-      handleImageData(capturedImage);
-      setCapturedImage(null);
-    }
-  };
-
-  // New: handle retake
+  // Update handleRetake function
   const handleRetake = () => {
+    // Abort any ongoing API call
+    if (abortController) {
+      abortController.abort();
+    }
+    
+    // Reset all states
     setCapturedImage(null);
+    setIsAnalyzing(false);
+    setApiError(null);
+    setResult(null);
+    setIsAnalysisComplete(false);
+    setImageSource(null);
+    
+    // Clear any previous analysis data
+    const syntheticEvent = {
+      target: {
+        name: 'colorAnalysis',
+        value: JSON.stringify({ isComplete: false })
+      }
+    } as React.ChangeEvent<HTMLInputElement>;
+    handleChange(syntheticEvent);
+    
+    // Start camera again
     setShowCamera(true);
-    setCameraError(null);
     startCamera();
   };
 
@@ -298,30 +376,87 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
           </button>
         </div>
 
+        {apiError && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <p className="text-sm font-medium text-red-800">{apiError}</p>
+                <p className="text-sm text-red-600 mt-1">Please try uploading your image again.</p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {mode === 'upload' && (
           <div className="space-y-6">
-            {/* Show preview if a photo was captured */}
-            {capturedImage ? (
+            {isAnalyzing ? (
+              <div className="flex flex-col items-center space-y-6">
+                {capturedImage && (
+                  <div className="relative w-full max-w-xs mx-auto">
+                    <img
+                      src={capturedImage}
+                      alt="Preview"
+                      className="w-full rounded-lg border border-gray-300 object-contain bg-gray-100"
+                    />
+                  </div>
+                )}
+                <div className="flex flex-col items-center justify-center space-y-4">
+                  <div className="flex items-center gap-3">
+                    <p className="text-[14px] text-gray-700">
+                      {isAnalysisComplete 
+                        ? "Analysis complete! You can proceed to the next step"
+                        : "Scanning your selfie for color analysis... hang tight!"}
+                    </p>
+                    {isAnalysisComplete ? (
+                      <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <div className="w-4 h-4 border-2 border-[#007e90] border-t-transparent rounded-full animate-spin"></div>
+                    )}
+                  </div>
+                  {imageSource === 'camera' ? (
+                    <button
+                      onClick={handleRetake}
+                      className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                    >
+                      Retake Photo
+                    </button>
+                  ) : imageSource === 'gallery' ? (
+                    <button
+                      onClick={handleReupload}
+                      className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                    >
+                      Reupload Photo
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            ) : capturedImage ? (
               <div className="flex flex-col items-center gap-6">
                 <img
                   src={capturedImage}
                   alt="Preview"
                   className="w-full max-w-xs rounded-lg border border-gray-300 object-contain bg-gray-100"
                 />
-                <div className="flex gap-4 justify-center">
-                  <button
-                    onClick={handleUploadCaptured}
-                    className="px-6 py-2 bg-[#007e90] text-white rounded-lg hover:bg-[#006d7d] transition-colors font-medium"
-                  >
-                    Upload
-                  </button>
+                {imageSource === 'camera' ? (
                   <button
                     onClick={handleRetake}
                     className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                   >
-                    Retake
+                    Retake Photo
                   </button>
-                </div>
+                ) : imageSource === 'gallery' ? (
+                  <button
+                    onClick={handleReupload}
+                    className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                  >
+                    Reupload Photo
+                  </button>
+                ) : null}
               </div>
             ) : showCamera ? (
               <div className="relative">
@@ -441,9 +576,11 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
               </div>
             )}
 
-            <p className="text-sm text-gray-500 italic text-center">
-              Not comfortable taking a photo? Switch to manual mode and choose your closest skin tone.
-            </p>
+            {!isAnalyzing && !apiError && (
+              <p className="text-sm text-gray-500 italic text-center">
+                Not comfortable taking a photo? Switch to manual mode and choose your closest skin tone.
+              </p>
+            )}
           </div>
         )}
 
@@ -470,38 +607,7 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
         )}
       </div>
 
-      {result && mode === 'upload' && (
-        <div className="space-y-4 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-medium text-gray-700 mb-2">Undertone</h3>
-              <p className="text-lg text-[#007e90]">{result.undertone}</p>
-            </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <h3 className="font-medium text-gray-700 mb-2">Contrast</h3>
-              <p className="text-lg text-[#007e90]">{result.contrast}</p>
-            </div>
-          </div>
-          
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-medium text-gray-700 mb-4">Recommended Colors</h3>
-            <div className="grid grid-cols-2 gap-3">
-              {result.recommended_colors.map((color, i) => (
-                <div key={i} className="flex items-center space-x-3 p-2 bg-white rounded-md">
-                  <span
-                    className="w-8 h-8 rounded-full border border-gray-200"
-                    style={{ backgroundColor: color.hex }}
-                  ></span>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-700">{color.hex}</p>
-                    <p className="text-xs text-gray-500">{color.explanation}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+ 
     </div>
   );
 }

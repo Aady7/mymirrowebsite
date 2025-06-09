@@ -1,78 +1,50 @@
-  export interface FitMappingEntry {
-    gender: string;
-    bodyType: string;
-    fit: string;
-  }
-  
-  // All values are lowercase for consistent matching
-  export const FIT_MAPPING_DATA: FitMappingEntry[] = [
-  { gender: "female", bodyType: "hourglass", fit: "bodycon" },
-  { gender: "female", bodyType: "hourglass", fit: "fitted" },
-  { gender: "female", bodyType: "hourglass", fit: "fitted at waist" },
-  { gender: "female", bodyType: "hourglass", fit: "flared fit" },
-  { gender: "female", bodyType: "hourglass", fit: "slim fit" },
-  { gender: "female", bodyType: "hourglass", fit: "tailored fit" },
-  { gender: "female", bodyType: "inverted triangle", fit: "fitted" },
-  { gender: "female", bodyType: "inverted triangle", fit: "loose fit" },
-  { gender: "female", bodyType: "inverted triangle", fit: "oversized fit" },
-  { gender: "female", bodyType: "inverted triangle", fit: "relaxed fit" },
-  { gender: "female", bodyType: "inverted triangle", fit: "tailored fit" },
-  { gender: "female", bodyType: "inverted triangle", fit: "tight fit" },
-  { gender: "female", bodyType: "oval", fit: "bodycon" },
-  { gender: "female", bodyType: "oval", fit: "fitted" },
-  { gender: "female", bodyType: "oval", fit: "fitted at waist" },
-  { gender: "female", bodyType: "oval", fit: "flared fit" },
-  { gender: "female", bodyType: "oval", fit: "loose fit" },
-  { gender: "female", bodyType: "oval", fit: "oversized fit" },
-  { gender: "female", bodyType: "oval", fit: "relaxed fit" },
-  { gender: "female", bodyType: "oval", fit: "slim fit" },
-  { gender: "female", bodyType: "rectangle", fit: "boxy fit" },
-  { gender: "female", bodyType: "rectangle", fit: "loose fit" },
-  { gender: "female", bodyType: "rectangle", fit: "relaxed fit" },
-  { gender: "female", bodyType: "rectangle", fit: "straight fit" },
-  { gender: "male", bodyType: "inverted triangle", fit: "boxy fit" },
-  { gender: "male", bodyType: "inverted triangle", fit: "fitted" },
-  { gender: "male", bodyType: "inverted triangle", fit: "loose fit" },
-  { gender: "male", bodyType: "inverted triangle", fit: "relaxed fit" },
-  { gender: "male", bodyType: "inverted triangle", fit: "slim fit" },
-  { gender: "male", bodyType: "inverted triangle", fit: "tailored fit" },
-  { gender: "male", bodyType: "inverted triangle", fit: "tapered fit" },
-  { gender: "male", bodyType: "oval", fit: "boxy fit" },
-  { gender: "male", bodyType: "oval", fit: "fitted" },
-  { gender: "male", bodyType: "oval", fit: "loose fit" },
-  { gender: "male", bodyType: "oval", fit: "regular fit" },
-  { gender: "male", bodyType: "oval", fit: "relaxed fit" },
-  { gender: "male", bodyType: "oval", fit: "slim fit" },
-  { gender: "male", bodyType: "oval", fit: "straight fit" },
-  { gender: "male", bodyType: "oval", fit: "tapered fit" },
-  { gender: "male", bodyType: "rectangle", fit: "boxy fit" },
-  { gender: "male", bodyType: "rectangle", fit: "classic fit" },
-  { gender: "male", bodyType: "rectangle", fit: "fitted" },
-  { gender: "male", bodyType: "rectangle", fit: "loose fit" },
-  { gender: "male", bodyType: "rectangle", fit: "regular fit" },
-  { gender: "male", bodyType: "rectangle", fit: "relaxed fit" },
-  { gender: "male", bodyType: "rectangle", fit: "slim fit" },
-  { gender: "male", bodyType: "rectangle", fit: "straight fit" },
-  { gender: "male", bodyType: "rectangle", fit: "tapered fit" },
-  { gender: "male", bodyType: "rectangle", fit: "wide fit" },
-  { gender: "male", bodyType: "triangle", fit: "boxy fit" },
-  { gender: "male", bodyType: "triangle", fit: "fitted" },
-  { gender: "male", bodyType: "triangle", fit: "loose fit" },
-  { gender: "male", bodyType: "triangle", fit: "slim fit" },
-  { gender: "male", bodyType: "triangle", fit: "tapered fit" },
+export interface FitMappingEntry {
+  gender: string;
+  bodyShape: string;
+  category: string;
+  recommendedFits: string[];
+}
+
+// All values are lowercase for consistent matching
+export const FIT_MAPPING_DATA: FitMappingEntry[] = [
+  { gender: "men", bodyShape: "hourglass", category: "upper wear", recommendedFits: ["fitted", "tailored"] },
+  { gender: "men", bodyShape: "hourglass", category: "lower wear", recommendedFits: ["slim", "straight"] },
+  { gender: "men", bodyShape: "inverted triangle", category: "upper wear", recommendedFits: ["tailored", "regular"] },
+  { gender: "men", bodyShape: "inverted triangle", category: "lower wear", recommendedFits: ["straight", "tapered"] },
+  { gender: "men", bodyShape: "oval", category: "upper wear", recommendedFits: ["relaxed", "regular"] },
+  { gender: "men", bodyShape: "oval", category: "lower wear", recommendedFits: ["straight", "relaxed"] },
+  { gender: "men", bodyShape: "rectangle", category: "upper wear", recommendedFits: ["tailored", "fitted"] },
+  { gender: "men", bodyShape: "rectangle", category: "lower wear", recommendedFits: ["straight", "tapered"] },
+  { gender: "men", bodyShape: "triangle", category: "upper wear", recommendedFits: ["tailored", "fitted"] },
+  { gender: "men", bodyShape: "triangle", category: "lower wear", recommendedFits: ["straight", "relaxed"] },
+  { gender: "women", bodyShape: "hourglass", category: "upper wear", recommendedFits: ["fitted", "tailored"] },
+  { gender: "women", bodyShape: "hourglass", category: "lower wear", recommendedFits: ["slim", "straight"] },
+  { gender: "women", bodyShape: "hourglass", category: "full body", recommendedFits: ["bodycon", "wrap"] },
+  { gender: "women", bodyShape: "inverted triangle", category: "upper wear", recommendedFits: ["relaxed", "oversized"] },
+  { gender: "women", bodyShape: "inverted triangle", category: "lower wear", recommendedFits: ["wide", "relaxed"] },
+  { gender: "women", bodyShape: "inverted triangle", category: "full body", recommendedFits: ["a-line", "empire"] },
+  { gender: "women", bodyShape: "oval", category: "upper wear", recommendedFits: ["relaxed", "regular"] },
+  { gender: "women", bodyShape: "oval", category: "lower wear", recommendedFits: ["straight", "tapered"] },
+  { gender: "women", bodyShape: "oval", category: "full body", recommendedFits: ["empire", "a-line"] },
+  { gender: "women", bodyShape: "rectangle", category: "upper wear", recommendedFits: ["fitted", "tailored"] },
+  { gender: "women", bodyShape: "rectangle", category: "lower wear", recommendedFits: ["straight", "slim"] },
+  { gender: "women", bodyShape: "rectangle", category: "full body", recommendedFits: ["shift", "a-line"] },
+  { gender: "women", bodyShape: "triangle", category: "upper wear", recommendedFits: ["fitted", "tailored"] },
+  { gender: "women", bodyShape: "triangle", category: "lower wear", recommendedFits: ["straight", "wide"] },
+  { gender: "women", bodyShape: "triangle", category: "full body", recommendedFits: ["a-line", "wrap"] },
 ];
 
-  export interface QuestionMappingEntry {
+export interface QuestionMappingEntry {
   questionKey: string; // identifier for the question
   option: string; // the exact option text (lowercase)
-    personalityTags: string[]; // lowercase tags
-  }
-  
-  /**
-   * Mappings of each possible answer option to its personality tags.
-   * All text is lowercase for consistent matching.
-   */
-  export const QUESTION_MAPPING_DATA: QuestionMappingEntry[] = [
+  personalityTags: string[]; // lowercase tags
+}
+
+/**
+ * Mappings of each possible answer option to its personality tags.
+ * All text is lowercase for consistent matching.
+ */
+export const QUESTION_MAPPING_DATA: QuestionMappingEntry[] = [
   // Weekend Preference (Q1)
   {
     questionKey: "weekendPreference",
@@ -164,22 +136,22 @@
   // Work Outfit (Q5)
   {
     questionKey: "workOutfit",
-    option: "Tailored blazer, crisp shirt—power stance",
+    option: "Crisp formal shirt, sharp trousers, polished shoes",
     personalityTags: ["conf", "stat"],
   },
   {
     questionKey: "workOutfit",
-    option: "Lightweight cotton set—polished yet breathable",
+    option: "Comfortable polo and well-fitted trousers",
     personalityTags: ["prac", "comf"],
   },
   {
     questionKey: "workOutfit",
-    option: "Statement jacket / saree detail that shows personality",
+    option: "Bold printed shirt with statement accessories",
     personalityTags: ["ex", "bold"],
   },
   {
     questionKey: "workOutfit",
-    option: "Timeless white kurta-pyjama or sober suit",
+    option: "Simple white/black shirt with clean lines—let your work speak",
     personalityTags: ["trad", "mini"],
   },
 
@@ -204,16 +176,15 @@
     option: "Eclectic thrift finds, DIY patches—totally you",
     personalityTags: ["rb", "ex"],
   },
-  ];
-  
-  export interface PatternMappingEntry {
-    gender: string;
-    personalityTag: string; // code only: ex, in, mo, rb, pl, intr, sc, rl
-    styleType: string;
-    patterns: string[];
-  }
-  
-  
+];
+
+export interface PatternMappingEntry {
+  gender: string;
+  personalityTag: string; // code only: ex, in, mo, rb, pl, intr, sc, rl
+  styleType: string;
+  patterns: string[];
+}
+
 export interface PatternCharacteristicsEntry {
   personality: string;
   gender: string;
@@ -346,5 +317,4 @@ export const PATTERN_CHARACTERISTICS_DATA: PatternCharacteristicsEntry[] = [
     patternPlacement: ["centered", "matched"],
     surfaceTexture: ["technical", "smooth"],
   },
-  ];
-  
+];

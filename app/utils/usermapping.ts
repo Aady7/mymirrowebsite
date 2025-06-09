@@ -1,11 +1,17 @@
-import { FIT_MAPPING_DATA, FitMappingEntry } from "../data/mappingData";
-import { QuestionMappingEntry, QUESTION_MAPPING_DATA } from "../data/mappingData";
+import { FIT_MAPPING_DATA, FitMappingEntry } from "@/app/data/mappingData";
+import { QuestionMappingEntry, QUESTION_MAPPING_DATA } from "@/app/data/mappingData";
 
-import { PATTERN_CHARACTERISTICS_DATA, PatternCharacteristicsEntry } from "../data/mappingData";
+import { PATTERN_CHARACTERISTICS_DATA, PatternCharacteristicsEntry } from "@/app/data/mappingData";
 
 interface FitTagsInput {
   gender: string;
   bodyType: string;
+}
+
+interface CategorizedFitTags {
+  upperWear: string[];
+  lowerWear: string[];
+  fullBody: string[];
 }
 
 interface PersonalityMapInput {
@@ -33,23 +39,69 @@ type PatternCharacteristicsOutput = {
 
 
 
-export function generateFitTags({ gender, bodyType }: FitTagsInput): string[] {
+export function generateFitTags({ gender, bodyType }: FitTagsInput): CategorizedFitTags {
   // Convert inputs to lowercase for consistent matching
-  const normalizedGender = gender.toLowerCase();
+  const normalizedGender = gender.toLowerCase() === "male" ? "men" : "women";
   const normalizedBodyType = bodyType.toLowerCase();
+
+  console.log("Searching fits for:", { normalizedGender, normalizedBodyType });
 
   // Filter the mapping data to get all fits for the given gender and body type
   const matchingFits = FIT_MAPPING_DATA.filter(
     (entry) => 
       entry.gender === normalizedGender &&
-      entry.bodyType === normalizedBodyType
+      entry.bodyShape === normalizedBodyType
   );
 
-  // Extract unique fits
-  const fitTags = [...new Set(matchingFits.map((entry) => entry.fit))];
-  
-  // Return unique tags
-  return fitTags;
+  console.log("Found matching fits:", matchingFits);
+
+  if (matchingFits.length === 0) {
+    console.warn(`No matching fits found for gender: ${normalizedGender}, body type: ${normalizedBodyType}`);
+    // Return default fits if no matches found
+    const defaultFits: CategorizedFitTags = {
+      upperWear: ["regular", "fitted"],
+      lowerWear: ["regular", "straight"],
+      fullBody: normalizedGender === "women" ? ["regular", "a-line"] : []
+    };
+    return defaultFits;
+  }
+
+  // Initialize result object
+  const result: CategorizedFitTags = {
+    upperWear: [],
+    lowerWear: [],
+    fullBody: []
+  };
+
+  // Categorize fits based on category
+  matchingFits.forEach((entry) => {
+    if (!entry.recommendedFits || !Array.isArray(entry.recommendedFits)) {
+      console.warn(`Invalid recommendedFits for entry:`, entry);
+      return;
+    }
+
+    switch (entry.category) {
+      case "upper wear":
+        result.upperWear.push(...entry.recommendedFits);
+        break;
+      case "lower wear":
+        result.lowerWear.push(...entry.recommendedFits);
+        break;
+      case "full body":
+        result.fullBody.push(...entry.recommendedFits);
+        break;
+      default:
+        console.warn(`Unknown category: ${entry.category}`);
+    }
+  });
+
+  // Remove duplicates from each category
+  result.upperWear = [...new Set(result.upperWear)];
+  result.lowerWear = [...new Set(result.lowerWear)];
+  result.fullBody = [...new Set(result.fullBody)];
+
+  console.log("Generated fit tags:", result);
+  return result;
 }
 
 

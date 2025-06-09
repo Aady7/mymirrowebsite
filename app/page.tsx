@@ -1,4 +1,5 @@
 import Stylist from "@/app/components/recommendations/stylist";
+import StylistHome from "@/app/components/stylisthome";
 import TestimonialSection from "@/app/components/testimonialSection";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@supabase/supabase-js";
@@ -12,8 +13,7 @@ const supabase = createClient(
 
 const page = async () => {
   // Get the session from Supabase
-  const { data } = await supabase.auth.getSession();
-  const session = data.session;
+  
 
   return (
     <>
@@ -22,7 +22,7 @@ const page = async () => {
           {" "}
           {/* This wrapper handles edge cases */}
           <section
-            className=" container mx-auto relative h-[520px] w-[100vw] left-[calc(-50vw+50%)] flex items-center justify-center bg-cover bg-fixed bg-center"
+            className=" container mx-auto relative h-[510px] w-[100vw] left-[calc(-50vw+50%)] flex items-center justify-center bg-cover bg-fixed bg-center"
             style={{
               backgroundImage: `url('/assets/homelogo.jpg')`,
             }}
@@ -31,10 +31,10 @@ const page = async () => {
             <div className="absolute inset-0 bg-black opacity-50"></div>
 
             {/* Content */}
-            <div className="relative z-10 text-center text-white px-4 w-full">
+            <div className="relative z-10 text-center text-white px-4 mt-[4rem] w-full">
               {/* Lines and Heading */}
               <div className="flex flex-col items-center mb-2">
-                <div className="w-1/2 border-t-4 border-white mb-2"></div>
+                <div className="w-35 border-t-4 border-white mb-2"></div>
 
                 <h1 className="text-[40px] md:text-6xl font-bold text-white px-4 pt-1 pb-1 text-center tracking-wider leading-tight">
                   No more
@@ -42,16 +42,16 @@ const page = async () => {
                   <i> styling </i>hassle
                 </h1>
 
-                <div className="w-1/2 border-t-4 border-white mt-4 pt-5"></div>
+                <div className="w-40 border-t-4 border-white mt-4 pt-5"></div>
               </div>
 
-              <p className="text-lg md:text-2xl mb-8 font-thin max-w-2xl mt-3 mx-auto leading-8 line-clamp-3">
+              <p className="text-lg md:text-2xl mb-6 font-thin max-w-2xl mt-3 mx-auto leading-8 line-clamp-3">
                 Personalised outfits, curated just for you.
                 <br /> Share your style and we will find the
                 <br /> perfect look!
               </p>
               <Link href="/style-quiz">
-                <Button className="px-6 py-3 h-14 w-50 bg-pink-200 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
+                <Button className="px-6 py-3 h-14 w-45 bg-pink-100 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
                   Take your style quiz now!
                 </Button>
               </Link>
@@ -59,7 +59,7 @@ const page = async () => {
           </section>
         </div>
 
-        <section className="py-14 bg-white w-full">
+        <section className="py-14 bg-white w-full p-4">
           <div className="max-w-7xl mx-auto px-2">
             <h2 className="text-3xl font-bold text-center mb-6" aria-label="Features"></h2>
 
@@ -81,7 +81,7 @@ const page = async () => {
                 <img
                   src="/assets/home1.jpeg"
                   alt="Feature 1"
-                  className="w-[100%] h-[250px] md:h-[500px] object-cover rounded-lg transition-transform duration-300 hover:scale-[1.02]"
+                  className="w-[100%] h-[350px] md:h-[500px] object-cover rounded-lg transition-transform duration-300 hover:scale-[1.02]"
                 />
               </div>
             </div>
@@ -106,7 +106,7 @@ const page = async () => {
                 <img
                   src="/assets/home2.jpeg"
                   alt="Feature 1"
-                  className="w-full h-[250px] md:h-[500px] object-cover rounded-xl transition-transform duration-300 hover:scale-[1.02]"
+                  className="w-full h-[350px] md:h-[500px] object-cover rounded-xl transition-transform duration-300 hover:scale-[1.02]"
                 />
               </div>
             </div>
@@ -129,23 +129,42 @@ const page = async () => {
                 <img
                   src="/assets/home3.jpeg"
                   alt="Feature 1"
-                  className="w-[100%] h-[250px] md:h-[500px] object-cover rounded-lg transition-transform duration-300 hover:scale-[1.02]"
+                  className="w-[100%] h-[350px] md:h-[500px] object-cover rounded-lg transition-transform duration-300 hover:scale-[1.02]"
                 />
               </div>
+            </div>
 
+            {/* Quiz Button - Mobile Only */}
+            <div className="flex md:hidden justify-center w-full mb-8">
               <Link href="/style-quiz">
-                <Button className="px-6 py-3 h-14 w-50 bg-pink-200 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin mt-4 rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
+
+                <Button className="px-6 py-3 h-14 w-50 bg-pink-200 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
+
                   Take your style quiz now!
                 </Button>
               </Link>
             </div>
-
-
           </div>
-          {/* Stylist section */}
-          <Stylist />
-        </section>
 
+          {/* Quiz Button - Desktop Only */}
+          <div className="hidden md:flex justify-center mb-12">
+            <Link href="/style-quiz">
+              <Button className="px-6 py-3 h-14 w-50 bg-pink-200 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
+                Take your style quiz now!
+              </Button>
+            </Link>
+          </div>
+
+
+         {/* Stylist section */}
+
+          
+
+        </section>
+        <div className="mt-[-3rem]"> 
+        {/* Stylist section */}
+          <StylistHome/>
+          </div>
 
         {/* Assuming TestimonialSection is already responsive */}
         <TestimonialSection />

@@ -46,7 +46,7 @@ export async function middleware(request: NextRequest) {
 		// Define public paths that don't require authentication
 		const isPublicPath =
 			path === "/" || // Root is now the homepage
-			path === "/sign-in" ||
+			path === "/mobile-sign-in" ||
 			path === "/sign-up" ||
 			path === "/mobile-sign-in" ||
 			path === "/style-quiz" ||
@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
 
 		// If user is logged in but trying to access a public auth page, redirect to recommendations
 		if (
-			(path === "/sign-in" ||
+			(path === "/mobile-sign-in" ||
 				path === "/sign-up" ||
 				path === "/mobile-sign-in") &&
 			session
@@ -64,9 +64,9 @@ export async function middleware(request: NextRequest) {
 			return NextResponse.redirect(new URL("/recommendations", request.url));
 		}
 
-		// If user is not logged in and trying to access a protected page, redirect to sign-in
+		// If user is not logged in and trying to access a protected page, redirect to mobile-sign-in
 		if (!isPublicPath && !session) {
-			return NextResponse.redirect(new URL("/sign-in", request.url));
+			return NextResponse.redirect(new URL("/mobile-sign-in", request.url));
 		}
 
 		return response;
@@ -84,7 +84,7 @@ export const config = {
 	matcher: [
 		"/",
 		"/aboutpage",
-		"/sign-in",
+		"/mobile-sign-in",
 		"/sign-up",
 		"/mobile-sign-in",
 		"/style-quiz/:path*",

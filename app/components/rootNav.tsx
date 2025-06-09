@@ -2,8 +2,8 @@
 import { useAuth } from '@/lib/hooks/useAuth'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 
 export default function Navigation() {
   const { signOut } = useAuth()
@@ -16,13 +16,21 @@ export default function Navigation() {
   const handleSignOut = async () => {
     try {
       setIsLoading(true)
+      setIsOpen(false) // Close menu when signing out
       await signOut()
-      router.push('/sign-in')
+      router.push('/mobile-sign-in')
     } catch (error) {
       console.error('Error signing out:', error)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Function to handle link clicks
+  const handleLinkClick = () => {
+
+   setIsOpen(false)
+
   }
 
   return (
@@ -31,7 +39,7 @@ export default function Navigation() {
         <div className="flex justify-between h-16 items-center">
           {/* Logo / Brand */}
           <div className="flex-shrink-0">
-            <Link href="/style-quiz" className="text-2xl font-bold text-indigo-600">
+            <Link href="/style-quiz" onClick={handleLinkClick} className="text-2xl font-bold text-indigo-600">
               <Image src="/assets/logo.png" alt='logo' width={100} height={30} />
             </Link>
           </div>
@@ -116,20 +124,37 @@ export default function Navigation() {
         {/*Mobile Dropdown*/}
         {isOpen && (
           <div className="sm:hidden mt-2 space-y-2 pb-3">
-            <Link href="/" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md">
+            <Link 
+              href="/" 
+              onClick={handleLinkClick}
+              className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
+            >
               Home
             </Link>
-            <Link href="/style-quiz" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md">
+            <Link 
+              href="/style-quiz" 
+              onClick={handleLinkClick}
+              className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
+            >
               Quiz
             </Link>
-            <Link href="/recommendations" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md">
+            <Link 
+              href="/recommendations" 
+              onClick={handleLinkClick}
+              className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
+            >
               Recommendations
             </Link>
-            <Link href="/cart" className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md">
+            <Link 
+              href="/cart" 
+              onClick={handleLinkClick}
+              className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
+            >
               Cart
             </Link>
             <Link
               href="/aboutpage"
+              onClick={handleLinkClick}
               className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
             >
               AboutUs
