@@ -156,14 +156,14 @@ const page = async () => {
           </div>
 
 
-          {/* Stylist section */}
+         {/* Stylist section */}
 
-          <StylistHome />
+          
 
         </section>
         <div className="mt-[-3rem]"> 
         {/* Stylist section */}
-          <Stylist/>
+          <StylistHome/>
           </div>
 
         {/* Assuming TestimonialSection is already responsive */}
