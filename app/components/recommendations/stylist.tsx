@@ -84,7 +84,7 @@ const Stylist = () => {
               </p>
             </div>
 
-            {/* Right Section: Color Boxes in Column */}
+            {/* Right Section: Color Boxes in Column test */}
             <div className="flex flex-col gap-2 md:gap-3 lg:gap-4 w-1/2 md:w-2/5 items-end">
               <div className="relative">
                 <div
