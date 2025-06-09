@@ -1,10 +1,10 @@
 import { looksData } from "@/app/utils/lookData";
+import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { FaCartArrowDown } from "react-icons/fa";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import MyCarousel from "./mycrausal";
-import { Button } from "@/components/ui/button";
 
 const UrbanShift = () => {
   const lookData = looksData.streetCore;
@@ -49,12 +49,20 @@ const UrbanShift = () => {
             {/* Product Details */}
             <div className="flex flex-col justify-between lg:w-[40%] py-4">
               <div>
-                <h1 className="text-lg tracking-normal font-thin mb-2">
+                <h1 className="text-[10px] tracking-normal font-thin mb-2">
                   {product.brandName}
                 </h1>
-                <p className="w-[85%] font-[Boston] text-[12px] font-light leading-normal mb-4">
-                  {product.description}
-                </p>
+
+                {/* Description as bullets */}
+                <ul className="list-disc list-inside w-[85%] font-[Boston] text-[12px] font-light leading-normal mb-2">
+                  {product.description
+                    .split(". ")
+                    .filter((point) => point.trim() !== "")
+                    .map((point, i) => (
+                      <li key={i}>{point.trim().replace(/\.$/, "")}.</li>
+                    ))}
+                </ul>
+
                 <h4 className="flex text-black font-[Boston] text-[20px] font-semibold leading-normal [font-variant:all-small-caps] mb-2">
                   <FaIndianRupeeSign className="h-4 mt-[2px] mr-1" />
                   {product.price}
@@ -69,7 +77,7 @@ const UrbanShift = () => {
                     {product.sizes.map((size, idx) => (
                       <Button
                         key={idx}
-                        className="text-black font-[Boston] text-[14px] font-light [font-variant:all-small-caps]"
+                        className="text-black font-[Boston] border-2 text-[14px] font-light [font-variant:all-small-caps]"
                       >
                         {size}
                       </Button>
@@ -154,12 +162,11 @@ const UrbanShift = () => {
           {lookData.description.whyPicked}
         </p>
 
-        {/* Divider */}
         <hr className="border-t-1 border-black w-[98%] mx-auto mt-8" />
       </div>
 
       {/* You May Also Like */}
-      <div className="text-left px-4 md:px-6 lg:px-8 mt-2 mb-2">
+      <div className="text-left px-[24px] md:px-6 lg:px-8 mt-2 mb-[30px]">
         <h1 className="font-thin" style={{ fontSize: "20px", fontWeight: 100 }}>
           YOU MAY ALSO LIKE
         </h1>

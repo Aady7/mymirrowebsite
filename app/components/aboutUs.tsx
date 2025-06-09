@@ -9,7 +9,7 @@ const AboutUs = () => {
             Get to know us
           </h1>
           <p className="font-light text-lg md:text-lg text-left tracking-wider leading-[1.3] m-0">
-            I was just trying to buy a pair of shoes — something stylish,
+            I was just trying to buy a pair of shoes,something stylish,
             something that felt like me. But the deeper I went, the more lost I
             felt. Endless tabs. No real guidance. And no idea what would
             actually go with what. By the time I found something I liked, I
@@ -24,12 +24,12 @@ const AboutUs = () => {
             "I don't know what actually suits me."
             <br />
             <br/>
-            That's when it clicked — it's not the people who are the problem.
+            That's when it clicked,it's not the people who are the problem.
             It's the system.
             <br />
             <br/>
             We created MyMirro to change that. MyMirro isn't about transactions.
-            It's about transformation — into someone who feels confident,
+            It's about transformation,into someone who feels confident,
             stylish, and completely themselves. <br />
             <br />
             We're not just another marketplace. We're your fashion partner.{" "}
@@ -56,17 +56,17 @@ const AboutUs = () => {
             Our mission
           </h1>
           <p className=" pt-4 leading-tight text-lg font-light font-['Boston'] md:text-lg text-left">
-            At MyMirro, we don't just sell clothes—we help you express yourself
+            At MyMirro, we don't just sell clothes,we help you express yourself
             through fashion. Shopping should be exciting, effortless, and
             tailored to you. Our goal is to be your personal fashion stylist,
             ensuring that you always look and feel your best.
             <br />
             <br />
-            We understand that online shopping can feel overwhelming—so much
+            We understand that online shopping can feel overwhelming,so much
             choice, yet never quite what you're looking for. That's why we
             handpick outfits based on your unique preferences, body type, and
             style. Whether you need guidance, don't have the time, or simply
-            want a better way to shop—we've got you covered.
+            want a better way to shop,we've got you covered.
           </p>
         </div>
         <div className="w-full md:w-1/2  ">
@@ -76,10 +76,10 @@ const AboutUs = () => {
           <p className=" text-lg font-light tracking-wide leading-[1.2] font-['Boston'] pt-7 md:text-lg text-left">
             Unlike other platforms, MyMirro isn't just another shopping site. We
             offer:
-            <br /> - Personalized fashion advice—real designers helping you
-            style yourself effortlessly. <br />- Curated recommendations—you'll
+            <br /> - Personalized fashion advice,real designers helping you
+            style yourself effortlessly. <br />- Curated recommendations,you'll
             only see outfits that truly match your style and personality.
-            <br /> - Time-saving simplicity—no more endless scrolling, just the
+            <br /> - Time-saving simplicity,no more endless scrolling, just the
             best picks for you.
           </p>
         </div>
@@ -166,7 +166,7 @@ const AboutUs = () => {
           </div>
 
           {/* Harshit bhaiya ka Image 4 */}
-          <div className="aspect-square flex-col space-y-2 rounded-lg">
+          <div className="aspect-square flex-col space-y-2 rounded-lg mb-15">
             <Image
               src="/assets/harshit.jpg"
               alt="Harshit bhiya"

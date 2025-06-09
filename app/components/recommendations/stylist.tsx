@@ -54,13 +54,14 @@ const Stylist = () => {
   }
   
   return (
-    <div className="px-4 w-full max-w-[480px] mx-auto md:max-w-[768px] lg:max-w-[1024px] xl:max-w-[1280px]">
+    <div className="px-4 mb-8 w-full max-w-[480px] mx-auto md:max-w-[768px] lg:max-w-[1024px] xl:max-w-[1280px]">
       {/*stylist section*/}
       <div className="p-4 md:p-6 lg:p-8">
         <div className="p-0">
           {/* Text + Image */}
           <div className="flex flex-col items-center justify-between md:max-w-[80%] lg:max-w-[70%] mx-auto">
             <p className="font-[Boston] text-[12px] md:text-[14px] lg:text-[16px] not-italic font-normal leading-normal text-center">
+
               <span className="font-semibold">{quizData?.name || 'Ahan'}</span>, your style journey
               starts with your
               <span className="font-semibold"> quiz</span> answers, layered
@@ -69,6 +70,7 @@ const Stylist = () => {
               expertise — all working together to{" "}
               <span className="flex items-center justify-center">
                 tailor every look just for you.
+
               </span>
             </p>
 
@@ -118,6 +120,7 @@ const Stylist = () => {
             </div>
           </div>
 
+
           {/* White horizontal line */}
           <hr className="w-full border-t border-gray-400 mt-4 md:mt-6 lg:mt-8" />
 
@@ -155,6 +158,7 @@ const Stylist = () => {
               ))}
             </div>
           </div>
+
         </div>
       </div>
     </div>

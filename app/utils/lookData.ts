@@ -29,48 +29,50 @@ export const looksData = {
     products: [
       {
         id: 1,
-        brandName: "Brand Name",
-        description: "The Glitchez Vivid Edge Shirt pairs bold prints with a relaxed cut—effortless and unapologetically you.",
+        brandName: "Glitchez Vivid Edge Shirt",
+        description: ["Bold Print", "Relaxed fit", "Breathable", "Street vibe"],
         price: 2300,
         sizes: ["S", "M", "L", "XL"],
         images: {
           background: "/assets/looks-1-back.png",
-          foreground: "/assets/tex-2.png"
-        }
+          foreground: "/assets/tex-2.png",
+        },
       },
       {
         id: 2,
-        brandName: "Brand Name",
-        description: "Function meets fashion. These split trousers go from full-length to street-ready—built to move.",
+        brandName: " Kook N Keech Trousers",
+        description: "Convertible.Zip detail. Easy movement.Utility feel",
         price: 2300,
         sizes: ["S", "M", "L", "XL"],
         images: {
           background: "/assets/looks-1-back.png",
-          foreground: "/assets/pant-2.png"
-        }
+          foreground: "/assets/pant-2.png",
+        },
       },
       {
         id: 3,
         brandName: "Adidas Samba OG",
-        description: "Timeless kicks with attitude. The Samba OG fuses vintage sport with streetwear cool—every step makes a statement.",
+        description: [
+          "Iconic look",
+          "Leather upper",
+          "Cushioned sole",
+          "Everyday cool",
+        ],
         price: 2300,
         sizes: ["S", "M", "L", "XL"],
         images: {
           background: "/assets/looks-1-back.png",
-          foreground: "/assets/shooes.png"
-        }
-      }
+          foreground: "/assets/shooes.png",
+        },
+      },
     ],
     totalPrice: 6900,
     description: {
-      mainText: "Clean cuts. Confident energy. Curated for someone who loves to stand out in subtle, stylish ways. The Vivid Edge shirt adds just enough print to turn heads, while the convertible trousers adapt to your day—from plans to spontaneity. Grounded with the iconic Adidas Sambas, this look speaks to your adventurous, street-smart personality. You value comfort, but never at the cost of edge—and that's exactly why this one's for you.",
-      features: [
-        "Shirt: Bold print that brings movement and energy",
-        "Trousers: Convertible, breathable, and flexible.",
-        "Shoes: Timeless silhouette with street-ready traction."
-      ],
-      whyPicked: "You lean toward bold yet balanced styles with streetwear influences. This look keeps you versatile and expressive."
-    }
+      mainText:
+        "This outfit brings bold energy with laid-back structure designed for comfort, movement, and style that doesn’t try too hard.",
+      features: [],
+      whyPicked: "",
+    },
   },
   minimalElegance: {
     title: "MINIMAL ELEGANCE",
@@ -79,35 +81,36 @@ export const looksData = {
       {
         id: 4,
         brandName: "Essentials",
-        description: "The Minimalist Oversized Tee in pristine white—where simplicity meets sophistication. Premium cotton, perfect drape.",
+        description:
+          "The Minimalist Oversized Tee in pristine white—where simplicity meets sophistication. Premium cotton, perfect drape.",
         price: 1800,
         sizes: ["S", "M", "L", "XL"],
         images: {
           background: "/assets/looks-1-back.png",
-          foreground: "/assets/minimal-tee.png"
-        }
+          foreground: "/assets/minimal-tee.png",
+        },
       },
       {
         id: 5,
         brandName: "Essentials",
-        description: "High-waisted Wide Leg Trousers in charcoal—fluid movement meets architectural lines. Tailored for the modern minimalist.",
+        description:
+          "High-waisted Wide Leg Trousers in charcoal—fluid movement meets architectural lines. Tailored for the modern minimalist.",
         price: 3200,
         sizes: ["S", "M", "L", "XL"],
         images: {
           background: "/assets/looks-1-back.png",
-          foreground: "/assets/minimal-pants.png"
-        }
-      }
+          foreground: "/assets/minimal-pants.png",
+        },
+      },
     ],
     totalPrice: 5000,
     description: {
-      mainText: "Less is more with this carefully curated minimal look. The oversized white tee creates a clean canvas, while the wide-leg trousers add architectural interest through their considered proportions. This look proves that simplicity, when executed with precision, makes the boldest statement.",
-      features: [
-        "T-Shirt: Premium cotton with considered oversized cut",
-        "Trousers: Architectural wide-leg silhouette with perfect drape"
-      ],
-      whyPicked: "Your appreciation for refined minimalism and quality basics shows you understand that true style often lies in restraint."
-    }
+      mainText:
+        "Less is more with this carefully curated minimal look. The oversized white tee creates a clean canvas, while the wide-leg trousers add architectural interest through their considered proportions. This look proves that simplicity, when executed with precision, makes the boldest statement.",
+      features: [],
+      whyPicked:
+        "Your appreciation for refined minimalism and quality basics shows you understand that true style often lies in restraint.",
+    },
   },
   streetCore: {
     title: "STREET CORE",
@@ -116,22 +119,101 @@ export const looksData = {
       {
         id: 6,
         brandName: "Urban Edge",
-        description: "The All-in-One Cargo Jumpsuit—utility meets urban flair. Multiple pockets, adjustable fit, and statement zippers make this piece as functional as it is fashion-forward.",
+        description:
+          "The All-in-One Cargo Jumpsuit—utility meets urban flair. Multiple pockets, adjustable fit, and statement zippers make this piece as functional as it is fashion-forward.",
         price: 4500,
         sizes: ["S", "M", "L", "XL"],
         images: {
           background: "/assets/looks-1-back.png",
-          foreground: "/assets/jumpsuit.png"
-        }
-      }
+          foreground: "/assets/jumpsuit.png",
+        },
+      },
     ],
     totalPrice: 4500,
     description: {
-      mainText: "One piece, endless possibilities. This cargo jumpsuit is the ultimate statement in effortless street style. With its perfect blend of utility and urban edge, it's designed for those who want their clothing to work as hard as they do while making a bold style statement.",
-      features: [
-        "Jumpsuit: Technical fabric with utility pockets and custom hardware"
-      ],
-      whyPicked: "Your bold approach to style and appreciation for functional fashion makes this piece perfect for your wardrobe."
-    }
-  }
+      mainText:
+        "One piece, endless possibilities. This cargo jumpsuit is the ultimate statement in effortless street style. With its perfect blend of utility and urban edge, it's designed for those who want their clothing to work as hard as they do while making a bold style statement.",
+      features: [],
+      whyPicked: "",
+    },
+  },
+  neoNomad: {
+    title: "NEO NOMAD",
+    lookNumber: 4,
+    products: [
+      {
+        id: 7,
+        brandName: "Nomadic Layers Hoodie",
+        description: [
+          "Layered texture",
+          "Earth tones",
+          "Tech fleece",
+          "Urban drape",
+        ],
+        price: 2800,
+        sizes: ["S", "M", "L", "XL"],
+        images: {
+          background: "/assets/looks-1-back.png",
+          foreground: "/assets/hoodie.png",
+        },
+      },
+    ],
+    totalPrice: 2800,
+    description: {
+      mainText:
+        "Channel the energy of modern wanderers. This hoodie look is crafted to move with you across terrains—urban or otherwise.",
+      features: [],
+      whyPicked: "",
+    },
+  },
+
+  monochromeMotion: {
+    title: "MONOCHROME MOTION",
+    lookNumber: 5,
+    products: [
+      {
+        id: 8,
+        brandName: "RunTrack Monochrome Set",
+        description: ["Streamlined", "Performance-ready", "Minimal logo"],
+        price: 3400,
+        sizes: ["S", "M", "L", "XL"],
+        images: {
+          background: "/assets/looks-1-back.png",
+          foreground: "/assets/monochrome.png",
+        },
+      },
+    ],
+    totalPrice: 3400,
+    description: {
+      mainText:
+        "Sleek lines and movement in focus. This monochrome set is the go-to for elevated street-active hybrids.",
+      features: [],
+      whyPicked: "",
+    },
+  },
+
+  vibrantPulse: {
+    title: "VIBRANT PULSE",
+    lookNumber: 6,
+    products: [
+      {
+        id: 9,
+        brandName: "Pulse Pop Jacket",
+        description: ["Colorblock", "Retro vibe", "Energetic feel"],
+        price: 3100,
+        sizes: ["S", "M", "L", "XL"],
+        images: {
+          background: "/assets/looks-1-back.png",
+          foreground: "/assets/pulse-jacket.png",
+        },
+      },
+    ],
+    totalPrice: 3100,
+    description: {
+      mainText:
+        "Bold hues and playful contrast. This look speaks to the high-energy streetwear enthusiast.",
+      features: [],
+      whyPicked: "",
+    },
+  },
 };
