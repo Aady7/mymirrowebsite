@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 const ThreeImgGreed = ({ look, lookId }) => {
   return (
-    <div className="md:col-span-2 lg:col-span-1 p-8">
+    <div className="md:col-span-2 lg:col-span-1 p-[50px]">
       <div className="flex flex-row gap-1 mt-8 md:mt-0">
         {/* LEFT: LOOK ID */}
         <div className="flex flex-col w-1/2 md:w-full">
