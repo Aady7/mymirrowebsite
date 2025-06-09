@@ -13,8 +13,7 @@ const supabase = createClient(
 
 const page = async () => {
   // Get the session from Supabase
-  const { data } = await supabase.auth.getSession();
-  const session = data.session;
+  
 
   return (
     <>
@@ -158,7 +157,8 @@ const page = async () => {
 
 
           {/* Stylist section */}
-          {!session ? <StylistHome /> : <Stylist />}
+
+          <StylistHome />
 
         </section>
         <div className="mt-[-3rem]"> 

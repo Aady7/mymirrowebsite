@@ -28,9 +28,7 @@ export default function Navigation() {
 
   // Function to handle link clicks
   const handleLinkClick = () => {
-    setTimeout(() => {
-      setIsOpen(false)
-    }, 5000)
+   setIsOpen(false)
   }
 
   return (

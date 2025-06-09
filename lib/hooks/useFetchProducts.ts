@@ -13,7 +13,7 @@ export async function fetchPaginatedData<T = any>(
   const to = from + pageSize - 1;
 
   const { data, error, count } = await supabase
-    .from('products')
+    .from('tagged_products')
     .select('*', { count: 'exact' })
     .range(from, to);
 

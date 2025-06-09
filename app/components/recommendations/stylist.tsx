@@ -63,9 +63,9 @@ const Stylist = () => {
             <p className="font-[Boston] text-[12px] md:text-[14px] lg:text-[16px] not-italic font-normal leading-normal text-center">
               <span className="font-semibold">{quizData?.name || 'Ahan'}</span>, your style journey
               starts with your
-              <span className="font-semibold"> quiz</span> answers,layered
-              <br className="hidden md:block"/>with <span className="font-semibold">AI </span>
-              insights and<span className="font-semibold">stylist </span>
+              <span className="font-semibold"> quiz</span> answers, layered
+              <br className="hidden md:block"/> with <span className="font-semibold">AI </span>
+              insights and<span className="font-semibold"> stylist </span>
               expertise — all working together to{" "}
               <span className="flex items-center justify-center">
                 tailor every look just for you.
