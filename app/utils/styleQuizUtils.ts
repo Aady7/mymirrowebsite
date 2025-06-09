@@ -228,6 +228,9 @@ export const STYLE_PREFERENCE_IMAGES = {
       Shirts: '/stylequizimages/GotoStyle/MalePrefBus/image128.png',
       Blazers: '/stylequizimages/GotoStyle/MalePrefBus/image129.png',
       Trousers: '/stylequizimages/GotoStyle/MalePrefBus/image130.png',
+      Turtlenecks: '/stylequizimages/GotoStyle/MalePrefBus/image158.png',
+      Jeans: '/stylequizimages/GotoStyle/MalePrefBus/image161.png',
+      'Polo T-shirts': '/stylequizimages/GotoStyle/MalePrefBus/image157.png',
      
      
     },
@@ -244,10 +247,11 @@ export const STYLE_PREFERENCE_IMAGES = {
   },
   athleisure: {
     male: {
-      Tshirts: '/stylequizimages/GotoStyle/MaleAthleiseure/image124.png',
-      'Tank Tops': '/stylequizimages/GotoStyle/MaleAthleiseure/image125.png',
-      Joggers: '/stylequizimages/GotoStyle/MaleAthleiseure/image126.png',
-      Shorts: '/stylequizimages/GotoStyle/MaleAthleiseure/image127.png',   
+     'Tank Tops': '/stylequizimages/GotoStyle/MaleAthleiseure/image124.png',
+     Tshirts: '/stylequizimages/GotoStyle/MaleAthleiseure/image125.png',
+      Sweatpants: '/stylequizimages/GotoStyle/MaleAthleiseure/image126.png',
+      Shorts: '/stylequizimages/GotoStyle/MaleAthleiseure/image127.png',  
+      Joggers: '/stylequizimages/GotoStyle/MaleAthleiseure/image160.png',
     },
     female: {
       'Crop Top': '/stylequizimages/GotoStyle/FemaleAthleisure/image98.png',

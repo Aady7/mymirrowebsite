@@ -1,15 +1,80 @@
 [
-   
-    { "tag": "ex", "gender": "female", "image": "/assets/femaleTarrotCards/image40.svg" },
-    { "tag": "conf", "gender": "female", "image": "/assets/femaleTarrotCards/image41.svg" },
-    { "tag": "bold", "gender": "female", "image": "/assets/femaleTarrotCards/image42.svg" },
-    { "tag": "sc", "gender": "female", "image": "/assets/femaleTarrotCards/image43.svg" },
-    { "tag": "trad", "gender": "female", "image": "/assets/femaleTarrotCards/image44.svg" },
-    { "tag": "stat", "gender": "female", "image": "/assets/femaleTarrotCards/image45.svg" },
-    { "tag": "comf", "gender": "female", "image": "/assets/femaleTarrotCards/image46.svg" },
-    { "tag": "prac", "gender": "female", "image": "/assets/femaleTarrotCards/image47.svg" },
-    { "tag": "pl", "gender": "female", "image": "/assets/femaleTarrotCards/image51.svg" },
-    { "tag": "mini", "gender": "female", "image": "/assets/femaleTarrotCards/image52.svg" },
-    { "tag": "trend", "gender": "female", "image": "/assets/femaleTarrotCards/image53.svg" }
+    {
+      "tag": "ex",
+      "gender": "female",
+      "image": "/assets/femaleTarrotCards/image40.svg",
+      "title": "You thrive in expression.",
+      "elaborate": "Bold, vibrant, and expressive—your style mirrors your lively spirit."
+    },
+    {
+      "tag": "conf",
+      "gender": "female",
+      "image": "/assets/femaleTarrotCards/image41.svg",
+      "title": "You radiate confidence.",
+      "elaborate": "Poised and self-assured—your fashion speaks with quiet power."
+    },
+    {
+      "tag": "bold",
+      "gender": "female",
+      "image": "/assets/femaleTarrotCards/image42.svg",
+      "title": "You own the spotlight.",
+      "elaborate": "Fearless and daring—you command attention with every outfit."
+    },
+    {
+      "tag": "sc",
+      "gender": "female",
+      "image": "/assets/femaleTarrotCards/image43.svg",
+      "title": "You embody sophistication.",
+      "elaborate": "Timeless and sophisticated—your style exudes classic grace."
+    },
+    {
+      "tag": "trad",
+      "gender": "female",
+      "image": "/assets/femaleTarrotCards/image44.svg",
+      "title": "You honor tradition.",
+      "elaborate": "Rooted in tradition—your style honors the beauty of heritage."
+    },
+    {
+      "tag": "stat",
+      "gender": "female",
+      "image": "/assets/femaleTarrotCards/image45.svg",
+      "title": "You make statements.",
+      "elaborate": "You make statements—your style turns heads and sparks conversation."
+    },
+    {
+      "tag": "comf",
+      "gender": "female",
+      "image": "/assets/femaleTarrotCards/image46.svg",
+      "title": "You embrace comfort.",
+      "elaborate": "Relaxed and effortless—you value comfort without sacrificing style."
+    },
+    {
+      "tag": "prac",
+      "gender": "female",
+      "image": "/assets/femaleTarrotCards/image47.svg",
+      "title": "You value practicality.",
+      "elaborate": "Practical and functional—you master everyday chic with ease."
+    },
+    {
+      "tag": "pl",
+      "gender": "female",
+      "image": "/assets/femaleTarrotCards/image51.svg",
+      "title": "You spark joy.",
+      "elaborate": "Playful and fun—you bring joy and whimsy to your wardrobe."
+    },
+    {
+      "tag": "mini",
+      "gender": "female",
+      "image": "/assets/femaleTarrotCards/image52.svg",
+      "title": "You master minimalism.",
+      "elaborate": "Clean and minimalist—your style embraces simplicity and clarity."
+    },
+    {
+      "tag": "trend",
+      "gender": "female",
+      "image": "/assets/femaleTarrotCards/image53.svg",
+      "title": "You set the trends.",
+      "elaborate": "Trend-forward and daring—you stay ahead of the fashion curve."
+    }
   ]
   

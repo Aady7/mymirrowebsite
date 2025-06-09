@@ -6,7 +6,7 @@ import { useStyleQuizData } from "@/lib/hooks/useStyleQuizData";
 import tarrotMapping from "@/app/data/tarrotcartmapping.json";
 
 const FashionTarot = () => {
-  const [selectedCards, setSelectedCards] = useState<Array<{ tag: string; image: string }>>([]);
+  const [selectedCards, setSelectedCards] = useState<Array<{ tag: string; image: string; title: string; elaborate: string }>>([]);
   const [flippedStates, setFlippedStates] = useState<boolean[]>([]);
   const { quizData, isLoading, error } = useStyleQuizData();
 
@@ -118,10 +118,21 @@ const FashionTarot = () => {
 
                 {/* Back */}
                 <div className="absolute inset-0 backface-hidden rotate-y-180">
-                  <div className="w-full h-full bg-black/80 rounded-2xl p-4 text-white flex items-center justify-center">
-                    <p className="text-center font-['Boston'] text-lg">
-                      {card.tag.toUpperCase()} Style Personality
-                    </p>
+                  <div className="relative w-full h-full">
+                    <Image
+                      src="/assets/tarrotback.svg"
+                      alt="Tarot Card Back"
+                      fill
+                      className="object-cover rounded-2xl"
+                    />
+                    <div className="absolute inset-0 flex flex-col items-center justify-center pl-8 pr-8 text-center">
+                      <h3 className="font-['Lora'] text-[16px] md:text-[20px] lg:text-[24px] text-[#D4AF7F] mb-4">
+                        {card.title}
+                      </h3>
+                      <p className="font-['Boston'] italic text-[11px] md:text-[12px] lg:text-[16px] text-[#F3E9DC] leading-tight md:pl-8 md:pr-8 pl-1 pr-1 pb-1" >
+                        {card.elaborate}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
