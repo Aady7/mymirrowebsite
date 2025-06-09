@@ -97,9 +97,11 @@ const FashionTarot = () => {
         <div className="flex flex-row gap-10 md:gap-16 lg:gap-20 justify-center">
           {selectedCards.map((card, index) => (
             <div
+
               key={card.tag}
               className="w-[152px] h-[240px] md:w-[200px] md:h-[320px] lg:w-[250px] lg:h-[400px] perspective cursor-pointer"
               onClick={() => handleCardFlip(index)}
+
             >
               <div
                 className={`relative w-full h-full duration-700 transform-style preserve-3d ${

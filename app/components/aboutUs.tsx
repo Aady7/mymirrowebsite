@@ -3,12 +3,12 @@ import Image from "next/image";
 const AboutUs = () => {
   return (
     <div>
-      <div className="flex flex-col space-x-6 md:flex-row gap-8 items-start max-w-7xl mx-auto px-4 py-12">
+      <div className="flex flex-col space-x-6 md:flex-row gap-8 items-start max-w-7xl mx-auto  px-8 py-10">
         <div className="md:w-1/2 space-y-6">
-          <h1 className=" font-bold text-4xl md:text-7xl font-['Boston'] ">
+          <h1 className=" font-bold sm:flex  sm:items-center sm:justify-center text-4xl md:text-7xl font-['Boston'] ">
             Get to know us
           </h1>
-          <p className="font-light text-lg md:text-lg text-left tracking-wide leading-[1.5] m-0">
+          <p className="font-light text-lg md:text-lg text-left tracking-wider leading-[1.3] m-0">
             I was just trying to buy a pair of shoes — something stylish,
             something that felt like me. But the deeper I went, the more lost I
             felt. Endless tabs. No real guidance. And no idea what would
@@ -50,7 +50,7 @@ const AboutUs = () => {
       </div>
 
       {/*nex section*/}
-      <div className="flex flex-col mt-2 space-x-6 md:flex-row gap-8 items-start max-w-7xl mx-auto px-4 py-4">
+      <div className="flex flex-col mt-2 space-x-6 md:flex-row gap-8 items-start max-w-7xl mx-auto px-8 py-4">
         <div className="md:w-1/2 space-y-2">
           <h1 className="font-['Boston'] text-3xl md:text-7xl font-bold text-left">
             Our mission
@@ -73,7 +73,7 @@ const AboutUs = () => {
           <h1 className="font-['Boston'] text-3xl md:text-7xl font-bold text-left">
             What makes us different?
           </h1>
-          <p className=" text-lg font-light leading-tight font-['Boston'] pt-7 md:text-lg text-left">
+          <p className=" text-lg font-light tracking-wide leading-[1.2] font-['Boston'] pt-7 md:text-lg text-left">
             Unlike other platforms, MyMirro isn't just another shopping site. We
             offer:
             <br /> - Personalized fashion advice—real designers helping you
@@ -101,7 +101,7 @@ const AboutUs = () => {
 
       {/*team section*/}
       <div>
-        <div className="flex flex-col mt-15 px-3 justify-between">
+        <div className="flex flex-col mt-15  justify-between px-8">
           <h1 className="font-['Boston']  test-left md:text-7xl font-bold text-3xl">
             Our Team
           </h1>
@@ -125,59 +125,61 @@ const AboutUs = () => {
         <div className="grid  sm:grid-cols-4 gap-3 sm:gap-5 mt-10">
           {/* Mayank bhaiya ka Image 1 */}
          
-          <div className="aspect-square flex-col space-y-3 rounded-lg">
+          <div className="aspect-square flex-col space-y-2 rounded-lg">
             <Image
               src="/assets/mayanksir.jpg"
               alt="Mayank Bhaiya"
               width={300}
               height={300}
-              className="w-full h-[250px] max-w-[350px] mx-auto object-cover hover:scale-105 transition-transform duration-300"
+              className="w-full h-[300px] max-w-[350px] mx-auto object-cover hover:scale-105 transition-transform duration-300"
             />
 
-            <p className="text-lg font-semibold">Mayank</p>
-            <p className="text-sm text-black">Chief executive officer</p>
+            <p className="text-lg font-semibold px-6">Mayank</p>
+            <p className="text-lg text-black px-6">Chief Executive Officer</p>
           </div>
 
           {/* Piyush bahiya ka Image 2 */}
-          <div className="aspect-square flex-col space-y-3 rounded-lg">
+          <div className="aspect-square flex-col space-y-2 rounded-lg">
             <Image
               src="/assets/ppiyush.avif"
               alt="Piyush bhaiya"
               width={300}
               height={300}
-              className="w-full h-[250]  bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
+              className="w-90 h-[300] max-w-[350px]  mx-auto object-cover hover:scale-105 transition-transform duration-300"
             />
-             <p className="text-lg font-semibold">Piyush Pratap Singh</p>
-            <p className="text-sm text-black">Chief Business officer</p>
+             <p className="text-lg font-semibold px-6">Piyush Pratap Singh</p>
+            <p className="text-lg text-black px-6">Chief Business Officer</p>
           </div>
 
           {/* Akhil bhaiya ka Image 3 */}
-          <div className="aspect-square flex-col space-y-3 rounded-lg">
+          <div className="aspect-square flex-col space-y-2 rounded-lg">
             <Image
               src="/assets/akhilBhaiya.avif"
               alt="Akhil bhaiya"
               width={300}
               height={300}
-              className="w-full h-[250]  bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
+              className="w-full h-[300] max-w-[350px]  mx-auto   object-cover hover:scale-105 transition-transform duration-300"
             />
-             <p className="text-lg font-semibold">Akhil Singh</p>
-            <p className="text-sm text-black">Chief technology officer</p>
+             <p className="text-lg font-semibold px-6">Akhil Singh</p>
+            <p className="text-lg text-black px-6 ">Chief Technology Officer</p>
+            
           </div>
 
           {/* Harshit bhaiya ka Image 4 */}
-          <div className="aspect-square flex-col space-y-3 rounded-lg">
+          <div className="aspect-square flex-col space-y-2 rounded-lg">
             <Image
               src="/assets/harshit.jpg"
               alt="Harshit bhiya"
               width={300}
               height={300}
-              className="w-full h-[250]  bg-amber-300 object-cover hover:scale-105 transition-transform duration-300"
+              className="w-full h-[300] max-w-[350px]  mx-auto    object-cover hover:scale-105 transition-transform duration-300"
             />
-             <p className="text-lg font-semibold">Harshit</p>
-            <p className="text-sm text-black">Chief Experience & Operations officer</p>
+             <p className="text-lg font-semibold px-6">Harshit</p>
+            <p className="text-lg text-black px-6">Chief Experience & Operations Officer</p>
           </div>
         </div>
       </div>
+      
     </div>
   );
 };
