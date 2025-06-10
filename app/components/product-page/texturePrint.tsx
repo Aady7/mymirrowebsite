@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import LooksSectionThree from "./looksThree";
+import LookSection from "../twoImg";
 
 export default function TexturePrint() {
   return (
@@ -90,7 +91,7 @@ export default function TexturePrint() {
       </div>
 
       {/*lookThreeSection*/}
-      <LooksSectionThree />
+      <LookSection />
 
       {/* Horizontal Line */}
       <hr className="border-thin w-[100%] border-black" />

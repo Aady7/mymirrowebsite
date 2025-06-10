@@ -20,6 +20,7 @@ export interface Look {
     features: string[];
     whyPicked: string;
   };
+  rating: number;
 }
 
 export const looksData = {
@@ -30,7 +31,8 @@ export const looksData = {
       {
         id: 1,
         brandName: "Glitchez Vivid Edge Shirt",
-        description: ["Bold Print", "Relaxed fit", "Breathable", "Street vibe"],
+        description:
+          "The Glitchez Vivid Edge Shirt pairs bold prints with a relaxed cut—effortless and unapologetically you.",
         price: 2300,
         sizes: ["S", "M", "L", "XL"],
         images: {
@@ -40,8 +42,9 @@ export const looksData = {
       },
       {
         id: 2,
-        brandName: " Kook N Keech Trousers",
-        description: "Convertible.Zip detail. Easy movement.Utility feel",
+        brandName: "Kook N Keech Trousers",
+        description:
+          "Function meets fashion. These split trousers go from full-length to street-ready—built to move.",
         price: 2300,
         sizes: ["S", "M", "L", "XL"],
         images: {
@@ -52,12 +55,8 @@ export const looksData = {
       {
         id: 3,
         brandName: "Adidas Samba OG",
-        description: [
-          "Iconic look",
-          "Leather upper",
-          "Cushioned sole",
-          "Everyday cool",
-        ],
+        description:
+          "Timeless kicks with attitude. The Samba OG fuses vintage sport with streetwear cool—every step makes a statement.",
         price: 2300,
         sizes: ["S", "M", "L", "XL"],
         images: {
@@ -70,9 +69,16 @@ export const looksData = {
     description: {
       mainText:
         "This outfit brings bold energy with laid-back structure designed for comfort, movement, and style that doesn’t try too hard.",
-      features: [],
-      whyPicked: "",
+
+      whyPicked:
+        "You lean toward bold yet balanced styles with streetwear influences. This look keeps you versatile and expressive.",
+      features: [
+        "Style Vive: Chill Relaxed fits and unfussy layers match your easygoing approach to fashion",
+        " Skin Tone: Warm Beige Soft, grounded tones work with your undertone—not against it—and bring natural balance to the full look.  ",
+        " Body Type: Hourglass Balanced pieces that flow with your shape—not against it—create a flattering silhouette. ",
+      ],
     },
+    rating: 5,
   },
   minimalElegance: {
     title: "MINIMAL ELEGANCE",
@@ -107,10 +113,15 @@ export const looksData = {
     description: {
       mainText:
         "Less is more with this carefully curated minimal look. The oversized white tee creates a clean canvas, while the wide-leg trousers add architectural interest through their considered proportions. This look proves that simplicity, when executed with precision, makes the boldest statement.",
-      features: [],
+      features: [
+        "Style Vive: ChillRelaxed fits and unfussy layers match your easygoing approach to fashion",
+        " Skin Tone: Warm Beige Soft, grounded tones work with your undertone—not against it—and bring natural balance to the full look.  ",
+        " Body Type: Hourglass Balanced pieces that flow with your shape—not against it—create a flattering silhouette. ",
+      ],
       whyPicked:
         "Your appreciation for refined minimalism and quality basics shows you understand that true style often lies in restraint.",
     },
+    rating: 5,
   },
   streetCore: {
     title: "STREET CORE",
@@ -133,87 +144,109 @@ export const looksData = {
     description: {
       mainText:
         "One piece, endless possibilities. This cargo jumpsuit is the ultimate statement in effortless street style. With its perfect blend of utility and urban edge, it's designed for those who want their clothing to work as hard as they do while making a bold style statement.",
-      features: [],
-      whyPicked: "",
+
+      features: [
+        "Style Vive: ChillRelaxed fits and unfussy layers match your easygoing approach to fashion",
+        " Skin Tone: Warm Beige Soft, grounded tones work with your undertone—not against it—and bring natural balance to the full look.  ",
+        " Body Type: Hourglass Balanced pieces that flow with your shape—not against it—create a flattering silhouette. ",
+      ],
+
+      whyPicked:
+        "Your bold approach to style and appreciation for functional fashion makes this piece perfect for your wardrobe.",
     },
+    rating: 5,
   },
-  neoNomad: {
-    title: "NEO NOMAD",
+  sleekMonochrome: {
+    title: "SLEEK MONOCHROME",
     lookNumber: 4,
     products: [
       {
         id: 7,
-        brandName: "Nomadic Layers Hoodie",
-        description: [
-          "Layered texture",
-          "Earth tones",
-          "Tech fleece",
-          "Urban drape",
-        ],
-        price: 2800,
+        brandName: "Minimal Move",
+        description:
+          "Cropped Monochrome Hoodie paired with Streamlined Joggers—effortlessly blending comfort and urban sharpness. Designed for those who thrive in simplicity with impact.",
+        price: 3800,
         sizes: ["S", "M", "L", "XL"],
         images: {
-          background: "/assets/looks-1-back.png",
-          foreground: "/assets/hoodie.png",
+          background: "/assets/looks-2-back.png",
+          foreground: "/assets/monochrome-hoodie-jogger.png",
         },
       },
     ],
-    totalPrice: 2800,
+    totalPrice: 3800,
     description: {
       mainText:
-        "Channel the energy of modern wanderers. This hoodie look is crafted to move with you across terrains—urban or otherwise.",
-      features: [],
-      whyPicked: "",
+        "Master the art of monochrome with this sleek set. Whether you're hitting the streets or the studio, this look offers an understated yet powerful silhouette.",
+      features: [
+        "Style Vive: ChillRelaxed fits and unfussy layers match your easygoing approach to fashion",
+        " Skin Tone: Warm Beige Soft, grounded tones work with your undertone—not against it—and bring natural balance to the full look.  ",
+        " Body Type: Hourglass Balanced pieces that flow with your shape—not against it—create a flattering silhouette. ",
+      ],
+      whyPicked:
+        "Your love for minimal yet striking styles makes this set an easy pick—offering versatility and a touch of edge.",
     },
+    rating: 4.5,
   },
-
-  monochromeMotion: {
-    title: "MONOCHROME MOTION",
+  retroRewind: {
+    title: "RETRO REWIND",
     lookNumber: 5,
     products: [
       {
         id: 8,
-        brandName: "RunTrack Monochrome Set",
-        description: ["Streamlined", "Performance-ready", "Minimal logo"],
-        price: 3400,
+        brandName: "Vibe Vault",
+        description:
+          "Throwback Varsity Jacket with Contrast Detailing—crafted for the modern nostalgic. Pair with relaxed-fit jeans and chunky sneakers for an effortlessly cool vibe.",
+        price: 5200,
         sizes: ["S", "M", "L", "XL"],
         images: {
-          background: "/assets/looks-1-back.png",
-          foreground: "/assets/monochrome.png",
+          background: "/assets/looks-3-back.png",
+          foreground: "/assets/varsity-jacket.png",
         },
       },
     ],
-    totalPrice: 3400,
+    totalPrice: 5200,
     description: {
       mainText:
-        "Sleek lines and movement in focus. This monochrome set is the go-to for elevated street-active hybrids.",
-      features: [],
-      whyPicked: "",
+        "Channel vintage energy with this elevated varsity jacket. Whether layered or worn solo, it’s a guaranteed head-turner.",
+      features: [
+        "Style Vive: ChillRelaxed fits and unfussy layers match your easygoing approach to fashion",
+        " Skin Tone: Warm Beige Soft, grounded tones work with your undertone—not against it—and bring natural balance to the full look.  ",
+        " Body Type: Hourglass Balanced pieces that flow with your shape—not against it—create a flattering silhouette. ",
+      ],
+      whyPicked:
+        "Your love for timeless statement pieces and appreciation for retro styles make this the ideal choice.",
     },
+    rating: 4.8,
   },
-
-  vibrantPulse: {
-    title: "VIBRANT PULSE",
+  grittyLayers: {
+    title: "GRITTY LAYERS",
     lookNumber: 6,
     products: [
       {
         id: 9,
-        brandName: "Pulse Pop Jacket",
-        description: ["Colorblock", "Retro vibe", "Energetic feel"],
-        price: 3100,
+        brandName: "Layered Code",
+        description:
+          "Oversized Graphic Tee layered with Lightweight Technical Vest—combining art and utility for the streets.",
+        price: 3700,
         sizes: ["S", "M", "L", "XL"],
         images: {
-          background: "/assets/looks-1-back.png",
-          foreground: "/assets/pulse-jacket.png",
+          background: "/assets/looks-4-back.png",
+          foreground: "/assets/layered-tee-vest.png",
         },
       },
     ],
-    totalPrice: 3100,
+    totalPrice: 3700,
     description: {
       mainText:
-        "Bold hues and playful contrast. This look speaks to the high-energy streetwear enthusiast.",
-      features: [],
-      whyPicked: "",
+        "A look built on contrasts—bold graphics paired with functional layering. Designed to let your personality shine through every street corner.",
+      features: [
+        "Style Vive: ChillRelaxed fits and unfussy layers match your easygoing approach to fashion",
+        " Skin Tone: Warm Beige Soft, grounded tones work with your undertone—not against it—and bring natural balance to the full look.  ",
+        " Body Type: Hourglass Balanced pieces that flow with your shape—not against it—create a flattering silhouette. ",
+      ],
+      whyPicked:
+        "Because your style thrives on individuality and utility, this layered look offers the perfect canvas to express both.",
     },
+    rating: 4.6,
   },
 };

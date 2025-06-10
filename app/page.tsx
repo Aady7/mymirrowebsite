@@ -1,4 +1,3 @@
-import Stylist from "@/app/components/recommendations/stylist";
 import StylistHome from "@/app/components/stylisthome";
 import TestimonialSection from "@/app/components/testimonialSection";
 import { Button } from "@/components/ui/button";
@@ -120,7 +119,7 @@ const page = async () => {
                 </h3>
                 <p className="font-light text-sm">
                   Our fashion experts handpick styles <br />
-                  tailored to you curated just for you
+                  tailored to you  
                 </p>
               </div>
 
@@ -161,7 +160,7 @@ const page = async () => {
           
 
         </section>
-        <div className="mt-[-3rem]"> 
+        <div className="mt-[-3rem] mb-10"> 
         {/* Stylist section */}
           <StylistHome/>
           </div>

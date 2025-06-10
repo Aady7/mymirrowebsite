@@ -1,12 +1,12 @@
 "use client";
+import { looksData } from "@/app/utils/lookData";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import { looksData } from "@/app/utils/lookData";
-import { useParams } from "next/navigation";
 
 interface LooksSectionThreeProps {
   currentProductId: number;
+  
 }
 
 const LooksSectionThree = ({ currentProductId }: LooksSectionThreeProps) => {
