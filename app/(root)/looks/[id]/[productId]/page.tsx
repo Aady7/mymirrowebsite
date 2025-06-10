@@ -123,7 +123,7 @@ export default function ProductPage() {
       </div>
 
       {/* Horizontal Line */}
-      <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8">
+      <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8 mt-[-3rem]">
         <hr className="w-full border border-black mt-[30px]" />
       </div>
 

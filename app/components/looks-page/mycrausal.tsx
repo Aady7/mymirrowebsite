@@ -32,11 +32,39 @@ const MyCarousel = () => {
         1024: { slidesPerView: 2 },
       }}
       pagination={{ clickable: true }}
-      navigation={false} // ✅ enable navigation arrows
+      navigation={true}
       loop={true}
-       
-      className="w-full"
+      className="w-full relative group"
     >
+      <style jsx global>{`
+        .swiper-button-next,
+        .swiper-button-prev {
+          width: 25px !important;
+          height: 25px !important;
+          background: none !important;
+          opacity: 0;
+          transition: opacity 0.3s;
+        }
+        
+        .swiper-button-next:after,
+        .swiper-button-prev:after {
+          font-size: 12px !important;
+          font-weight: bold;
+          color: #333;
+        }
+
+        .swiper-button-next:active,
+        .swiper-button-prev:active,
+        .swiper-button-next:focus,
+        .swiper-button-prev:focus {
+          background: none !important;
+        }
+
+        .group:hover .swiper-button-next,
+        .group:hover .swiper-button-prev {
+          opacity: 1;
+        }
+      `}</style>
       {looks.map(({ lookId, ...look }) => (
         <SwiperSlide key={lookId}>
           <div className="p-1">

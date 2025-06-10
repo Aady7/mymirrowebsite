@@ -47,11 +47,11 @@ const StarRating = ({ userId, lookId }: { userId: string; lookId: number }) => {
   };
 
   return (
-    <div className="flex justify-center gap-2 my-4 w-full max-w-xs mx-auto">
+    <div className="flex justify-center gap-10 my-4 w-full max-w-xs mx-auto">
       {[1, 2, 3, 4, 5].map((star) => (
         <FaStar
           key={star}
-          size={30}
+          size={40}
           className={`cursor-pointer transition-colors ${
             rating >= star ? "text-yellow-400" : "text-gray-300"
           }`}
