@@ -23,6 +23,7 @@ const StylistHome = () => {
                 proportions, and personality — to build a wardrobe that knows
                 you better than you know yourself.
               </span>
+              <br/>
               <span className="block max-w-[60%] mx-auto">
                 This is styling, redefined. Personal, intentional, and built
                 around you.

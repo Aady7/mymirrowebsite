@@ -151,7 +151,7 @@ export default function ProductPage() {
             />
             <p className="text-xs text-left mt-2">FLORA PRINT SHIRT</p>
             <p className="text-xs mt-4 font-thin">$ 69</p>
-            <Button className=" w-2/3 h-7 bg-black text-white text-xs py-[10px] mt-2 rounded-none">
+            <Button className=" w-2/3 h-6 bg-black text-white text-xs py-[10px] mt-2 rounded-none">
               VIEW MORE
             </Button>
           </div>
@@ -167,7 +167,7 @@ export default function ProductPage() {
             />
             <p className="text-xs text-left mt-2">FLORA PRINT SHIRT</p>
             <p className="text-xs mt-4 font-thin">$ 69</p>
-            <Button className=" w-2/3 h-7 bg-black text-white text-xs py-[10px] mt-2 rounded-none">
+            <Button className=" w-2/3 h-6 bg-black text-white text-xs py-[10px] mt-2 rounded-none">
               VIEW MORE
             </Button>
           </div>
@@ -186,7 +186,7 @@ export default function ProductPage() {
             />
             <p className="text-xs text-left mt-4">FLORA PRINT SHIRT</p>
             <p className="text-xs mt-4 font-thin">$ 69</p>
-            <Button className=" w-2/3 h-7   bg-black text-white text-xs py-[10px] mt-2 rounded-none">
+            <Button className=" w-2/3 h-6   bg-black text-white text-xs py-[10px] mt-2 rounded-none">
               VIEW MORE
             </Button>
           </div>
@@ -202,7 +202,7 @@ export default function ProductPage() {
             />
             <p className="text-xs text-left mt-4">FLORA PRINT SHIRT</p>
             <p className="text-xs mt-4 font-thin">$ 69</p>
-            <Button className="w-2/3 h-7  bg-black text-white text-xs py-[10px] mt-2 rounded-none">
+            <Button className="w-2/3 h-6  bg-black text-white text-xs py-[10px] mt-2 rounded-none">
               VIEW MORE
             </Button>
           </div>

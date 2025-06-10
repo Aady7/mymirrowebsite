@@ -84,6 +84,7 @@ const LookPage = () => {
       if (!session) {
         setError('Please sign in to add items to cart');
         return;
+        
       }
 
       // Add all products to cart

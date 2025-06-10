@@ -22,7 +22,7 @@ export const productList : product[]= [
       "Clean and versatile, these slim-fit cotton twill trousers from H&M are built for comfort and easy styling all day long.",
   },
   {
-    id: 1,
+    id: 3,
     title: "look 1",
     image: "/assets/look-11.png",
     description:

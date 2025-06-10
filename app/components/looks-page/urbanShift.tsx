@@ -4,10 +4,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { FaCartArrowDown } from "react-icons/fa";
 import { FaIndianRupeeSign } from "react-icons/fa6";
+import StarRating from "../starRating";
 import MyCarousel from "./mycrausal";
+import { supabase } from "@/lib/supabase";
 
-const UrbanShift = () => {
+const UrbanShift = async() => {
   const lookData = looksData.streetCore;
+  const { data: { user } } = await supabase.auth.getUser();
   return (
     <>
       {/* Header */}
@@ -109,25 +112,26 @@ const UrbanShift = () => {
         </h1>
       </div>
 
+  
       {/* Buy Now / Add to Cart */}
-      <div className="flex flex-row gap-4 mt-6 mx-8 mb-6">
-        <button className="flex items-center h-9 w-32 justify-center text-sm bg-black text-white rounded-none">
+      <div className="flex gap-4 mt-6 w-[90%] mx-auto">
+        <button className="flex-[0.35] h-9 text-sm bg-black text-white rounded-none">
           Buy Now
         </button>
-        <Link href="/cart">
-          <button className="bg-black h-9 w-60 text-white text-sm rounded-none">
+        <Link href="/cart" className="flex-[0.65]">
+          <button className="w-full h-9 text-sm bg-black text-white rounded-none">
             Add To Cart
           </button>
         </Link>
       </div>
 
       {/* Divider */}
-      <hr className="border-t-1 border-black w-[90%] mx-auto mt-6 mb-6" />
+      <hr className="border-t border-black w-[90%] mx-auto mt-6 mb-6" />
 
       {/* Description */}
       <div className="px-4 md:px-6 lg:px-8 py-6">
         <h1
-          className="text-lg text-black tracking-wide font-thin mb-4"
+          className="text-xs text-black tracking-wide font-thin mb-4"
           style={{ fontFamily: "Boston" }}
         >
           DESCRIPTION
@@ -161,9 +165,17 @@ const UrbanShift = () => {
           <br />
           {lookData.description.whyPicked}
         </p>
+         {/*rating */}
+          {user && (
+            <StarRating userId={user.id} lookId={lookData.lookNumber} />
+          )}
+
 
         <hr className="border-t-1 border-black w-[98%] mx-auto mt-8" />
       </div>
+      
+      
+
 
       {/* You May Also Like */}
       <div className="text-left px-[24px] md:px-6 lg:px-8 mt-2 mb-[30px]">
