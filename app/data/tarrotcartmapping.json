@@ -1,80 +1,90 @@
-[
+
+  [
     {
       "tag": "ex",
       "gender": "female",
-      "image": "/assets/femaleTarrotCards/image40.svg",
-      "title": "You thrive in expression.",
-      "elaborate": "Bold, vibrant, and expressive—your style mirrors your lively spirit."
+      "image": "/assets/femaleTarrotCards/image163.svg",
+      "title": "Creative Enchantress",
+      "elaborate": "Your style tells stories that captivate hearts and inspire creative souls."
     },
     {
       "tag": "conf",
       "gender": "female",
-      "image": "/assets/femaleTarrotCards/image41.svg",
-      "title": "You radiate confidence.",
-      "elaborate": "Poised and self-assured—your fashion speaks with quiet power."
+      "image": "/assets/femaleTarrotCards/image164.svg",
+      "title": "Radiant Empress",
+      "elaborate": "You wear confidence like a crown, turning every sidewalk into your runway."
     },
     {
       "tag": "bold",
       "gender": "female",
-      "image": "/assets/femaleTarrotCards/image42.svg",
-      "title": "You own the spotlight.",
-      "elaborate": "Fearless and daring—you command attention with every outfit."
+      "image": "/assets/femaleTarrotCards/image165.svg",
+      "title": "Fearless Goddess",
+      "elaborate": "You transform audacity into elegance, making brave choices look effortless."
     },
     {
       "tag": "sc",
       "gender": "female",
-      "image": "/assets/femaleTarrotCards/image43.svg",
-      "title": "You embody sophistication.",
-      "elaborate": "Timeless and sophisticated—your style exudes classic grace."
+      "image": "/assets/femaleTarrotCards/image166.svg",
+      "title": "Magnetic Socialite",
+      "elaborate": "Your style creates instant connections, turning strangers into admirers."
     },
     {
       "tag": "trad",
       "gender": "female",
-      "image": "/assets/femaleTarrotCards/image44.svg",
-      "title": "You honor tradition.",
-      "elaborate": "Rooted in tradition—your style honors the beauty of heritage."
+      "image": "/assets/femaleTarrotCards/image167.svg",
+      "title": "Graceful Heritage",
+      "elaborate": "You honor timeless femininity while adding your own sophisticated twist."
     },
     {
       "tag": "stat",
       "gender": "female",
-      "image": "/assets/femaleTarrotCards/image45.svg",
-      "title": "You make statements.",
-      "elaborate": "You make statements—your style turns heads and sparks conversation."
+      "image": "/assets/femaleTarrotCards/image168.svg",
+      "title": "Luxury Curator",
+      "elaborate": "You collect prestige pieces like precious gems, crafting enviable elegance."
     },
     {
       "tag": "comf",
       "gender": "female",
-      "image": "/assets/femaleTarrotCards/image46.svg",
-      "title": "You embrace comfort.",
-      "elaborate": "Relaxed and effortless—you value comfort without sacrificing style."
+      "image": "/assets/femaleTarrotCards/image169.svg",
+      "title": "Serene Goddess",
+      "elaborate": "You've perfected the balance of comfort and chic, making ease look elegant."
     },
     {
       "tag": "prac",
       "gender": "female",
-      "image": "/assets/femaleTarrotCards/image47.svg",
-      "title": "You value practicality.",
-      "elaborate": "Practical and functional—you master everyday chic with ease."
+      "image": "/assets/femaleTarrotCards/image170.svg",
+      "title": "Smart Strategist",
+      "elaborate": "Your wardrobe works as hard as you do, proving function can be fabulous."
     },
     {
       "tag": "pl",
       "gender": "female",
-      "image": "/assets/femaleTarrotCards/image51.svg",
-      "title": "You spark joy.",
-      "elaborate": "Playful and fun—you bring joy and whimsy to your wardrobe."
+      "image": "/assets/femaleTarrotCards/image171.svg",
+      "title": "Organized Oracle",
+      "elaborate": "You orchestrate outfits with foresight, creating flawless fashion symphonies."
     },
     {
       "tag": "mini",
       "gender": "female",
-      "image": "/assets/femaleTarrotCards/image52.svg",
-      "title": "You master minimalism.",
-      "elaborate": "Clean and minimalist—your style embraces simplicity and clarity."
+      "image": "/assets/femaleTarrotCards/image172.svg",
+      "title": "Pure Visionary",
+      "elaborate": "You distill style to its essence, finding power in perfectly chosen pieces."
     },
     {
       "tag": "trend",
       "gender": "female",
-      "image": "/assets/femaleTarrotCards/image53.svg",
-      "title": "You set the trends.",
-      "elaborate": "Trend-forward and daring—you stay ahead of the fashion curve."
+      "image": "/assets/femaleTarrotCards/image173.svg",
+      "title": "Style Sorceress",
+      "elaborate": "You conjure tomorrow’s trends today, casting spells with cutting-edge fashion."
+    },
+    {
+      "tag": "rb",
+      "gender": "female",
+      "image": "/assets/femaleTarrotCards/image175.svg",
+      "title": "Rebel Queen",
+      "elaborate": "You overthrow fashion conventions with grace, making rebellion look refined."
     }
   ]
+  
+  
   

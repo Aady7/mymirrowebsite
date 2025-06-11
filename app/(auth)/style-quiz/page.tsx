@@ -227,7 +227,7 @@ const StyleQuiz: React.FC = () => {
       const styleQuizId = localStorage.getItem('styleQuizId');
       
       const cleanedData: DynamicStyleQuizData = {
-        styleQuizId,
+        styleQuizId: styleQuizId || undefined,
         name: formValues.name.trim(),
         phone: formValues.phone?.replace(/\D/g, '') || '',
         gender: formValues.gender,
@@ -392,108 +392,88 @@ const StyleQuiz: React.FC = () => {
     // Update form values first
     setFormValues(prev => {
       const newVals = { ...prev };
-      if (type === 'checkbox') {
+      
+      // Handle personality questions (multi-select)
+      if (type === 'checkbox' && (currentStep >= 2 && currentStep <= 4)) {
+        const currentArray = Array.isArray(prev[name]) ? [...prev[name]] : [];
+        if (checked) {
+          currentArray.push(value);
+        } else {
+          const index = currentArray.indexOf(value);
+          if (index > -1) {
+            currentArray.splice(index, 1);
+          }
+        }
+        newVals[name] = currentArray;
+      }
+      // Handle other checkbox inputs
+      else if (type === 'checkbox') {
         const arr = Array.isArray(prev[name]) ? [...prev[name]] : [];
         if (checked) arr.push(value);
         else arr.splice(arr.indexOf(value), 1);
         newVals[name] = arr;
-      } else {
+      }
+      // Handle all other inputs
+      else {
         newVals[name] = value;
       }
       return newVals;
     });
 
-    // Auto-next for single-option questions (radio buttons)
-    if (type === 'radio') {
-      // Skip auto-next for steps that need multiple inputs or selections
-      const skipAutoNext = [
-        'name', // Name is required
-        'gender',
-        'phone', // Phone number needs a "Next" click to confirm
-        'otp',   // OTP verification needs a "Next" click to confirm
-        'feedback', // Feedback is optional
-        'colorAnalysis',
-        'minimalistic', // Color analysis needs explicit next button click
-       // Size preferences step has multiple inputs
-       // Size preferences step has multiple inputs
-      ].includes(name);
+    // Skip auto-next for steps that need multiple inputs or selections
+    const skipAutoNext = [
+      'name',
+      'gender',
+      'phone',
+      'otp',
+      'feedback',
+      'colorAnalysis',
+      'minimalistic',
+      
+    ].includes(name);
 
-      // Also skip if the step is the GoToStyle step (multiple checkboxes)
-      const isGoToStyleStep = currentStep === 7;
-      
-      // Or if it's a dynamic style preference step (multiple options)
-      const isDynamicStyleStep = currentStep > 7 && currentStep <= 7 + dynamicSteps.length;
-      
-      if(currentStep===2){
-        const updatedValues = {...formValues, [name]: value};
-        const bothPersonalityQuestionsAnswered = 
-          !!updatedValues.weekendPreference  && !!updatedValues.friendCompliments;
-        if(!bothPersonalityQuestionsAnswered){
-          console.log("Not auto-advancing yet - waiting for both personality questions to be answered");
-          return; // Skip auto-next until both are answered
-        }
-      }
-      
-      // Special handling for step 3 (social questions)
-      if (currentStep === 3) {
-        // Check if both social questions are answered after this update
-        const updatedValues = {...formValues, [name]: value};
-        const bothSocialQuestionsAnswered = 
-          !!updatedValues.shoppingStyle && !!updatedValues.wardrobeContent;
-        
-        if (!bothSocialQuestionsAnswered) {
-          console.log("Not auto-advancing yet - waiting for both social questions to be answered");
-          return; // Skip auto-next until both are answered
-        }
-      }
-
-      if(currentStep===4){
-        const updatedValues = {...formValues, [name]: value};
-        const bothWorkQuestionsAnswered = 
-          !!updatedValues.workspaceStyle && !!updatedValues.workOutfit;
-        if(!bothWorkQuestionsAnswered){
-          console.log("Not auto-advancing yet - waiting for both work questions to be answered");
-          return; // Skip auto-next until both are answered
-        }
-      }
-
-      if(currentStep==6){
-        const updatedValues = {...formValues, [name]: value};
-        const bothSizeQuestionsAnswered = 
-          !!updatedValues.upperWear && !!updatedValues.waistSize;
-        
-        if (!bothSizeQuestionsAnswered) {
-          console.log("Not auto-advancing yet - waiting for both size questions to be answered");
-          return; // Skip auto-next until both are answered
-        }
-      }
-      
+    // Also skip if the step is the GoToStyle step (multiple checkboxes)
+    const isGoToStyleStep = currentStep === 7;
     
-      
-      if (!skipAutoNext && !isGoToStyleStep && !isDynamicStyleStep) {
-        // Auto advance for most radio button selections
-        console.log(`Will auto-advance after selecting ${name}=${value} at step ${currentStep}`);
-        
-        // Add a small delay to allow state to update
-        setTimeout(async () => {
-          console.log(`Auto-advancing now from step ${currentStep}`);
-          
-          try {
-            // First save the data
-            await sendFormData();
-            console.log("Data saved successfully");
-            
-            // Directly advance the step without validation
-            console.log(`Advancing from ${currentStep} to ${currentStep + 1}`);
-            setCurrentStep(prev => prev + 1);
-            setMaxCompletedStep(prev => Math.max(prev, currentStep));
-          } catch (error) {
-            console.error('Error during auto-advance:', error);
-          }
-        }, 500);
+    // Or if it's a dynamic style preference step (multiple options)
+    const isDynamicStyleStep = currentStep > 7 && currentStep <= 7 + dynamicSteps.length;
+    
+    // Skip auto-next for personality questions (steps 2-4) since they're now multi-select
+    const isPersonalityStep = currentStep >= 2 && currentStep <= 4;
+
+    if(currentStep === 6){
+      const updatedValues={...formValues, [name]: value}
+      const bothSizeQuestionsAnswered= 
+      !!updatedValues.upperWear && !!updatedValues.waistSize;
+      if(!bothSizeQuestionsAnswered){
+        console.log("Both size questions must be answered before proceeding to the next step");
+        return;
       }
     }
-  }, [sendFormData, currentStep, setCurrentStep, setMaxCompletedStep, formValues]);
+
+    if (!skipAutoNext && !isGoToStyleStep && !isDynamicStyleStep && !isPersonalityStep) {
+      // Auto advance for most radio button selections
+      console.log(`Will auto-advance after selecting ${name}=${value} at step ${currentStep}`);
+      
+      // Add a small delay to allow state to update
+      setTimeout(async () => {
+        console.log(`Auto-advancing now from step ${currentStep}`);
+        
+        try {
+          // First save the data
+          await sendFormData();
+          console.log("Data saved successfully");
+          
+          // Directly advance the step without validation
+          console.log(`Advancing from ${currentStep} to ${currentStep + 1}`);
+          setCurrentStep(prev => prev + 1);
+          setMaxCompletedStep(prev => Math.max(prev, currentStep));
+        } catch (error) {
+          console.error('Error during auto-advance:', error);
+        }
+      }, 500);
+    }
+  }, [sendFormData, currentStep, setCurrentStep, setMaxCompletedStep]);
 
   const renderStepContent = () => {
     const content = (() => {
@@ -517,7 +497,6 @@ const StyleQuiz: React.FC = () => {
             formValues={formValues}
             handleChange={handleChange}
             questionIndex={personalityIdx}
-            onOptionSelect={() => nextStep()}
           />
         );
       }
