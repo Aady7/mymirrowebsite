@@ -2,267 +2,210 @@
 import StylistSays from '@/app/components/recommendations/stylistSays';
 import TexturePrint from '@/app/components/product-page/texturePrint';
 import UrbanShift from '@/app/components/looks-page/urbanShift';
-import { useParams } from 'next/navigation';
+import { useParams, notFound } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
-import Image from "next/image";
-import Link from "next/link";
-import { FaCartArrowDown } from "react-icons/fa";
-import { FaIndianRupeeSign } from "react-icons/fa6";
-import MyCarousel from "@/app/components/looks-page/mycrausal";
-import { looksData } from "@/app/utils/lookData";
-import { notFound } from "next/navigation";
+import Image from 'next/image';
+import Link from 'next/link';
+import { FaCartArrowDown } from 'react-icons/fa';
+import { FaIndianRupeeSign } from 'react-icons/fa6';
+import MyCarousel from '@/app/components/looks-page/mycrausal';
 import { addToCart } from '@/lib/utils/cart';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { Button } from '@/components/ui/button';
-import StarRating from '@/app/components/starRating';
+import { useFetchLookProducts } from '@/lib/hooks/useFetchLookProducts';
+
+interface Product {
+  id: number;
+  created_at: string;
+  title: string;
+  name: string;
+  overallRating: number;
+  price: number;
+  mrp: number;
+  discount: string;
+  sizesAvailable: string;
+  productImages: string;
+  specifications: string;
+}
+
+interface Look {
+  lookNumber: number;
+  lookName: string;
+  lookDescription: string;
+  productids: number[];
+  products: Product[];
+  totalPrice: number;
+}
 
 interface LoadingState {
-  [key: number]: boolean;
-  all?: boolean;
+  [key: string]: boolean;
 }
 
 const LookPage = () => {
   const { id } = useParams();
-  const lookData = looksData[id as keyof typeof looksData];
-  const [selectedSizes, setSelectedSizes] = useState<{ [key: number]: string }>({});
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<LoadingState>({});
   const { getSession } = useAuth();
-  const [session, setSession] = useState<any>(null);
+  const [look, setLook] = useState<Look | null>(null);
+  const [selectedSizes, setSelectedSizes] = useState<Record<number, string>>({});
+  const [loading, setLoading] = useState<LoadingState>({});
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const initSession = async () => {
-      const { session: currentSession } = await getSession();
-      setSession(currentSession);
+    const fetchLook = async () => {
+      try {
+        const lookData = await useFetchLookProducts(Number(id));
+        const data = Array.isArray(lookData) ? lookData[0] : lookData;
+        if (!data) throw new Error('Look not found');
+
+        // Calculate total price from products
+        const totalPrice = data.products.reduce((sum, product) => sum + product.price, 0);
+
+        setLook({
+          ...data,
+          totalPrice
+        });
+      } catch (err) {
+        notFound();
+      }
     };
-    initSession();
-  }, [getSession]);
+    if (id) fetchLook();
+  }, [id]);
 
-  if (!lookData) {
-    notFound();
-  }
+  if (!look) return <div>Loading...</div>;
 
-  const handleAddProductToCart = async (productIndex: number) => {
-    const selectedSize = selectedSizes[productIndex];
-    if (!selectedSize) {
-      setError('Please select a size first');
-      return;
-    }
-
-    setLoading(prev => ({ ...prev, [productIndex]: true }));
-    setError(null);
-
+  const parseImages = (imgs: string): string[] => {
     try {
-      const { session } = await getSession();
-      if (!session) {
-        setError('Please sign in to add items to cart');
-        return;
-      }
-
-      const product = lookData.products[productIndex];
-      const { success, error } = await addToCart(
-        session.user.id,
-        product.id,
-        selectedSize
-      );
-
-      if (success) {
-        alert('Product added to cart successfully!');
-      } else {
-        setError(error || 'Failed to add product to cart');
-      }
-    } catch (error) {
-      console.error('Error adding product to cart:', error);
-      setError('Failed to add product to cart. Please try again.');
-    } finally {
-      setLoading(prev => ({ ...prev, [productIndex]: false }));
+      const arr = JSON.parse(imgs);
+      return Array.isArray(arr) ? arr : [];
+    } catch {
+      return [];
     }
   };
 
-  const handleAddLookToCart = async () => {
-    // Check if sizes are selected for all products
-    const allSizesSelected = lookData.products.every((_, index) => selectedSizes[index]);
-    if (!allSizesSelected) {
-      setError('Please select sizes for all products');
-      return;
-    }
+  const handleAddProduct = async (idx: number) => {
+    const size = selectedSizes[idx];
+    if (!size) { setError('Please select a size'); return; }
+    setLoading(prev => ({ ...prev, [idx]: true }));
+    setError(null);
+    const { session } = await getSession();
+    if (!session) { setError('Sign in first'); setLoading(prev => ({ ...prev, [idx]: false })); return; }
+    const prod = look.products[idx];
+    const { success, error: e } = await addToCart(session.user.id, prod.id, size);
+    if (!success) setError(e || 'Failed to add');
+    setLoading(prev => ({ ...prev, [idx]: false }));
+  };
 
+  const handleAddAll = async () => {
+    const allSelected = look.products.every((_, i) => selectedSizes[i]);
+    if (!allSelected) { setError('Select all sizes'); return; }
     setLoading(prev => ({ ...prev, all: true }));
     setError(null);
+    const { session } = await getSession();
+    if (!session) { setError('Sign in first'); setLoading(prev => ({ ...prev, all: false })); return; }
+    const results = await Promise.all(
+      look.products.map((p, i) => addToCart(session.user.id, p.id, selectedSizes[i]))
+    );
+    if (!results.every(r => r.success)) setError('Some items failed');
+    setLoading(prev => ({ ...prev, all: false }));
+  };
 
+  const parseSizes = (sizesStr: string): string[] => {
     try {
-      const { session } = await getSession();
-      if (!session) {
-        setError('Please sign in to add items to cart');
-        return;
-
-      }
-
-      // Add all products to cart
-      const results = await Promise.all(
-        lookData.products.map((product, index) =>
-          addToCart(
-            session.user.id,
-            product.id,
-            selectedSizes[index]
-          )
-        )
-      );
-
-      const allSuccess = results.every(result => result.success);
-      if (allSuccess) {
-        alert('All products from the look added to cart successfully!');
-      } else {
-        setError('Failed to add some products to cart');
-      }
-    } catch (error) {
-      console.error('Error adding look to cart:', error);
-      setError('Failed to add look to cart. Please try again.');
-    } finally {
-      setLoading(prev => ({ ...prev, all: false }));
+      // First try to parse as JSON
+      const parsedSizes = JSON.parse(sizesStr);
+      return Array.isArray(parsedSizes) ? parsedSizes : [];
+    } catch {
+      // If not JSON, split by comma and clean up
+      return sizesStr
+        .split(',')
+        .map(s => s.trim())
+        .filter(s => s !== '');
     }
   };
 
   return (
     <>
-      <div>
-        <div className="flex items-center justify-center mb-2">
-          <span className="text-[26px] font-thin">{lookData.title}</span>
-          <hr className="border-black border-1 w-[30px] mx-3" />
-          <span className="text-[26px] font-thin">LOOK {lookData.lookNumber}</span>
-        </div>
-
-        <hr className="border-t-1 border-black w-[90%] mx-auto" />
+      {/* Header */}
+      <div className="flex items-center justify-center mb-2">
+        <span className="text-[26px] font-thin">{look.lookName.toUpperCase()}</span>
+        <hr className="border-black border-1 w-[30px] mx-3" />
+        <span className="text-[26px] font-thin">LOOK {look.lookNumber}</span>
       </div>
+      <hr className="border-t-1 border-black w-[90%] mx-auto" />
 
-      <div>
-        {lookData.products.map((product, index) => (
-          <div key={index} className={`flex flex-row lg:flex-row w-full mt-8 gap-1 ${index % 2 === 1 ? 'flex-row-reverse' : ''}`}>
-            <div className="relative w-[70%] h-[260px] lg:w-[70%] overflow-hidden">
-              <Image
-                src={product.images.background}
-                alt="Background"
-                fill
-                className="object-cover absolute z-0"
-              />
-              <Image
-                src={product.images.foreground}
-                alt="Product"
-                fill
-                className="object-contain z-10"
-              />
+      {/* Products */}
+      {look.products.map((product, idx) => {
+        const imgs = parseImages(product.productImages);
+        const firstImg = imgs[0] || '/fallback.jpg';
+        const sizes = parseSizes(product.sizesAvailable);
+        
+        return (
+          <div key={product.id} className={`flex w-full mt-8 mb-2 gap-2 ${idx % 2 ? 'flex-row-reverse' : ''}`}>            
+            <div className="relative w-[221px] h-[260.5px] overflow-hidden">
+              <Image src={firstImg} alt={product.name} fill className="object-cover" />
             </div>
-
-            <div className="flex flex-col h-[200px] w-[60%] lg:w-[20%]">
-              <div>
-                <h1 className="text-[18px] px-5 flex tracking-normal leading-[1] items-center justify-center font-thin mb-[8px]">
-                  {product.brandName}
-                </h1>
-                <p className="w-2/3 mx-6 font-[Boston] text-[12px] tracking-wide not-italic font-light leading-[1.2] mb-[40px]">
-                  {product.description}
-                </p>
-                <h4 className="flex text-black px-4 font-[Boston] text-[20px] not-italic font-semibold leading-normal [font-variant:all-small-caps]">
-                  <FaIndianRupeeSign className="h-4 mt-2" /> {product.price}
-                </h4>
-                <div className="flex flex-row gap-4 px-5">
-                  <h4 className="text-black font-[Boston] text-[20px] not-italic font-light leading-normal [font-variant:all-small-caps]">
-                    SIZE
-                  </h4>
-                  <ul className="flex flex-row gap-4">
-                    {product.sizes.map((size, idx) => (
-
-                      <li
-                        key={idx}
-                        onClick={() => setSelectedSizes(prev => ({ ...prev, [index]: size }))}
-                        className={`text-black flex items-centre justify-centre font-[Boston] text-[20px] not-italic font-light leading-normal [font-variant:all-small-caps] cursor-pointer hover:underline
-                          ${selectedSizes[index] === size ? 'font-bold' : ''}`}
-                      >
-                        {size}
-                      </li>
-
-                    ))}
-                  </ul>
-                </div>
+            <div className="relative flex flex-col flex-1 max-w-[400px] h-[260.5px] pl-2 pr-2">
+              <h1 className="text-lg text-center font-thin mb-1 mt-0 text-[14px]">{product.name}</h1>
+              <p className="font-[Boston] text-[12px] font-medium leading-normal mb-1 pr-4 mx-2">
+                {product.specifications}
+              </p>
+              <h4 className="flex text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-2">
+                <FaIndianRupeeSign className="h-4 mt-2" /> {product.price}
+              </h4>
+              <div className="flex gap-5 mb-2">
+                <span className="text-black font-[Boston] text-[14px] font-light [font-variant:all-small-caps]">SIZE</span>
+                <ul className="flex gap-2">
+                  {sizes.map(sz => (
+                    <li key={sz} onClick={() => setSelectedSizes(prev => ({ ...prev, [idx]: sz }))}
+                      className={`cursor-pointer text-black font-[Boston] text-[14px] font-light [font-variant:all-small-caps] hover:font-bold transition-all ${selectedSizes[idx]===sz?'font-bold':''}`}
+                    >{sz}</li>
+                  ))}
+                </ul>
               </div>
-
-              <div className="flex flex-row gap-[8px] mt-[15px] mx-5">
-                {lookData.products.length > 1 && (
-                  <button
-                    onClick={() => handleAddProductToCart(index)}
-                    disabled={loading[index]}
-                    className="flex items-center h-7 w-10 justify-center gap-2 bg-black text-white rounded-none disabled:bg-gray-400"
-                  >
-                    <FaCartArrowDown className="w-4" />
-                  </button>
-                )}
-                <Link href={`/looks/${id}/${index + 1}`}>
-                  <button className="bg-black h-7 w-25 text-white text-xs rounded-none">
-                    View Product
-                  </button>
+              <div className="absolute bottom-0 left-2 right-2 flex gap-2">
+                <button onClick={() => handleAddProduct(idx)} disabled={loading[idx]}
+                  className="flex items-center h-8 w-12 justify-center bg-black text-white rounded-none disabled:bg-gray-400 hover:bg-gray-800 transition-colors">
+                  <FaCartArrowDown className="w-4" />
+                </button>
+                <Link href={`/products/${product.id}`} className="flex-1">
+                  <button className="w-full bg-black h-8 text-white text-sm rounded-none hover:bg-gray-800 transition-colors">View Product</button>
                 </Link>
               </div>
             </div>
           </div>
-        ))}
+        );
+      })}
 
-        <div>
-          <h1 className="flex font-thin text-2xl font-['Boston'] text-left mt-8 mx-6">
-            <FaIndianRupeeSign className="h-5 mt-2" /> {lookData.totalPrice}
-          </h1>
-        </div>
-
-        <div className="flex flex-row gap-3 mt-[30px] w-[90%] max-w-[800px] mx-auto">
-          <button className="flex items-center h-7 justify-center text-xs gap-2 bg-black text-white rounded-none w-[30%]">
+      {/* Total & Actions */}
+      <div className="mt-12 px-6">
+        <h1 className="flex font-thin text-2xl mb-4">
+          <FaIndianRupeeSign className="h-5 mt-2" /> {look.totalPrice}
+        </h1>
+        <div className="flex gap-4">
+          <button className="flex items-center h-10 px-6 justify-center bg-black text-white text-sm rounded-none hover:bg-gray-800 transition-colors">
             Buy Now
           </button>
-          <button
-            onClick={handleAddLookToCart}
-            disabled={loading.all}
-            className="bg-black h-7 text-white text-xs rounded-none disabled:bg-gray-400 w-[70%]"
-          >
-            {loading.all ? 'Adding to Cart...' : 'Add To Cart'}
+          <button onClick={handleAddAll} disabled={loading.all}
+            className="flex-1 bg-black h-10 text-white text-sm rounded-none disabled:bg-gray-400 hover:bg-gray-800 transition-colors">
+            {loading.all ? 'Adding...' : 'Add To Cart'}
           </button>
         </div>
+        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+      </div>
+      <hr className="border-t-1 border-black w-[92%] mx-auto my-12" />
 
-        {error && (
-          <p className="text-red-500 text-sm mt-2 mx-8">{error}</p>
-        )}
-
-        <hr className="border-t-1 border-black w-[90%] max-w-[800px] mx-auto mt-[30px]" />
+      {/* Description */}
+      <div className="px-6 py-8">
+        <h1 className="text-lg text-black font-thin mb-6 font-[Boston]">DESCRIPTION</h1>
+        <div className="text-[14px] font-light leading-6 font-[Boston] space-y-6">
+          <p>{look.lookDescription}</p>
+        </div>
+        <hr className="border-t-1 border-black w-full mt-12" />
       </div>
 
-      <div className="w-[90%] max-w-[800px] mx-auto py-6">
-        <h1 className="text-sm text-black tracking-wide font-thin mb-[5px]" style={{ fontFamily: "Boston" }}>
-          DESCRIPTION
-        </h1>
-        <p className="text-[14px] mb-[30px] tracking-wide font-light leading-5" style={{ fontFamily: "Boston" }}>
-          {lookData.description.mainText}
-        </p>
-
-        <h1 className="text-sm  tracking-wide font-light mb-4" style={{ fontFamily: "Boston" }}>
-          WHY THIS LOOK WAS PICKED FOR YOU
-        </h1>
-        {lookData.description.features.map((feature, index) => (
-          <div key={index} className="mb-4">
-            <span className="text-xs">{feature}</span>
-          </div>
-        ))}
-        <h1 className="text-sm  tracking-wide font-light mb-4" style={{ fontFamily: "Boston" }}>RATE THIS LOOK</h1>
-        {session?.user && (
-          <StarRating userId={session.user.id} lookId={Number(id)} />
-        )}
+      {/* Carousel */}
+      <div className="px-6 py-8">
+        <h1 className="font-thin text-[20px] font-[Boston] mb-6">YOU MAY ALSO LIKE</h1>
+        <MyCarousel />
       </div>
-      <hr className="border-t-1 border-black w-[90%] max-w-[800px] mx-auto mt-[10px]" />
-
-      <div className="w-[90%] max-w-[800px] mx-auto mt-8 mb-[-4rem]">
-        <h1 className="font-thin" style={{ fontSize: "20px", fontWeight: 100 }}>
-          YOU MAY ALSO LIKE
-        </h1>
-
-      </div>
-      <MyCarousel />
-
-
     </>
   );
 };

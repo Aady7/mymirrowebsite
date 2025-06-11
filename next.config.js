@@ -10,6 +10,9 @@ const nextConfig = {
 		// This is a temporary workaround to fix the build error with params type
 		ignoreBuildErrors: true,
 	},
+	images: {
+		domains: ['assets.myntassets.com'],
+	},
 };
 
 module.exports = nextConfig;

@@ -15,12 +15,12 @@ interface CategorizedFitTags {
 }
 
 interface PersonalityMapInput {
-  weekendPreference?: string;
-  shoppingStyle?: string;
-  workspaceStyle?: string;
-  friendCompliments?: string;
-  workOutfit?: string;
-  wardrobeContent?: string;
+  weekendPreference?: string[];
+  shoppingStyle?: string[];
+  workspaceStyle?: string[];
+  friendCompliments?: string[];
+  workOutfit?: string[];
+  wardrobeContent?: string[];
 }
 
 type PatternCharacteristicsTagsInput = {
@@ -113,39 +113,38 @@ export function generatePersonalityTags({
   workOutfit,
   wardrobeContent
 }: PersonalityMapInput): string[] {
-  // Convert inputs to lowercase for consistent matching
-  const normalizedInputs: { [key: string]: string } = {
-    weekendPreference: weekendPreference?.toLowerCase() || '',
-    shoppingStyle: shoppingStyle?.toLowerCase() || '',
-    workspaceStyle: workspaceStyle?.toLowerCase() || '',
-    friendCompliments: friendCompliments?.toLowerCase() || '',
-    workOutfit: workOutfit?.toLowerCase() || '',
-    wardrobeContent: wardrobeContent?.toLowerCase() || ''
-  };
-
-  // Create a map to count occurrences of each personality tag
+  // Initialize tag counts
   const tagCounts: { [key: string]: number } = {};
 
-  // Process each answer and accumulate personality tag counts
-  Object.entries(normalizedInputs).forEach(([questionKey, answer]) => {
-    if (!answer) return; // Skip empty answers
+  // Helper function to process answers for a question
+  const processAnswers = (questionKey: string, answers: string[] = []) => {
+    answers.forEach(answer => {
+      const normalizedAnswer = answer.toLowerCase();
+      
+      // Find all matching entries for this answer
+      const matchingEntries = QUESTION_MAPPING_DATA.filter(
+        entry => entry.questionKey === questionKey && entry.option.toLowerCase() === normalizedAnswer
+      );
 
-    // Find the matching question entry
-    const matchingEntry = QUESTION_MAPPING_DATA.find(
-      entry => entry.questionKey === questionKey && entry.option.toLowerCase() === answer
-    );
-
-    // If we found a match, count its personality tags
-    if (matchingEntry) {
-      matchingEntry.personalityTags.forEach(tag => {
-        // Primary tags (first in the array) get more weight
-        const weight = matchingEntry.personalityTags.indexOf(tag) === 0 ? 2 : 1;
-        tagCounts[tag] = (tagCounts[tag] || 0) + weight;
+      matchingEntries.forEach(entry => {
+        entry.personalityTags.forEach((tag, index) => {
+          // Primary tags (first in array) get more weight
+          const weight = index === 0 ? 2 : 1;
+          tagCounts[tag] = (tagCounts[tag] || 0) + weight;
+        });
       });
-    }
-  });
+    });
+  };
 
-  // Convert the counts to an array and sort by frequency
+  // Process each question's answers
+  processAnswers('weekendPreference', weekendPreference);
+  processAnswers('shoppingStyle', shoppingStyle);
+  processAnswers('workspaceStyle', workspaceStyle);
+  processAnswers('friendCompliments', friendCompliments);
+  processAnswers('workOutfit', workOutfit);
+  processAnswers('wardrobeContent', wardrobeContent);
+
+  // Convert counts to sorted array of tags
   const sortedTags = Object.entries(tagCounts)
     .sort((a, b) => {
       // Sort by count first (descending)
@@ -155,11 +154,11 @@ export function generatePersonalityTags({
       return a[0].localeCompare(b[0]);
     })
     .map(([tag]) => tag);
-    console.log(sortedTags.slice(0,2));
 
-  // Return the top 2  personality tags (since we have more questions now)
-  return sortedTags.slice(0,2);
- 
+  console.log("Generated personality tags:", sortedTags.slice(0, 3));
+  
+  // Return top 3 personality tags (increased from 2 since we now have multiple selections)
+  return sortedTags.slice(0, 3);
 }
 
 

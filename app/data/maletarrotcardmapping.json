@@ -1,0 +1,87 @@
+[
+    {
+      "tag": "ex",
+      "gender": "male",
+      "image": "/assets/maleTarrotCards/image176.svg",
+      "title": "Creative Magician",
+      "elaborate": "You weave style spells that turn everyday moments into artistic expressions."
+    },
+    {
+      "tag": "conf",
+      "gender": "male",
+      "image": "/assets/maleTarrotCards/image177.svg",
+      "title": "Fearless Emperor",
+      "elaborate": "Your wardrobe commands respect and radiates unshakeable self-assurance."
+    },
+    {
+      "tag": "bold",
+      "gender": "male",
+      "image": "/assets/maleTarrotCards/image178.svg",
+      "title": "Daring Warrior",
+      "elaborate": "You charge into fashion battles wearing courage as your finest accessory."
+    },
+    {
+      "tag": "sc",
+      "gender": "male",
+      "image": "/assets/maleTarrotCards/image179.svg",
+      "title": "Charismatic Connector",
+      "elaborate": "Your style opens doors and hearts, making every gathering your stage."
+    },
+    {
+      "tag": "trad",
+      "gender": "male",
+      "image": "/assets/maleTarrotCards/image180.svg",
+      "title": "Timeless Guardian",
+      "elaborate": "You honor classic elegance while keeping heritage alive through impeccable taste."
+    },
+    {
+      "tag": "stat",
+      "gender": "male",
+      "image": "/assets/maleTarrotCards/image181.svg",
+      "title": "Prestige Collector",
+      "elaborate": "Your wardrobe speaks fluent luxury, translating success into sartorial statements."
+    },
+    {
+      "tag": "comf",
+      "gender": "male",
+      "image": "/assets/maleTarrotCards/image182.svg",
+      "title": "Cozy Philosopher",
+      "elaborate": "You've mastered the art of looking effortlessly put-together while feeling like home."
+    },
+    {
+      "tag": "prac",
+      "gender": "male",
+      "image": "/assets/maleTarrotCards/image183.svg",
+      "title": "Efficient Strategist",
+      "elaborate": "Every piece serves a purpose in your perfectly calculated style equation."
+    },
+    {
+      "tag": "pl",
+      "gender": "male",
+      "image": "/assets/maleTarrotCards/image184.svg",
+      "title": "Methodical Architect",
+      "elaborate": "You blueprint your looks with precision, building wardrobes that never fail."
+    },
+    {
+      "tag": "mini",
+      "gender": "male",
+      "image": "/assets/maleTarrotCards/image185.svg",
+      "title": "Essential Monk",
+      "elaborate": "You find profound beauty in simplicity, proving less truly is more."
+    },
+    {
+      "tag": "trend",
+      "gender": "male",
+      "image": "/assets/maleTarrotCards/image186.svg",
+      "title": "Fashion Prophet",
+      "elaborate": "You predict tomorrow's style today, always three steps ahead of the curve."
+    },
+    {
+      "tag": "rb",
+      "gender": "male",
+      "image": "/assets/maleTarrotCards/image187.svg",
+      "title": "Rebellious Maverick",
+      "elaborate": "You rewrite fashion rules with every outfit, making chaos look intentional."
+    }
+  ]
+  

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useStyleQuizData } from "@/lib/hooks/useStyleQuizData";
 import tarrotMapping from "@/app/data/tarrotcartmapping.json";
+import maleTarrotMapping from "@/app/data/maletarrotcardmapping.json";
 
 const FashionTarot = () => {
   const [selectedCards, setSelectedCards] = useState<Array<{ tag: string; image: string; title: string; elaborate: string }>>([]);
@@ -27,22 +28,26 @@ const FashionTarot = () => {
     }
 
     const personalityTags = userTags[0].personality_tags;
+    const userGender = quizData.gender?.toLowerCase() || 'female';
     console.log('Personality tags:', personalityTags);
+    console.log('User gender:', userGender);
 
     if (!Array.isArray(personalityTags) || personalityTags.length === 0) {
       console.error('No personality tags found');
       return;
     }
 
-    console.log('Tarrot mapping:', tarrotMapping);
+    // Choose mapping based on gender
+    const mappingToUse = userGender === 'male' ? maleTarrotMapping : tarrotMapping;
+    console.log('Using tarot mapping for:', userGender);
     
     const matchingCards = personalityTags
       .map(tag => {
-        const found = tarrotMapping.find(card => card.tag.toLowerCase() === tag.toLowerCase());
+        const found = mappingToUse.find(card => card.tag.toLowerCase() === tag.toLowerCase());
         console.log(`Looking for tag ${tag}, found:`, found);
         return found;
       })
-      .filter((card): card is typeof tarrotMapping[0] => card !== undefined)
+      .filter((card): card is typeof mappingToUse[0] => card !== undefined)
       .slice(0, 2);
 
     console.log('Final matching cards:', matchingCards);

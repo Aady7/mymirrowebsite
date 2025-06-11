@@ -1,0 +1,24 @@
+[
+    {
+        "lookNumber": 1,
+        "lookName": "Urban Shift",
+        "lookDescription": "A modern, urban look with a twist. Perfect for a night out or a casual day.",
+        "productids": [2694,4382,4389]
+    },
+    {
+        "lookNumber": 2,
+        "lookName": "Classic Chic",
+        "lookDescription": "A classic, chic look with a modern twist. Perfect for a night out or a casual day.",
+        "productids": [4360]
+
+
+    },
+    {
+        "lookNumber": 3,
+        "lookName": "Boho Chic",
+        "lookDescription": "A boho, chic look with a modern twist. Perfect for a night out or a casual day.",
+        "productids": [4314,4396]
+    }
+   
+
+]
