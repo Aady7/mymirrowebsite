@@ -57,6 +57,7 @@ function isLookProduct(product: Product | LookProduct): product is LookProduct {
 
 export default function ProductPage() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [product, setProduct] = useState<Product | LookProduct | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -243,8 +244,8 @@ export default function ProductPage() {
 
         {/*star rating section */}
         <div className="w-full mt-4 flex flex-col">
-          <h1  className="font-[Boston] font-thin text-[12px] text-left">Rating</h1>
-          <StarRating rating={isLookProduct(product) ? product.rating : product.overallRating} />
+          <h1 className="font-[Boston] font-thin text-[12px] text-left">Rating</h1>
+          <StarRating userId={user?.id} lookId={parseInt(id as string, 10)} />
         </div>
       </div>
       {/* Horizontal Line */}
