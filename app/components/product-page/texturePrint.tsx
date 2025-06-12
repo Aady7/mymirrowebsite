@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { FaIndianRupeeSign } from "react-icons/fa6";
-import LooksSectionThree from "./looksThree";
+import LooksSectionThree from "./looksSection";
 import LookSection from "../twoImg";
 
 export default function TexturePrint() {
