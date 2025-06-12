@@ -38,7 +38,7 @@ const LookSection = ({ look, lookId }: LookSectionProps) => {
               </div>
             </div>
 
-            {/* Bottom Row - Text Left, Second Product Image Right */}
+            {/* Bottom Row - Text Left, Second Product Image Right  discription and button*/}
             <div className="flex gap-2 m-2 text-black">
               <div className="mt-[4.5rem] mx-3 text-xs justify-center items-center tracking-wide font-light leading-normal">
                 {displayProducts[1].description}<br/>
