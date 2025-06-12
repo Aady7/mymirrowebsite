@@ -1,6 +1,6 @@
 "use client"
 
-import LooksSectionThree from "@/app/components/product-page/looksThree";
+import LooksSection from "@/app/components/product-page/looksSection";
 import { looksData } from "@/app/utils/lookData";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -11,6 +11,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useFetchSimilarProducts } from "@/lib/hooks/useFetchSimilarProducts";
 import Link from "next/link";
+import StarRating from "@/app/components/starRating";
+ 
+import { useAuth } from "@/lib/hooks/useAuth";
 
 interface Product {
   id: number;
@@ -44,6 +47,7 @@ interface LookProduct {
     background: string;
     foreground: string;
   };
+  rating: number;
 }
 
 // Type guard to check if product is from looks data
@@ -53,6 +57,7 @@ function isLookProduct(product: Product | LookProduct): product is LookProduct {
 
 export default function ProductPage() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [product, setProduct] = useState<Product | LookProduct | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -236,6 +241,12 @@ export default function ProductPage() {
             {isLookProduct(product) ? product.description : (product?.specifications || '')}
           </p>
         </div>
+
+        {/*star rating section */}
+        <div className="w-full mt-4 flex flex-col">
+          <h1 className="font-[Boston] font-thin text-[12px] text-left">Rating</h1>
+          <StarRating userId={user?.id} lookId={parseInt(id as string, 10)} />
+        </div>
       </div>
       {/* Horizontal Line */}
       <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8">
@@ -249,9 +260,9 @@ export default function ProductPage() {
         </h1>
       </div>
 
-      {/*lookThreeSection*/}
+      {/*looksSection*/}
       <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8">
-        <LooksSectionThree currentProductId={product.id} />
+        <LooksSection currentProductId={parseInt(id as string, 10)} />
       </div>
 
       {/* Horizontal Line */}

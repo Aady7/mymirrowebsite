@@ -14,7 +14,7 @@ const LookSection = ({ look, lookId }: LookSectionProps) => {
   const displayProducts = look.products.slice(0, 2);
 
   return (
-    <div className="bg-white mt-6">
+    <div className="bg-white mt-6 px-6 py-2">
       <h1 className="text-sm mx-6 font-semibold text-black text-left mb-1">
         {look.title}
       </h1>
@@ -24,7 +24,7 @@ const LookSection = ({ look, lookId }: LookSectionProps) => {
           <>
             {/* Top Row - First Product Image Left, Text Right */}
             <div className="flex gap-2 m-2">
-              <div className="w-[400%]">
+              <div className="w-[250%]   ">
                 <Image
                   src={displayProducts[0].images.foreground}
                   alt={displayProducts[0].description}
@@ -33,25 +33,25 @@ const LookSection = ({ look, lookId }: LookSectionProps) => {
                 />
               </div>
 
-              <div className="mt-3 mx-4 tracking-wide font-light text-xs justify-center items-center leading-normal">
+              <div className="mt-[5rem] mx-4 tracking-wide font-light text-xs justify-center items-center leading-normal">
                 {displayProducts[0].description}
               </div>
             </div>
 
-            {/* Bottom Row - Text Left, Second Product Image Right */}
+            {/* Bottom Row - Text Left, Second Product Image Right  discription and button*/}
             <div className="flex gap-2 m-2 text-black">
-              <div className="mt-8 mx-3 text-xs justify-center items-center tracking-wide font-light leading-normal">
+              <div className="mt-[4.5rem] mx-3 text-xs justify-center items-center tracking-wide font-light leading-normal">
                 {displayProducts[1].description}<br/>
                 <Link href={`/looks/${lookId}`}>
-                  <Button className="bg-black text-white h-5 mt-4 rounded-none">
+                  <Button className="bg-black text-white h-5 mt-[2rem] rounded-none">
                     View More
                   </Button>
                 </Link>
               </div>
 
-              <div className="w-[310%] relative top-[-50]">
+              <div className="w-[250%] relative top-[-60]">
                 <Image
-                  src={displayProducts[1].images.foreground}
+                  src={displayProducts[0].images.foreground}
                   alt={displayProducts[1].description}
                   width={600}
                   height={600}
@@ -72,7 +72,7 @@ const LookSection = ({ look, lookId }: LookSectionProps) => {
               />
             </div>
 
-            <div className="mt-3 mx-4 tracking-wide font-light text-xs justify-center items-center leading-normal">
+            <div className="mt-[5rem] mx-4 tracking-wide font-light text-xs justify-center items-center leading-normal">
               {displayProducts[0].description}<br/>
               <Link href={`/looks/${lookId}`}>
                 <Button className="bg-black text-white h-5 mt-4 rounded-none">
