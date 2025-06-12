@@ -4,6 +4,9 @@ import { useAuth } from '@/lib/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
+import { FaIndianRupeeSign } from "react-icons/fa6"
+import { Button } from "@/components/ui/button"
+import PageLoader from '@/app/components/common/PageLoader'
 
 interface CartItem {
   productId: number
@@ -26,6 +29,7 @@ const CartPage = () => {
   const [products, setProducts] = useState<{ [key: number]: Product }>({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const { getSession } = useAuth()
 
   useEffect(() => {
@@ -117,26 +121,36 @@ const CartPage = () => {
     await updateCart(updatedItems)
   }
 
-  const calculateTotal = () => {
+  const toggleItemSelection = (productId: number, size: string) => {
+    const itemKey = `${productId}-${size}`
+    const newSelected = new Set(selectedItems)
+    if (newSelected.has(itemKey)) {
+      newSelected.delete(itemKey)
+    } else {
+      newSelected.add(itemKey)
+    }
+    setSelectedItems(newSelected)
+  }
+
+  const calculateSelectedTotal = () => {
     return cartItems.reduce((total, item) => {
-      const product = products[item.productId]
-      return total + (product?.price || 0) * item.quantity
+      const itemKey = `${item.productId}-${item.size}`
+      if (selectedItems.has(itemKey)) {
+        const product = products[item.productId]
+        return total + (product?.price || 0) * item.quantity
+      }
+      return total
     }, 0)
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
-        <p className="ml-4 text-gray-600">Loading cart...</p>
-      </div>
-    )
+    return <PageLoader loadingText="Loading your cart..." />
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <p className="text-red-500">{error}</p>
+      <div className="flex items-center justify-center h-screen font-[Boston]">
+        <p className="text-red-500 font-normal">{error}</p>
       </div>
     )
   }
@@ -144,14 +158,13 @@ const CartPage = () => {
   if (cartItems.length === 0) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold mb-4">Your Cart is Empty</h1>
-          <p className="text-gray-600 mb-6">Looks like you haven't added any items to your cart yet.</p>
-          <Link
-            href="/recommendations"
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors duration-300"
-          >
-            Browse Products
+        <div className="text-center font-[Boston]">
+          <h1 className="text-[35px] font-light [font-variant:all-small-caps]">My Cart</h1>
+          <p className="text-gray-500 mb-6 font-light">Your cart is empty</p>
+          <Link href="/recommendations">
+            <button className="bg-black text-white text-[14px] font-medium uppercase py-3 px-6 tracking-wide">
+              Browse Products
+            </button>
           </Link>
         </div>
       </div>
@@ -159,115 +172,189 @@ const CartPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
+    <>
+      {/* header section */}
+      <div className="text-black font-[Boston] text-[35px] px-[24px] not-italic font-light leading-normal [font-variant:all-small-caps]">
+        <h1>MY CART</h1>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Cart Items */}
-        <div className="lg:col-span-2 space-y-6">
-          {cartItems.map((item) => {
-            const product = products[item.productId]
-            const images = product ? JSON.parse(product.productImages) : []
+      {/* Horizontal Line */}
+      <div className="px-[24px] mt-[20px] w-full">
+        <hr className="border border-gray-700 w-full" />
+      </div>
 
-            return (
-              <div key={`${item.productId}-${item.size}`} className="flex gap-6 p-6 border rounded-lg">
-                {/* Product Image */}
-                <div className="relative w-32 h-32 flex-shrink-0">
-                  {images.length > 0 ? (
-                    <img
-                      src={images[0]}
-                      alt={product?.title}
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gray-100 rounded-lg flex items-center justify-center">
-                      <p className="text-gray-500">No image</p>
-                    </div>
-                  )}
-                </div>
+      {/*check box with selected items and price */}
+      <div className="flex flex-row items-center justify-start px-[20px] mt-6 gap-3 text-black font-[Boston] text-[14px] not-italic font-normal leading-normal [font-variant:all-small-caps]">
+        <label className="relative inline-flex items-center cursor-pointer">
+          <input 
+            type="checkbox" 
+            className="sr-only peer"
+            checked={selectedItems.size > 0}
+            onChange={() => {
+              if (selectedItems.size > 0) {
+                setSelectedItems(new Set())
+              } else {
+                setSelectedItems(new Set(cartItems.map(item => `${item.productId}-${item.size}`)))
+              }
+            }}
+          />
+          <div className="w-8 h-8 border-1 border-black rounded peer-checked:bg-black peer-checked:text-white flex items-center justify-center text-[24px] font-normal">
+            -
+          </div>
+        </label>
 
-                {/* Product Details */}
-                <div className="flex-grow">
-                  <Link href={`/product/${item.productId}`}>
-                    <h3 className="text-lg font-semibold hover:text-indigo-600">{product?.title}</h3>
-                  </Link>
-                  <p className="text-gray-600">{product?.name}</p>
-                  <p className="text-gray-600 mt-1">Size: {item.size}</p>
+        <h2 className="flex flex-row items-center text-[20px] font-normal leading-normal m-0 p-0">
+          {selectedItems.size}/{cartItems.length} ITEMS SELECTED&nbsp;
+          <span className="flex flex-row items-center">
+            ( <FaIndianRupeeSign className="mr-[4px]" /> {calculateSelectedTotal()} )
+          </span>
+        </h2>
+      </div>
 
-                  <div className="flex items-center mt-2">
-                    <span className="text-lg font-bold">₹{product?.price}</span>
-                    {product?.mrp && product.mrp > product.price && (
-                      <span className="text-gray-500 line-through ml-2">₹{product.mrp}</span>
-                    )}
-                  </div>
+      {/* Cart Items */}
+      {cartItems.map((item) => {
+        const product = products[item.productId]
+        const images = product ? JSON.parse(product.productImages) : []
+        const itemKey = `${item.productId}-${item.size}`
 
-                  {/* Quantity Controls */}
-                  <div className="flex items-center mt-4">
-                    <button
-                      onClick={() => handleQuantityChange(item.productId, item.quantity - 1, item.size)}
-                      className="w-8 h-8 flex items-center justify-center border rounded-l-md hover:bg-gray-100"
-                    >
-                      -
-                    </button>
-                    <span className="w-12 h-8 flex items-center justify-center border-t border-b">
-                      {item.quantity}
-                    </span>
-                    <button
-                      onClick={() => handleQuantityChange(item.productId, item.quantity + 1, item.size)}
-                      className="w-8 h-8 flex items-center justify-center border rounded-r-md hover:bg-gray-100"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
+        return (
+          <div key={itemKey} className="flex flex-row items-start justify-between px-[20px] py-[12px] gap-4 mt-[26px]">
+            {/* Left: image with checkbox */}
+            <div className="relative inline-block">
+              <input
+                type="checkbox"
+                checked={selectedItems.has(itemKey)}
+                onChange={() => toggleItemSelection(item.productId, item.size)}
+                className="absolute top-2 left-2 w-6 h-6 border-2 border-black rounded appearance-none
+                  checked:bg-black
+                  checked:after:content-['✔'] checked:after:text-white checked:after:text-[14px] checked:after:flex checked:after:items-center checked:after:justify-center"
+              />
+              <Image
+                src={images[0] || "/fallback.jpg"}
+                alt={product?.name || "Product image"}
+                width={150}
+                height={80}
+                className="object-cover"
+              />
+            </div>
 
-                {/* Remove Button */}
+            {/* Middle: product details */}
+            <div className="flex flex-col flex-grow items-start gap-1 text-black font-[Boston] text-[16px] not-italic font-normal leading-normal [font-variant:all-small-caps]">
+              <h1 className="text-[20px] font-medium">{product?.title}</h1>
+              <h1 className="text-[18px] mt-[-1rem] text-gray-400 font-normal">{product?.name}</h1>
+              
+              {/* Size */}
+              <div className="flex items-center gap-2 mt-2">
+                <span className="text-[14px] font-light">SIZE:</span>
+                <span className="text-[14px] font-normal">{item.size}</span>
+              </div>
+
+              {/* Quantity selector */}
+              <div className="flex flex-row items-center mt-4 h-9 gap-2 border bg-black border-black rounded-none px-2 py-1">
                 <button
-                  onClick={() => handleRemoveItem(item.productId, item.size)}
-                  className="text-red-500 hover:text-red-700"
+                  onClick={() => handleQuantityChange(item.productId, item.quantity - 1, item.size)}
+                  className="text-[20px] font-normal px-2 text-white"
                 >
-                  Remove
+                  -
+                </button>
+                <span className="text-[18px] font-normal text-white">{item.quantity}</span>
+                <button
+                  onClick={() => handleQuantityChange(item.productId, item.quantity + 1, item.size)}
+                  className="text-[20px] font-normal px-2 text-white"
+                >
+                  +
                 </button>
               </div>
-            )
-          })}
-        </div>
 
-        {/* Order Summary */}
-        <div className="lg:col-span-1">
-          <div className="border rounded-lg p-6">
-            <h2 className="text-xl font-bold mb-4">Order Summary</h2>
-
-            <div className="space-y-4">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>₹{calculateTotal()}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span>Shipping</span>
-                <span>Free</span>
-              </div>
-
-              <div className="border-t pt-4">
-                <div className="flex justify-between font-bold">
-                  <span>Total</span>
-                  <span>₹{calculateTotal()}</span>
-                </div>
-              </div>
+              {/* Price */}
+              <span className="flex flex-row items-center text-[18px] font-normal mt-4">
+                <FaIndianRupeeSign className="mr-[4px]" /> {product?.price}
+              </span>
             </div>
-            <Link href={"/checkout"}>
 
-              <button
-                className="w-full mt-6 bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-md transition-colors duration-300"
+            {/* Right: delete icon */}
+            <div className="self-start">
+              <Button
+                variant="ghost"
+                onClick={() => handleRemoveItem(item.productId, item.size)}
+                className="flex items-center justify-center p-2 w-8 h-8 bg-transparent hover:bg-gray-100 rounded"
               >
-                Proceed to Checkout
-              </button>
-            </Link>
+                <Image
+                  src="/assets/delete.svg"
+                  alt="delete"
+                  width={15}
+                  height={12}
+                />
+              </Button>
+            </div>
+          </div>
+        )
+      })}
+
+      {/* Horizontal Line */}
+      <div className="px-[24px] mt-[20px] w-full">
+        <hr className="border border-gray-700 w-full" />
+      </div>
+
+      {/* billing section */}
+      <div className="px-[24px] md:p-6 lg:p-8">
+        <div className="border border-black px-4 mt-9 py-4 w-full max-w-sm text-black font-[Boston] text-[16px] not-italic leading-normal [font-variant:all-small-caps]">
+          {/* Header */}
+          <h2 className="text-[16px] font-medium mb-3 border-b border-dashed border-gray-400 pb-2">
+            PRICE DETAILS ({selectedItems.size} Items)
+          </h2>
+
+          {/* Total MRP */}
+          <div className="flex justify-between items-center mb-3">
+            <span className="font-normal">Total MRP</span>
+            <span className="text-[18px] font-normal flex items-center">
+              <FaIndianRupeeSign className="mr-[4px]" /> {calculateSelectedTotal()}
+            </span>
+          </div>
+
+          {/* Stylist Fee */}
+          <div className="flex justify-between items-center mb-3">
+            <span className="flex items-center font-normal">
+              Stylist Fee
+              <span className="ml-2 w-5 h-5 rounded-full bg-green-400 flex items-center justify-center text-yellow-500 font-medium text-[12px] border border-green-600">
+                S
+              </span>
+            </span>
+            <span className="text-green-500 font-normal">FREE</span>
+          </div>
+
+          {/* Shipping Fee */}
+          <div className="flex justify-between items-center mb-3 border-b border-dashed border-gray-400 pb-2">
+            <span className="font-normal">Shipping Fee</span>
+            <span className="text-green-500 font-normal">FREE</span>
+          </div>
+
+          {/* Total Amount */}
+          <div className="flex justify-between items-center mt-3">
+            <span className="text-[18px] font-medium">Total Amount</span>
+            <span className="text-[18px] font-medium flex items-center">
+              <FaIndianRupeeSign className="mr-[4px]" /> {calculateSelectedTotal()}
+            </span>
           </div>
         </div>
       </div>
-    </div>
+
+      {/* place order */}
+      <div className="w-full mt-9 px-4 py-6 flex flex-col items-center justify-center gap-3 border-t border-gray-200">
+        {/* Text */}
+        <p className="text-[14px] text-gray-500 font-[Boston] not-italic font-light leading-normal">
+          {selectedItems.size} {selectedItems.size === 1 ? 'Item' : 'Items'} selected for order
+        </p>
+
+        {/* Place Order button */}
+        <button 
+          className="w-full max-w-xs bg-black text-white text-[14px] font-[Boston] font-medium uppercase py-3 px-6 tracking-wide"
+          disabled={selectedItems.size === 0}
+        >
+          Place Order
+        </button>
+      </div>
+    </>
   )
 }
 

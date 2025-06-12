@@ -429,6 +429,7 @@ const StyleQuiz: React.FC = () => {
       'feedback',
       'colorAnalysis',
       'minimalistic',
+      'outfitAdventurous'
       
     ].includes(name);
 

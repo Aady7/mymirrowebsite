@@ -3,7 +3,7 @@ import StylistSays from '@/app/components/recommendations/stylistSays';
 import TexturePrint from '@/app/components/product-page/texturePrint';
 import UrbanShift from '@/app/components/looks-page/urbanShift';
 import { useParams, notFound } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaCartArrowDown } from 'react-icons/fa';
@@ -12,6 +12,7 @@ import MyCarousel from '@/app/components/looks-page/mycrausal';
 import { addToCart } from '@/lib/utils/cart';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useFetchLookProducts } from '@/lib/hooks/useFetchLookProducts';
+import PageLoader from '@/app/components/common/PageLoader';
 
 interface Product {
   id: number;
@@ -69,7 +70,7 @@ const LookPage = () => {
     if (id) fetchLook();
   }, [id]);
 
-  if (!look) return <div>Loading...</div>;
+  if (!look) return <PageLoader loadingText="Loading look details..." />;
 
   const parseImages = (imgs: string): string[] => {
     try {

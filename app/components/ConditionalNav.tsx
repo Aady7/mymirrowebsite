@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import AuthNav from './authNav'
 import RootNav from './rootNav'
 import { supabase } from '@/lib/supabase'
+import PageLoader from '@/app/components/common/PageLoader'
 
 const ConditionalNav = () => {
   const { getSession } = useAuth()
@@ -41,13 +42,7 @@ const ConditionalNav = () => {
   }, [getSession])
 
   if (isLoading) {
-    return (
-      <nav className="bg-white shadow-md h-16">
-        <div className="max-w-7xl mx-auto px-4 h-full flex items-center justify-center">
-          <div className="animate-pulse h-8 w-32 bg-gray-200 rounded"></div>
-        </div>
-      </nav>
-    )
+    return <PageLoader loadingText="Loading navigation..." />
   }
 
   return isAuthenticated ? <RootNav /> : <AuthNav />

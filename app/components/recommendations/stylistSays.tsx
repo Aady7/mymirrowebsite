@@ -6,6 +6,7 @@ import FashionTarot from "./fashionTarot";
 import Stylist from "./stylist";
 import { useFetchLookProducts } from "@/lib/hooks/useFetchLookProducts";
 import { useEffect, useState } from "react";
+import PageLoader from "@/app/components/common/PageLoader";
 
 interface Product {
   id: number;
@@ -62,7 +63,7 @@ const StylistSays = () => {
   }, []);
 
   if (loading) {
-    return <div>Loading looks...</div>;
+    return <PageLoader loadingText="Loading looks..." />;
   }
 
   if (error) {

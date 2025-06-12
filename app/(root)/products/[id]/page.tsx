@@ -7,10 +7,11 @@ import Image from "next/image";
 import { notFound, useParams } from "next/navigation";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import { useFetchLookProducts } from "@/lib/hooks/useFetchLookProducts";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
 import { useFetchSimilarProducts } from "@/lib/hooks/useFetchSimilarProducts";
 import Link from "next/link";
+import PageLoader from "@/app/components/common/PageLoader";
 
 interface Product {
   id: number;
@@ -109,7 +110,7 @@ export default function ProductPage() {
   }, [id]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <PageLoader loadingText="Loading product details..." />;
   }
 
   if (error || !product) {
@@ -153,7 +154,7 @@ export default function ProductPage() {
       {/* Header */}
       <div className="text-center mb-2">
         <h1 className="font-thin" style={{ fontSize: "25px", fontWeight: 300 }}>
-          {isLookProduct(product) ? product.brandName : (product?.name || '')}
+          {isLookProduct(product) ? product.brandName : (product?.title || '')}
         </h1>
       </div>
 

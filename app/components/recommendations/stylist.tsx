@@ -1,6 +1,7 @@
 "use client"
 import Image from "next/image";
 import { useStyleQuizData } from "@/lib/hooks/useStyleQuizData";
+import PageLoader from "@/app/components/common/PageLoader";
 
 const Stylist = () => {
   const { quizData, colorAnalysis, isLoading, error } = useStyleQuizData();
@@ -46,7 +47,7 @@ const Stylist = () => {
   const colors = colorAnalysis ? getDefaultColors(colorAnalysis.selectedToneName) : getDefaultColors('');
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-[400px]">Loading...</div>;
+    return <PageLoader loadingText="Loading stylist recommendations..." />;
   }
 
   if (error) {
@@ -144,7 +145,7 @@ const Stylist = () => {
               {colors.map((color, index) => (
                 <div key={index} className="relative">
                   <div
-                    className="w-[158px] md:w-[200px] lg:w-[250px] h-[23px] md:h-[40px] lg:h-[50px]"
+                    className="w-[140px] md:w-[200px] lg:w-[250px] h-[23px] md:h-[40px] lg:h-[50px]"
                     style={{ backgroundColor: color.hex }}
                   ></div>
                   <span className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[10px] md:text-[12px] lg:text-[14px] font-[Boston] ${
