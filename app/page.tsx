@@ -3,6 +3,7 @@ import TestimonialSection from "@/app/components/testimonialSection";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
+ 
 
 // Create a single supabase client for the entire app
 const supabase = createClient(
@@ -164,6 +165,7 @@ const page = async () => {
         {/* Stylist section */}
           <StylistHome/>
           </div>
+ 
 
         {/* Assuming TestimonialSection is already responsive */}
         <TestimonialSection />
