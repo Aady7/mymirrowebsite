@@ -65,57 +65,63 @@ const Feedback: React.FC<FeedbackProps> = ({ onClose }) => {
     if (!userId) return null;
 
     return (
-        <div className="w-full bg-black text-gray-300 flex items-center justify-center p-2 rounded-t-4xl">
-            <div className="w-full max-w-2xl bg-gray-900/90 rounded-lg p-6 relative">
-                <div className="flex items-center justify-between mb-8">
-                    <button 
-                        onClick={onClose}
-                        className="text-gray-400 hover:text-gray-200 transition-colors"
-                        aria-label="Close feedback form"
-                    >
-                        <X size={24} />
-                    </button>
-                    <h1 className="text-2xl font-bold text-center flex-1 text-gray-200">Feedback</h1>
+        <div className="w-full bg-black rounded-t-2xl max-h-[90vh] flex flex-col fixed bottom-0 left-0 right-0">
+            <div className="w-full mb-[25px] flex items-center justify-between bg-[#1F1F1F] p-4 rounded-t-2xl">
+                <button
+                    onClick={onClose}
+                    className="text-gray-400 hover:text-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    aria-label="Close feedback form"
                     
-                    <div className="w-6" /> {/* Spacer for alignment */}
-                </div>
+                >
+                    <X size={24} />
+                </button>
+                <h1 className="text-lg font-light tracking-wide text-center flex-1 text-gray-200">Feedback</h1>
+                <div className="w-[24px]"></div>
+            </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                    <div className="space-y-2">
-                        <label className="block text-gray-400">How well did this product work for you overall?</label>
-                        <StarRating userId={userId} lookId={lookId} />
+            <form onSubmit={handleSubmit} className="flex-1 flex flex-col px-6 py-3 overflow-y-auto">
+                <div className="space-y-4 flex-1 px-[20px]">
+                    <div className="space-y-2 mb-[30px]">
+                        <label className="block text-gray-400 text-sm">How well did this product work for you overall?</label>
+                        <div className="px-8">
+                            <StarRating userId={userId} lookId={lookId} />
+                        </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="block text-gray-400">How do you feel about the design and styling of this piece?</label>
-                        <StarRating userId={userId} lookId={lookId} />
+                    <div className="space-y-2 mb-[30px]">
+                        <label className="block text-gray-400 text-sm">How do you feel about the design and styling of this piece?</label>
+                        <div className="px-8">
+                            <StarRating userId={userId} lookId={lookId} />
+                        </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="block text-gray-400">What's your take on the color, did it match your expectations?</label>
-                        <StarRating userId={userId} lookId={lookId} />
+                    <div className="space-y-2 mb-[30px]">
+                        <label className="block text-gray-400 text-sm">What's your take on the color, did it match your expectations?</label>
+                        <div className="px-8">
+                            <StarRating userId={userId} lookId={lookId} />
+                        </div>
                     </div>
 
-                    <div className="space-y-2">
-                        <textarea 
+                    <div className="space-y-2 mb-[30px]">
+                        <textarea
                             name="comment"
                             value={formData.comment}
-                            onChange={(e) => setFormData({...formData, comment: e.target.value})}
+                            onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
                             placeholder="Anything you'd like us to know?"
-                            className="w-full h-32 p-3 rounded-lg bg-gray-800 text-gray-200 placeholder-gray-400 border border-gray-700 focus:outline-none focus:border-gray-500"
+                            className="w-full h-[186px] p-3 rounded-none bg-black text-gray-200 tracking-wider text-xs placeholder-gray-400 border border-gray-700 focus:outline-none focus:border-gray-500"
                         />
                     </div>
+                </div>
 
-                    <Button 
+                <div className="mt-[35px] flex justify-center pb-1 ">
+                    <Button
                         type="submit"
-                        className="w-full bg-gray-700 hover:bg-gray-600 text-gray-200"
+                        className="w-[180px] h-16 rounded-t-2xl bg-[#1F1F1F] hover:bg-gray-600 text-gray-200 text-base font-light tracking-wide font-[Boston]"
                     >
                         Submit
                     </Button>
-                </form>
-
-                <div className="mt-8 pt-6 border-t border-gray-700" />
-            </div>
+                </div>
+            </form>
         </div>
     );
 }

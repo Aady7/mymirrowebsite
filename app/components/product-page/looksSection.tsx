@@ -5,12 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import StarRating from "../starRating";
 
-interface LooksSectionThreeProps {
+interface LooksSectionProps {
   currentProductId: number;
   user?: { id: string };
 }
 
-const LooksSectionThree = ({ currentProductId, user }: LooksSectionThreeProps) => {
+const LooksSection = ({ currentProductId, user }: LooksSectionProps) => {
   console.log('LooksSectionThree - currentProductId:', currentProductId);
   console.log('LooksSectionThree - looksData:', looksData);
   
@@ -29,14 +29,18 @@ const LooksSectionThree = ({ currentProductId, user }: LooksSectionThreeProps) =
 
   if (!currentLook) {
     console.log('LooksSectionThree - No look found for product:', currentProductId);
-    return null;
+    return (
+      <div className="bg-white mt-8 font-['Boston'] p-4 text-center">
+        <p className="text-sm text-gray-500">No matching look found for this product</p>
+      </div>
+    );
   }
 
   const [lookId, lookData] = currentLook;
   
   // Get other products from the same look, excluding the current product
   const otherProducts = lookData.products.filter(product => product.id !== currentProductId);
-  console.log('LooksSectionThree - otherProducts:', otherProducts);
+  console.log('LooksSection - otherProducts:', otherProducts);
 
   // Take up to 3 other products
   const displayProducts = otherProducts.slice(0, 3);
@@ -124,4 +128,4 @@ const LooksSectionThree = ({ currentProductId, user }: LooksSectionThreeProps) =
   );
 };
 
-export default LooksSectionThree;
+export default LooksSection;

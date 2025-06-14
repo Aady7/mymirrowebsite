@@ -15,8 +15,10 @@ import Link from "next/link";
 import PageLoader from "@/app/components/common/PageLoader";
 
 import StarRating from "@/app/components/starRating";
- 
+
 import { useAuth } from "@/lib/hooks/useAuth";
+import FeedbackButton from "@/app/components/feedbackButton";
+import LookSection from "@/app/components/looksTwo";
 
 
 interface Product {
@@ -74,7 +76,7 @@ export default function ProductPage() {
         setLoading(true);
         // First, try to find the product in looks data
         let foundProduct: Product | LookProduct | null = null;
-        
+
         // Search in looksData
         for (const [lookId, look] of Object.entries(looksData)) {
           const lookProduct = look.products.find(p => p.id.toString() === id);
@@ -188,9 +190,8 @@ export default function ProductPage() {
               <button
                 key={index}
                 onClick={() => setSelectedImageIndex(index)}
-                className={`w-2 h-2 rounded-full ${
-                  selectedImageIndex === index ? "bg-black" : "bg-gray-300"
-                }`}
+                className={`w-2 h-2 rounded-full ${selectedImageIndex === index ? "bg-black" : "bg-gray-300"
+                  }`}
               />
             ))}
           </div>
@@ -245,12 +246,18 @@ export default function ProductPage() {
             {isLookProduct(product) ? product.description : (product?.specifications || '')}
           </p>
         </div>
-
+ 
         {/*star rating section */}
         <div className="w-full mt-4 flex flex-col">
           <h1 className="font-[Boston] font-thin text-[12px] text-left">Rating</h1>
           <StarRating userId={user?.id} lookId={parseInt(id as string, 10)} />
         </div>
+
+      </div>
+       
+       {/*button feedback section */}
+      <div className="flex sm:px-30 px-31 mt-6">
+        <FeedbackButton/>
       </div>
       {/* Horizontal Line */}
       <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8">
@@ -262,6 +269,7 @@ export default function ProductPage() {
         <h1 className="font-thin" style={{ fontSize: "20px", fontWeight: 100 }}>
           STYLE IT WITH
         </h1>
+       
       </div>
 
       {/*looksSection*/}
@@ -292,7 +300,7 @@ export default function ProductPage() {
                 return [];
               }
             })();
-            
+
             return (
               <div key={similarProduct.id} className="flex flex-col items-center">
                 <div className="relative w-full aspect-[3/4]">

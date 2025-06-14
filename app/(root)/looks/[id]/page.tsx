@@ -13,6 +13,9 @@ import { addToCart } from '@/lib/utils/cart';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useFetchLookProducts } from '@/lib/hooks/useFetchLookProducts';
 import PageLoader from '@/app/components/common/PageLoader';
+import StarRating from '@/app/components/starRating';
+import FeedbackButton from '@/app/components/feedbackButton';
+import Looksfeeback from '@/app/components/looks-feeback';
 
 interface Product {
   id: number;
@@ -178,7 +181,7 @@ const LookPage = () => {
       {/* Total & Actions */}
       <div className="mt-12 px-6">
         <h1 className="flex font-thin text-2xl mb-4">
-          <FaIndianRupeeSign className="h-5 mt-2" /> {look.totalPrice}
+          <FaIndianRupeeSign className="h-5 mt-1.5" /> {look.totalPrice}
         </h1>
         <div className="flex gap-4">
           <button className="flex items-center h-10 px-6 justify-center bg-black text-white text-sm rounded-none hover:bg-gray-800 transition-colors">
@@ -197,8 +200,18 @@ const LookPage = () => {
       <div className="px-6 py-8">
         <h1 className="text-lg text-black font-thin mb-6 font-[Boston]">DESCRIPTION</h1>
         <div className="text-[14px] font-light leading-6 font-[Boston] space-y-6">
-          <p>{look.lookDescription}</p>
+          <p>{look?.lookDescription}</p>
+          <p className='font-semibold'>Rating</p>
+          <StarRating userId={getSession()?.id} lookId={Number(id)} />
+          <div className='mt-6 flex items-centre justify-centre px-[8rem]'>
+           <Looksfeeback 
+             onClose={() => { }} 
+             userId={getSession()?.id || ''} 
+             lookId={Number(id)}
+           />
         </div>
+        </div>
+        
         <hr className="border-t-1 border-black w-full mt-12" />
       </div>
 
