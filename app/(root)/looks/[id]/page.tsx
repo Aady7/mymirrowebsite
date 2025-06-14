@@ -14,6 +14,8 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { useFetchLookProducts } from '@/lib/hooks/useFetchLookProducts';
 import PageLoader from '@/app/components/common/PageLoader';
 import StarRating from '@/app/components/starRating';
+import FeedbackButton from '@/app/components/feedbackButton';
+import Looksfeeback from '@/app/components/looks-feeback';
 
 interface Product {
   id: number;
@@ -201,7 +203,15 @@ const LookPage = () => {
           <p>{look?.lookDescription}</p>
           <p className='font-semibold'>Rating</p>
           <StarRating userId={getSession()?.id} lookId={Number(id)} />
+          <div className='mt-6 flex items-centre justify-centre px-[8rem]'>
+           <Looksfeeback 
+             onClose={() => { }} 
+             userId={getSession()?.id || ''} 
+             lookId={Number(id)}
+           />
         </div>
+        </div>
+        
         <hr className="border-t-1 border-black w-full mt-12" />
       </div>
 

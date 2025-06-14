@@ -13,20 +13,13 @@ const FeedbackButton = () => {
         {showFeedback && (
             <div className="fixed inset-0 z-50 flex items-end justify-center  bg-opacity-40">
               <div
-                className="w-full max-w-md bg-white rounded-t-2xl shadow-lg p-0"
+                className="w-full max-w-md   rounded-t-2xl shadow-lg p-0"
                 style={{
                   height: "80vh",
-                  animation: "slideUp 0.4s ease"
+                  animation: "slideUp 1.5s ease"
                 }}
               >
-                <button
-                  onClick={() => setShowFeedback(false)}
-                  className="absolute top-4 right-6 text-2xl font-bold text-gray-500 hover:text-black"
-                  aria-label="Close"
-                  disabled
-                >
-                  &times;
-                </button>
+                
                 <Feedback onClose={() => setShowFeedback(false)} />
               </div>
               <style jsx global>{`
