@@ -127,14 +127,14 @@ const StyleQuiz: React.FC = () => {
           // Add user data to users table with styleQuizId
           console.log("Updating user data with styleQuizId:", styleQuizId);
           const { error: userError } = await supabase
-            .from('users')
+            .from('users_updated')
             .upsert([{
-              userid: session?.user.id,
-              phoneNumber: session?.user.phone,
+              user_id: session?.user.id,
+              phone_number: session?.user.phone,
               created_at: new Date().toISOString(),
-              styleQuizID: styleQuizId // Add the styleQuizId to users table
+              style_quiz_id: styleQuizId // Add the styleQuizId to users table
             }], {
-              onConflict: 'userid',
+              onConflict: 'user_id',
             });
 
           if (userError) {
@@ -218,44 +218,181 @@ const StyleQuiz: React.FC = () => {
 
       // Get the session to access user ID
       const { data: { session } } = await supabase.auth.getSession();
-      const userId = session?.user?.id || '';
+      const user_id = session?.user?.id || '';
 
       interface DynamicStyleQuizData extends StyleQuizData {
         [key: string]: any;
       }
+      
+      const generateCaptions = (formValues: FormValues): { upperWearCaption: string; lowerWearCaption: string; fullBodyCaption: string } => {
+        // Extract basic information
+        const gender = formValues.gender || 'Not specified';
+        const bodyShape = formValues.bodyType || 'Not specified';
+        const upperFit = fitTags.upperWear?.join(', ') || 'Not specified';
+        const lowerFit = fitTags.lowerWear?.join(', ') || 'Not specified';
+        const fullBodyFit = fitTags.fullBody?.join(', ') || 'Not specified';
+        const upperSize = formValues.upperWear || 'Not specified';
+        const lowerWaistSize = formValues.waistSize || 'Not specified';
+        
+        // Extract personality tags
+        const personalityTag1 = personalityTags[0] || 'Not specified';
+        const personalityTag2 = personalityTags[1] || 'Not specified';
+        
+        // Extract fashion style
+        const fashionStyle = formValues.goToStyle?.join(', ') || 'Not specified';
+        
+        // Extract color analysis
+        let colorPalette = 'Not specified';
+        if (formValues.color_analysis) {
+          try {
+            const colorData = typeof formValues.color_analysis === 'string' 
+              ? JSON.parse(formValues.color_analysis) 
+              : formValues.color_analysis;
+            
+            if (colorData.colors && Array.isArray(colorData.colors)) {
+              colorPalette = colorData.colors
+                .map((color: { hex: string }) => color.hex)
+                .join(', ');
+            }
+          } catch (e) {
+            console.error('Error parsing color analysis:', e);
+          }
+        }
+        
+        // Extract print preferences - now including all values
+        const printType = printCharacteristics.printTypes?.join(', ') || 'Not specified';
+        const printScale = printCharacteristics.printScales?.join(', ') || 'Not specified';
+        const printDensity = printCharacteristics.printDensities?.join(', ') || 'Not specified';
+        const patternPlacement = printCharacteristics.patternPlacements?.join(', ') || 'Not specified';
+        const surfaceTexture = printCharacteristics.surfaceTextures?.join(', ') || 'Not specified';
+        
+        // Define apparel categories
+        const upperWearItems = [
+          'Blazers', 'Shirts', 'Turtlenecks', 'Polo T-shirts', 'Tank Tops', 'Tshirts', 'Tshirt', 'Shirt',
+          'Crop Top', 'Tanks', 'Sports Bra', 'Cropped T-shirt'
+        ];
+        
+        const lowerWearItems = [
+          'Trousers', 'Jeans', 'Sweatpants', 'Shorts', 'Joggers', 'Leggings', 'Cargos', 'Cargoes',
+          'Pants', 'Skirts'
+        ];
+        
+        const fullBodyItems = [
+          'Co-ords & Onesies', 'Dressses', 'Ethnics'
+        ];
+        
+        // Extract specific wear interests
+        let upperWearInterests: string[] = [];
+        let lowerWearInterests: string[] = [];
+        let fullBodyInterests: string[] = [];
+        
+        if (formValues.goToStyle) {
+          formValues.goToStyle.forEach(style => {
+            const key = `preferred_${style}`;
+            if (formValues[key] && Array.isArray(formValues[key])) {
+              formValues[key].forEach(item => {
+                const normalizedItem = item.trim();
+                if (upperWearItems.some(upperItem => normalizedItem.toLowerCase().includes(upperItem.toLowerCase()))) {
+                  upperWearInterests.push(normalizedItem);
+                } else if (lowerWearItems.some(lowerItem => normalizedItem.toLowerCase().includes(lowerItem.toLowerCase()))) {
+                  lowerWearInterests.push(normalizedItem);
+                } else if (fullBodyItems.some(fullBodyItem => normalizedItem.toLowerCase().includes(fullBodyItem.toLowerCase()))) {
+                  fullBodyInterests.push(normalizedItem);
+                }
+              });
+            }
+          });
+        }
+        
+        const upperSpecificInterests = upperWearInterests.length > 0 
+          ? upperWearInterests.join(', ') 
+          : 'Not specified';
+          
+        const lowerSpecificInterests = lowerWearInterests.length > 0 
+          ? lowerWearInterests.join(', ') 
+          : 'Not specified';
+
+        const fullBodySpecificInterests = fullBodyInterests.length > 0 
+          ? fullBodyInterests.join(', ') 
+          : 'Not specified';
+        
+        // Determine minimalistic preference
+        const minimalistic = formValues.minimalistic === 'Yes' ? 'minimalistic' : 'non-minimalistic';
+        
+        // Additional preferences
+        const additionalPreferences = formValues.feedback || 'None';
+        
+        // Construct the captions
+        const upperWearCaption = `${gender} with ${bodyShape} body shape seeking ${upperFit} fitting tops in size ${upperSize}. Style personality combines ${personalityTag1} and ${personalityTag2} traits with ${fashionStyle} aesthetic. Color palette features ${colorPalette}. Print preferences include ${printType} patterns at ${printScale} scale with ${printDensity} density and ${patternPlacement} positioning. Prefers ${surfaceTexture} fabric textures. Specific upper wear interests: ${upperSpecificInterests}. Styling approach: ${minimalistic} design.
+Additional preferences: ${additionalPreferences}`;
+
+        const lowerWearCaption = `${gender} with ${bodyShape} body shape seeking ${lowerFit} fitting bottoms with ${lowerWaistSize} waist size. Style personality combines ${personalityTag1} and ${personalityTag2} traits with ${fashionStyle} aesthetic. Color palette features ${colorPalette}. Prefers ${surfaceTexture} fabric textures. Specific lower wear interests: ${lowerSpecificInterests}. Styling approach: ${minimalistic} design.
+Additional preferences: ${additionalPreferences}`;
+
+        const fullBodyCaption = `${gender} with ${bodyShape} body shape seeking ${fullBodyFit} silhouette in size ${upperSize} with ${lowerWaistSize} waist measurement. Style personality combines ${personalityTag1} and ${personalityTag2} traits with ${fashionStyle} aesthetic. Color palette features ${colorPalette}. Print preferences include ${printType} patterns at ${printScale} scale with ${printDensity} density and ${patternPlacement} positioning. Prefers ${surfaceTexture} fabric textures. Specific dress interests: ${fullBodySpecificInterests}. Styling approach: ${minimalistic} design.
+Additional preferences: ${additionalPreferences}`;
+
+        return { upperWearCaption, lowerWearCaption, fullBodyCaption };
+      };
 
       const styleQuizId = localStorage.getItem('styleQuizId');
       
+      const { upperWearCaption, lowerWearCaption, fullBodyCaption } = generateCaptions(formValues);
+
       const cleanedData: DynamicStyleQuizData = {
-        styleQuizId: styleQuizId || undefined,
+        id: styleQuizId || undefined,
         name: formValues.name.trim(),
-        phone: formValues.phone?.replace(/\D/g, '') || '',
+        phone_number: formValues.phone?.replace(/\D/g, '') || '',
         gender: formValues.gender,
-        bodyType: formValues.bodyType,
-        upperWear: formValues.upperWear,
-        waistSize: formValues.waistSize,
-        outfitAdventurous: formValues.outfitAdventurous || [],
+        body_shape: formValues.bodyType,
+        upper_size: formValues.upperWear,
+        lower_waist_size: formValues.waistSize,
+        outfit_adventurous: formValues.outfitAdventurous || [],
         minimalistic: formValues.minimalistic,
-        goToStyle: formValues.goToStyle || [],
+        fashion_style: formValues.goToStyle || [],
         feedback: formValues.feedback?.trim(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        usertags: userTags,
-        weekendPreference: formValues.weekendPreference,
-        shoppingStyle: formValues.shoppingStyle,
-        workspaceStyle: formValues.workspaceStyle,
-        friendCompliments: formValues.friendCompliments,
-        workOutfit: formValues.workOutfit,
-        wardrobeContent: formValues.wardrobeContent,
-        colorAnalysis: colorAnalysisData,
-        userId
-      
+        user_tags: userTags,
+        weekend_preference: formValues.weekendPreference,
+        shopping_style: formValues.shoppingStyle,
+        workspace_style: formValues.workspaceStyle,
+        friend_compliments: formValues.friendCompliments,
+        work_outfit: formValues.workOutfit,
+        wardrobe_content: formValues.wardrobeContent,
+        color_analysis: colorAnalysisData,
+        personality_tag_1: personalityTags[0],
+        personality_tag_2: personalityTags[1],
+        print_type: printCharacteristics.printTypes,
+        print_scale: printCharacteristics.printScales,
+        print_density: printCharacteristics.printDensities,
+        pattern_placement: printCharacteristics.patternPlacements,
+        surface_texture: printCharacteristics.surfaceTextures,
+        upper_fit: fitTags.upperWear,
+        lower_fit: fitTags.lowerWear,
+        full_body_fit: fitTags.fullBody,
+        user_id,
+        upper_wear_caption: upperWearCaption,
+        lower_wear_caption: lowerWearCaption,
+        full_body_dress_caption: fullBodyCaption,
+        undertone:colorAnalysisData?.undertone,
+        contrast:colorAnalysisData?.contrast,
+        hex_codes: colorAnalysisData?.recommendedColors?.map((c:any) => c.hex),
+        color_family:colorAnalysisData?.recommendedColors?.map((color:any) =>
+          color.explanation.split(' - ')[0].trim()
+        )
+
+        
       };
+
+      const validApparelKeys = ['athleisure', 'streetwear', 'business_casual'];
 
       dynamicSteps.forEach(({ style }) => {
         const key = `preferred_${style}`;
-        if (formValues[key]) {
-          cleanedData[key] = formValues[key];
+        const dbKey = `apparel_pref_${style.replace(/\s+/g, '_')}`;
+      
+        if (validApparelKeys.includes(style.replace(/\s+/g, '_')) && formValues[key]) {
+          cleanedData[dbKey] = formValues[key];
         }
       });
 
@@ -263,9 +400,9 @@ const StyleQuiz: React.FC = () => {
 
       // Upsert data using styleQuizId
       const { error: insertError } = await supabase
-        .from('style-quiz')
+        .from('style-quiz-updated')
         .upsert([cleanedData], {
-          onConflict: 'styleQuizId'
+          onConflict: 'id'
         });
 
       if (insertError) {
@@ -309,7 +446,7 @@ const StyleQuiz: React.FC = () => {
       return Array.isArray(formValues.goToStyle) && formValues.goToStyle.length > 0;
     }
 
-    // Dynamic steps come right after Go To Style (step 7)
+    // Dynamic steps come right after Go To Style step (step 7)
     if (currentStep > 7 && currentStep <= 7 + dynamicSteps.length) {
       const idx = currentStep - 8;
       const key = `preferred_${dynamicSteps[idx].style}`;

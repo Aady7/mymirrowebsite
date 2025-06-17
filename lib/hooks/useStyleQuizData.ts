@@ -25,7 +25,7 @@ export interface StyleQuizData {
   name: string;
   colorAnalysis: string;
   gender: string;
-  bodyType: string;
+  body_shape: string;
   upperWear: string;
   waistSize: string;
   outfitAdventurous: string[];
@@ -39,6 +39,8 @@ export interface StyleQuizData {
   friendCompliments: string;
   workOutfit: string;
   wardrobeContent: string;
+  personality_tag_1:string;
+  personality_tag_2:string;
   // Add other fields as needed
 }
 
@@ -66,9 +68,9 @@ export const useStyleQuizData = () => {
           const processedData = { ...data };
           
           // Parse usertags if it's a string
-          if (typeof data.usertags === 'string') {
+          if (typeof data.user_tags === 'string') {
             try {
-              processedData.usertags = JSON.parse(data.usertags);
+              processedData.usertags = JSON.parse(data.user_tags);
             } catch (e) {
               console.error("Error parsing usertags:", e);
               setError("Error parsing usertags data");
@@ -79,9 +81,9 @@ export const useStyleQuizData = () => {
           setParsedData(processedData as StyleQuizData & { usertags: UserTagsData[] });
           
           // Parse colorAnalysis if it exists
-          if (data.colorAnalysis) {
+          if (data.color_analysis) {
             try {
-              const parsedColorAnalysis = JSON.parse(data.colorAnalysis);
+              const parsedColorAnalysis = JSON.parse(data.color_analysis);
               setColorAnalysis(parsedColorAnalysis);
             } catch (e) {
               console.error("Error parsing color analysis:", e);
@@ -111,18 +113,18 @@ export const useStyleQuizData = () => {
       if (data) {
         setQuizData(data);
         const processedData = { ...data };
-        if (typeof data.usertags === 'string') {
+        if (typeof data.user_tags === 'string') {
           try {
-            processedData.usertags = JSON.parse(data.usertags);
+            processedData.usertags = JSON.parse(data.user_tags);
           } catch (e) {
             console.error("Error parsing usertags:", e);
           }
         }
         setParsedData(processedData as StyleQuizData & { usertags: UserTagsData[] });
         
-        if (data.colorAnalysis) {
+        if (data.color_analysis) {
           try {
-            const parsedColorAnalysis = JSON.parse(data.colorAnalysis);
+            const parsedColorAnalysis = JSON.parse(data.color_analysis);
             setColorAnalysis(parsedColorAnalysis);
           } catch (e) {
             console.error("Error parsing color analysis:", e);

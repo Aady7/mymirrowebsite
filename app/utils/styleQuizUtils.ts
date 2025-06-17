@@ -59,20 +59,20 @@ export const getStyleQuizData = async () => {
 
     // Get the user's styleQuizId from users table
     const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('styleQuizID')
-      .eq('userid', session.user.id)
+      .from('users_updated')
+      .select('style_quiz_id')
+      .eq('user_id', session.user.id)
       .single();
 
-    if (userError || !userData?.styleQuizID) {
+    if (userError || !userData?.style_quiz_id) {
       throw new Error('No style quiz data found for user');
     }
 
     // Fetch the style quiz data using styleQuizId
     const { data: quizData, error: quizError } = await supabase
-      .from('style-quiz')
+      .from('style-quiz-updated')
       .select('*')
-      .eq('styleQuizId', userData.styleQuizID)
+      .eq('id', userData.style_quiz_id)
       .single();
 
     if (quizError) {
