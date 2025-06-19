@@ -1,50 +1,98 @@
 "use client";
 
+import { useAuth } from "@/lib/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-const StarRating = ({ userId, lookId }: { userId: string; lookId: number }) => {
+const StarRating = ({ productId }: { productId: string }) => {
+  const { getSession } = useAuth();
   const supabase = createClientComponentClient();
   const [rating, setRating] = useState<number>(0);
   const [showMessage, setShowMessage] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>("");
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // Fetch rating from DB on mount
   useEffect(() => {
+    const checkLoginStatus = async () => {
+      const { session } = await getSession();
+      setIsLoggedIn(!!session);
+      setCurrentUserId(session?.user?.id || null);
+    };
+    checkLoginStatus();
+  }, [getSession]);
+
+  // Fetch user's rating from Supabase
+  useEffect(() => {
+    if (!currentUserId) return;
+    
     const fetchRating = async () => {
       const { data, error } = await supabase
-        .from("ratings")
+        .from("product-rating")
         .select("rating")
-        .eq("user_id", userId)
-        .eq("look_id", lookId)
+        .eq("user_id", currentUserId)
+        .eq("product_id", parseInt(productId, 10))
         .single();
 
-      if (data && data.rating) {
+      if (data?.rating) {
         setRating(data.rating);
+      }
+
+      if (error && error.code !== "PGRST116") {
+        console.error("Fetch rating error:", error.message);
       }
     };
 
     fetchRating();
-  }, [supabase, userId, lookId]);
+  }, [supabase, currentUserId, productId]);
 
-  // Save rating to DB on click
+  // Handle rating click
   const handleRatingChange = async (star: number) => {
+    if (!isLoggedIn || !currentUserId) {
+      setMessage("Please log in to rate this product");
+      setShowMessage(true);
+      return;
+    }
+
     setRating(star);
+    setMessage("Thanks! Your response has been recorded.");
     setShowMessage(true);
 
-    const { error } = await supabase
-      .from("ratings")
-      .upsert(
-        {
-          user_id: userId,
-          look_id: lookId,
+    console.log('Attempting to save rating:', { user_id: currentUserId, product_id: parseInt(productId, 10), rating: star });
+
+    // First check if rating exists
+    const { data: existingRating } = await supabase
+      .from("product-rating")
+      .select("rating")
+      .eq("user_id", currentUserId)
+      .eq("product_id", parseInt(productId, 10))
+      .single();
+
+    let error;
+    if (existingRating) {
+      // Update existing rating
+      const { error: updateError } = await supabase
+        .from("product-rating")
+        .update({ rating: star })
+        .eq("user_id", currentUserId)
+        .eq("product_id", parseInt(productId, 10));
+      error = updateError;
+    } else {
+      // Insert new rating
+      const { error: insertError } = await supabase
+        .from("product-rating")
+        .insert({
+          user_id: currentUserId,
+          product_id: parseInt(productId, 10),
           rating: star,
-        },
-        { onConflict: "user_id,look_id" } // ensures 1 rating per user per look
-      );
+        });
+      error = insertError;
+    }
 
     if (error) {
       console.error("Error saving rating:", error.message);
+      setShowMessage(false);
     }
   };
 
@@ -63,8 +111,10 @@ const StarRating = ({ userId, lookId }: { userId: string; lookId: number }) => {
         ))}
       </div>
       {showMessage && (
-        <div className="bg-white shadow-lg rounded-lg px-6 py-3 text-center text-green-600 font-medium ">
-          Thanks Your Response Has Been Recorded
+        <div className={`bg-white shadow-lg rounded-lg px-6 py-3 text-center font-medium ${
+          !isLoggedIn ? "text-red-600" : "text-green-600"
+        }`}>
+          {message}
         </div>
       )}
     </div>

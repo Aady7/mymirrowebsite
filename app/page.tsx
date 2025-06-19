@@ -3,7 +3,7 @@ import TestimonialSection from "@/app/components/testimonialSection";
 import { Button } from "@/components/ui/button";
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
- 
+
 
 // Create a single supabase client for the entire app
 const supabase = createClient(
@@ -13,7 +13,7 @@ const supabase = createClient(
 
 const page = async () => {
   // Get the session from Supabase
-  
+
 
   return (
     <>
@@ -120,7 +120,7 @@ const page = async () => {
                 </h3>
                 <p className="font-light text-sm">
                   Our fashion experts handpick styles <br />
-                  tailored to you  
+                  tailored to you
                 </p>
               </div>
 
@@ -156,16 +156,25 @@ const page = async () => {
           </div>
 
 
-         {/* Stylist section */}
+          {/* Stylist section */}
 
-          
+
 
         </section>
-        <div className="mt-[-3rem] mb-10"> 
-        {/* Stylist section */}
-          <StylistHome/>
+
+        {/* stylist says headed added */}
+        <div className="mt-[-3rem] mb-10">
+          <div>
+            <div className="flex items-center justify-center mt-4">
+              <h1 className="text-black font-[Boston] text-[30px] md:text-[40px] not-italic font-normal leading-normal [font-variant:all-small-caps] text-center">
+                STYLIST SAYS
+              </h1>
+            </div>
           </div>
- 
+          {/* Stylist section */}
+          <StylistHome />
+        </div>
+
 
         {/* Assuming TestimonialSection is already responsive */}
         <TestimonialSection />

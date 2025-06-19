@@ -250,7 +250,7 @@ export default function ProductPage() {
         {/*star rating section */}
         <div className="w-full mt-4 flex flex-col">
           <h1 className="font-[Boston] font-thin text-[12px] text-left">Rating</h1>
-          <StarRating userId={user?.id} lookId={parseInt(id as string, 10)} />
+          <StarRating userId={user?.id} productId={id as string} />
         </div>
 
       </div>
