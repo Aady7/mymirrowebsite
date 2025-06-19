@@ -148,18 +148,18 @@ const LookPage = () => {
             </div>
             <div className="relative flex flex-col flex-1 max-w-[400px] h-[260.5px] pl-2 pr-2">
               <h1 className="text-lg text-center font-thin mb-1 mt-0 text-[14px]">{product.name}</h1>
-              <p className="font-[Boston] text-[12px] font-medium leading-normal mb-1 pr-4 mx-2">
+              <p className="font-[Boston] text-[10px] font-medium leading-normal mb-1 pr-4 mx-2">
                 {product.specifications}
               </p>
               <h4 className="flex text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-2">
                 <FaIndianRupeeSign className="h-4 mt-2" /> {product.price}
               </h4>
-              <div className="flex gap-5 mb-2">
-                <span className="text-black font-[Boston] text-[14px] font-light [font-variant:all-small-caps]">SIZE</span>
+              <div className=" absolute bottom-8 left-2 right-2 flex gap-4 mb-2">
+                <span className="text-black font-[Boston] text-[16px] font-light [font-variant:all-small-caps]">SIZE</span>
                 <ul className="flex gap-2">
                   {sizes.map(sz => (
                     <li key={sz} onClick={() => setSelectedSizes(prev => ({ ...prev, [idx]: sz }))}
-                      className={`cursor-pointer text-black font-[Boston] text-[14px] font-light [font-variant:all-small-caps] hover:font-bold transition-all ${selectedSizes[idx]===sz?'font-bold':''}`}
+                      className={`cursor-pointer text-black font-[Boston] text-[16px] font-light [font-variant:all-small-caps] hover:font-bold transition-all ${selectedSizes[idx]===sz?'font-bold':''}`}
                     >{sz}</li>
                   ))}
                 </ul>
@@ -216,8 +216,8 @@ const LookPage = () => {
       </div>
 
       {/* Carousel */}
-      <div className="px-6 py-8">
-        <h1 className="font-thin text-[20px] font-[Boston] mb-6">YOU MAY ALSO LIKE</h1>
+      <div className="px-6 py-8 mt-[-2rem]">
+        <h1 className="font-thin text-[22px] font-[Boston] mb-[-2rem]">YOU MAY ALSO LIKE</h1>
         <MyCarousel />
       </div>
     </>

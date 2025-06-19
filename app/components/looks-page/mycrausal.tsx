@@ -34,7 +34,7 @@ const MyCarousel = () => {
       pagination={{ clickable: true }}
       navigation={true}
       loop={true}
-      className="w-full relative group"
+      className="w-full max-w-none relative group"
     >
       <style jsx global>{`
         .swiper-button-next,
@@ -44,30 +44,36 @@ const MyCarousel = () => {
           background: none !important;
           opacity: 0;
           transition: opacity 0.3s;
+          top: 50% !important;
+        }
+        
+        .swiper-button-next {
+          right: -8px !important;
+        }
+        
+        .swiper-button-prev {
+          left: -8px !important;
         }
         
         .swiper-button-next:after,
         .swiper-button-prev:after {
-          font-size: 12px !important;
+          font-size: 14px !important;
           font-weight: bold;
           color: #333;
         }
 
         .swiper-button-next:active,
         .swiper-button-prev:active,
-        .swiper-button-next:focus,
-        .swiper-button-prev:focus {
-          background: none !important;
-        }
+         
 
         .group:hover .swiper-button-next,
         .group:hover .swiper-button-prev {
-          opacity: 1;
+          opacity: 2;
         }
       `}</style>
       {looks.map(({ lookId, ...look }) => (
         <SwiperSlide key={lookId}>
-          <div className="p-1">
+          <div className="w-full max-w-none">
             <ThreeImgGreed look={look} lookId={lookId} />
           </div>
         </SwiperSlide>

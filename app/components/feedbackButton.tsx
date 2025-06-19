@@ -7,7 +7,7 @@ const FeedbackButton = () => {
     
     return (
         <>
-         <button   onClick={() => setShowFeedback(true)} className="rounded-none text-sm font-extralight bg-black text-white h-10 w-30 font-[Boston]">
+         <button   onClick={() => setShowFeedback(true)} className="rounded-none text-xs font-extralight bg-black text-white h-8 w-40 font-[Boston]">
       Give Feedback
     </button>
         {showFeedback && (

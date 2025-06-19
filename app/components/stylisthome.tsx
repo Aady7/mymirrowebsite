@@ -24,7 +24,7 @@ const StylistHome = () => {
                 you better than you know yourself.
               </span>
               <br/>
-              <span className="block max-w-[60%] mx-auto">
+              <span className="block max-w-[50%] mx-auto">
                 This is styling, redefined. Personal, intentional, and built
                 around you.
               </span>

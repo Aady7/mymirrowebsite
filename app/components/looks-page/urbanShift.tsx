@@ -13,8 +13,8 @@ const UrbanShift = async() => {
   const { data: { user } } = await supabase.auth.getUser();
   return (
     <>
-      {/* Header */}
-      <div className="flex items-center justify-center mb-2 mt-6">
+      {/* Header - Removed title and look number */}
+      {/* <div className="flex items-center justify-center mb-2 mt-6">
         <span className="text-[26px] font-thin">{lookData.title}</span>
         <hr className="border-black border-1 w-[30px] mx-3" />
         <span className="text-[26px] font-thin">
@@ -22,7 +22,7 @@ const UrbanShift = async() => {
         </span>
       </div>
 
-      <hr className="border-t-1 border-black w-[90%] mx-auto mb-6" />
+      <hr className="border-t-1 border-black w-[90%] mx-auto mb-6" /> */}
 
       {/* Product List */}
       <div>
