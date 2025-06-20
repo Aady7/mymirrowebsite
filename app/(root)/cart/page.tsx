@@ -53,6 +53,10 @@ const CartPage = () => {
         const items = userData?.cartitems ? JSON.parse(userData.cartitems) : []
         setCartItems(items)
 
+        // Automatically select all cart items
+        const allSelectedItems = new Set<string>(items.map((item: CartItem) => `${item.productId}-${item.size}`))
+        setSelectedItems(allSelectedItems)
+
         // Fetch product details for all items in cart
         if (items.length > 0) {
           const productIds = items.map((item: CartItem) => item.productId)
@@ -198,7 +202,7 @@ const CartPage = () => {
               }
             }}
           />
-          <div className="w-8 h-8 border-1 border-black rounded peer-checked:bg-black peer-checked:text-white flex items-center justify-center text-[24px] font-normal">
+          <div className="w-6 h-6 border-1 border-black rounded peer-checked:bg-black peer-checked:text-white flex items-center justify-center text-[24px] font-normal">
             -
           </div>
         </label>
@@ -239,18 +243,18 @@ const CartPage = () => {
             </div>
 
             {/* Middle: product details */}
-            <div className="flex flex-col flex-grow items-start gap-1 text-black font-[Boston] text-[16px] not-italic font-normal leading-normal [font-variant:all-small-caps]">
-              <h1 className="text-[20px] font-medium">{product?.title}</h1>
+            <div className="flex flex-col flex-grow items-start gap-1 text-black font-[Boston] text-[14px] not-italic font-normal leading-normal [font-variant:all-small-caps]">
+              <h1 className="text-[20px]  mt-[-0.5rem] font-medium">{product?.title}</h1>
               <h1 className="text-[18px] mt-[-1rem] text-gray-400 font-normal">{product?.name}</h1>
               
               {/* Size */}
-              <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center gap-2 mt-1">
                 <span className="text-[14px] font-light">SIZE:</span>
-                <span className="text-[14px] font-normal">{item.size}</span>
+                <span className="text-[14px] font-normal ">{item.size}</span>
               </div>
 
               {/* Quantity selector */}
-              <div className="flex flex-row items-center mt-4 h-9 gap-2 border bg-black border-black rounded-none px-2 py-1">
+              <div className="flex flex-row items-center mt-1 h-8 gap-2 border bg-black border-black rounded-none px-2 py-1">
                 <button
                   onClick={() => handleQuantityChange(item.productId, item.quantity - 1, item.size)}
                   className="text-[20px] font-normal px-2 text-white"
@@ -267,7 +271,7 @@ const CartPage = () => {
               </div>
 
               {/* Price */}
-              <span className="flex flex-row items-center text-[18px] font-normal mt-4">
+              <span className="flex flex-row items-center text-[18px] font-normal mt-2">
                 <FaIndianRupeeSign className="mr-[4px]" /> {product?.price}
               </span>
             </div>

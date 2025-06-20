@@ -29,8 +29,8 @@ const StylistHome = () => {
           </p>
 
           <div className="flex flex-row items-center justify-center w-full gap-2 sm:gap-4">
-            <div className="flex flex-col items-center justify-center p-0 bg-[#F5EFE8] border border-[#D3C9BE] rounded-lg w-24 h-24 md:w-28 md:h-28">
-              <div className="relative w-16 h-16 md:w-20 md:h-20">
+            <div className="flex flex-col items-center justify-center p-0   w-24 h-24 md:w-28 md:h-28">
+              <div className="relative w-20 h-20 md:w-20 md:h-20">
                 <Image
                   src="/assets/quiz.svg"
                   alt="quiz photo"
@@ -38,15 +38,15 @@ const StylistHome = () => {
                   objectFit="contain"
                 />
               </div>
-              <span className="font-light text-black text-[9px] md:text-xs text-center mt-2">
+              <span className="font-light text-black text-[10px] md:text-xs text-center mt-1">
                 QUIZ
               </span>
             </div>
 
-            <div className="flex-grow border-t border-stone-300 max-w-16 md:max-w-24"></div>
+            
 
-            <div className="flex flex-col items-center justify-center p-0 bg-[#F5EFE8] border border-[#D3C9BE] rounded-lg w-24 h-24 md:w-28 md:h-28">
-              <div className="relative w-16 h-16 md:w-20 md:h-20">
+            <div className="flex flex-col items-center justify-center p-0   w-24 h-24 md:w-28 md:h-28">
+              <div className="relative  w-20 h-20 md:w-20 md:h-20">
                 <Image
                   src="/assets/ai.svg"
                   alt="ai photo"
@@ -54,15 +54,15 @@ const StylistHome = () => {
                   objectFit="contain"
                 />
               </div>
-              <span className="font-light text-black text-[9px] md:text-xs text-center mt-2">
+              <span className="font-light text-black text-[10px] md:text-xs text-center mt-1">
                 AI
               </span>
             </div>
 
-            <div className="flex-grow border-t border-stone-300 max-w-16 md:max-w-24"></div>
+          
 
-            <div className="flex flex-col items-center justify-center p-0 bg-[#F5EFE8] border border-[#D3C9BE] rounded-lg w-24 h-24 md:w-28 md:h-28">
-              <div className="relative w-16 h-16 md:w-20 md:h-20">
+            <div className="flex flex-col items-center justify-center p-0   w-24 h-24 md:w-28 md:h-28">
+              <div className="relative  w-20 h-20 md:w-20 md:h-20">
                 <Image
                   src="/assets/stylist.svg"
                   alt="stylist photo"
@@ -70,7 +70,7 @@ const StylistHome = () => {
                   objectFit="contain"
                 />
               </div>
-              <span className="font-light text-black text-[9px] md:text-xs text-center mt-2">
+              <span className="font-light text-black text-[10px] md:text-xs text-center mt-2">
                 STYLIST
               </span>
             </div>
