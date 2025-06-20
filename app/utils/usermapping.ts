@@ -158,7 +158,7 @@ export function generatePersonalityTags({
   console.log("Generated personality tags:", sortedTags.slice(0, 3));
   
   // Return top 3 personality tags (increased from 2 since we now have multiple selections)
-  return sortedTags.slice(0, 3);
+  return sortedTags.slice(0, 2);
 }
 
 

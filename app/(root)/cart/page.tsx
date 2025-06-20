@@ -43,14 +43,14 @@ const CartPage = () => {
 
         // Fetch user's cart items
         const { data: userData, error: userError } = await supabase
-          .from('users')
-          .select('cartitems')
-          .eq('userid', session.user.id)
+          .from('users_updated')
+          .select('cart_items')
+          .eq('user_id', session.user.id)
           .single()
 
         if (userError) throw userError
 
-        const items = userData?.cartitems ? JSON.parse(userData.cartitems) : []
+        const items = userData?.cart_items ? JSON.parse(userData.cart_items) : []
         setCartItems(items)
 
         // Fetch product details for all items in cart

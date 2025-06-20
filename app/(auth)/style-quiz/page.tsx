@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect, ChangeEvent, FormEvent, useCallback } from 'react';
+import React, { useState, useEffect, ChangeEvent, FormEvent, useCallback, useRef } from 'react';
 import { supabase } from '@/lib/supabase';
 import { generateFitTags, generatePersonalityTags, generatePrintTags } from '@/app/utils/usermapping';
 import { useRouter } from 'next/navigation';
@@ -73,6 +73,7 @@ const StyleQuiz: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [otpSent, setOtpSent] = useState(false);
   const router = useRouter();
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let id = localStorage.getItem('userId');
@@ -89,6 +90,15 @@ const StyleQuiz: React.FC = () => {
       localStorage.setItem('styleQuizId', quizId);
     }
   }, []);
+
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  }, [currentStep]);
 
   const handleSendOtpClick = async () => {
     setIsSubmitting(true);
@@ -684,14 +694,17 @@ Additional preferences: ${additionalPreferences}`;
                     onChange={handleChange}
                     className="hidden"
                   />
-                  <div className={`w-full py-3 px-4 rounded-lg text-center cursor-pointer transition-all text-[14px] ${formValues.minimalistic === option ? 'bg-[#007e90] text-white' : 'bg-white text-gray-700 border-2 border-gray-200'
-                    }`}>
+                  <div className={`w-full py-3 px-4 rounded-lg text-center cursor-pointer transition-all text-[14px] ${
+                    formValues.minimalistic === option 
+                      ? 'bg-[#007e90] text-white' 
+                      : 'bg-white text-gray-700 border-2 border-gray-200'
+                  }`}>
                     {option}
                   </div>
                 </label>
               ))}
             </div>
-            <div className="border-t pt-8">
+            <div className="pt-8">
               <StylePreferencesStep formValues={formValues} handleChange={handleChange} />
             </div>
           </div>
@@ -931,7 +944,7 @@ Additional preferences: ${additionalPreferences}`;
 
             {/* Content Area */}
             <div className="flex-1 min-h-0 relative">
-              <div className="absolute inset-0 overflow-y-auto">
+              <div ref={contentRef} className="absolute inset-0 overflow-y-auto">
                 <div className="p-4 md:p-8 pb-32">
                   {error && (
                     <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">

@@ -16,15 +16,15 @@ export const addToCart = async (
   try {
     // Get current cart items
     const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('cartitems')
-      .eq('userid', userId)
+      .from('users_updated')
+      .select('cart_items')
+      .eq('user_id', userId)
       .single()
 
     if (userError) throw userError
 
     // Parse existing cart items or initialize empty array
-    const currentCartItems = userData?.cartitems ? JSON.parse(userData.cartitems) : []
+    const currentCartItems = userData?.cart_items ? JSON.parse(userData.cart_items) : []
 
     // Check if the item with the same size already exists in cart
     const existingItemIndex = currentCartItems.findIndex(
@@ -53,9 +53,9 @@ export const addToCart = async (
 
     // Update user's cart in database
     const { error: updateError } = await supabase
-      .from('users')
-      .update({ cartitems: JSON.stringify(updatedCartItems) })
-      .eq('userid', userId)
+      .from('users_updated')
+      .update({ cart_items: JSON.stringify(updatedCartItems) })
+      .eq('user_id', userId)
 
     if (updateError) throw updateError
 
