@@ -316,9 +316,7 @@ const CartPage = () => {
           <div className="flex justify-between items-center mb-3">
             <span className="flex items-center font-normal">
               Stylist Fee
-              <span className="ml-2 w-5 h-5 rounded-full bg-green-400 flex items-center justify-center text-yellow-500 font-medium text-[12px] border border-green-600">
-                S
-              </span>
+              
             </span>
             <span className="text-green-500 font-normal">FREE</span>
           </div>

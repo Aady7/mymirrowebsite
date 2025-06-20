@@ -61,7 +61,7 @@ const Stylist = () => {
         <div className="p-0">
           {/* Text + Image */}
           <div className="flex flex-col items-center justify-between md:max-w-[80%] lg:max-w-[70%] mx-auto">
-            <p className="font-[Boston] text-[12px] md:text-[14px] lg:text-[16px] not-italic font-normal leading-normal text-center">
+            <p className="font-[Boston] text-[10px] md:text-[14px] lg:text-[16px] not-italic font-normal leading-normal text-center">
 
               <span className="font-semibold">{quizData?.name || 'Ahan'}</span>, your style journey
               starts with your
