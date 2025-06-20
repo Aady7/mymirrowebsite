@@ -118,9 +118,9 @@ const MobileSignIn = () => {
     try {
       // Double check if the phone number exists in users table
       const { data: users, error: fetchError } = await supabase
-        .from('users')
-        .select('phoneNumber')
-        .eq('phoneNumber', cleanedPhone)
+        .from('users_updated')
+        .select('phone_number')
+        .eq('phone_number', cleanedPhone)
 
       if (fetchError) {
         throw fetchError;

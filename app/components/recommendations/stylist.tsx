@@ -134,7 +134,7 @@ const Stylist = () => {
               </h1>
               <p className="mt-2 font-[Boston] text-[12px] md:text-[14px] lg:text-[16px] not-italic font-light leading-normal">
                 {colorAnalysis ? 
-                  `With your ${colorAnalysis.selectedToneName.toLowerCase()} undertones, these harmonious colors will enhance your natural style and create a balanced, sophisticated look.` :
+                  `With your ${colorAnalysis?.selectedToneName?.toLowerCase()} undertones, these harmonious colors will enhance your natural style and create a balanced, sophisticated look.` :
                   'With your soft undertones and calm personality, light earthy tones and minimal pieces enhance your natural ease and elegance.'
                 }
               </p>
