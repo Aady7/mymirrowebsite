@@ -36,7 +36,7 @@ export const looksData = {
         price: 2300,
         sizes: ["S", "M", "L", "XL"],
         images: {
-          background: "/assets/looks-1-back.png",
+          background: "/assets/looks.png",
           foreground: "/assets/tex-2.png",
         },
       },
@@ -48,7 +48,7 @@ export const looksData = {
         price: 2300,
         sizes: ["S", "M", "L", "XL"],
         images: {
-          background: "/assets/looks-1-back.png",
+          background: "/assets/looksk.png",
           foreground: "/assets/pant-2.png",
         },
       },
@@ -60,7 +60,7 @@ export const looksData = {
         price: 2300,
         sizes: ["S", "M", "L", "XL"],
         images: {
-          background: "/assets/looks-1-back.png",
+          background: "/assets/looks .png",
           foreground: "/assets/shooes.png",
         },
       },

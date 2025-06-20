@@ -27,7 +27,7 @@ const Looksfeeback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId })
 
     return (
         <>
-            <button onClick={() => setShow(true)} className="rounded-none text-sm font-extralight bg-black text-white h-10 w-30 font-[Boston]">
+            <button onClick={() => setShow(true)} className="rounded-none text-xs font-extralight bg-black text-white px-2 py-2 min-w-[120px] w-50 whitespace-nowrap font-[Boston]">
                 Give Feedback
             </button>
             {show && (
@@ -62,21 +62,21 @@ const Looksfeeback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId })
                                     <div className="space-y-2 mb-[30px]">
                                         <label className="block text-gray-400 text-sm"> Did these outfit suggestions feel fresh and exciting to you?</label>
                                         <div className="px-8">
-                                            <StarRating userId={userId} lookId={lookId} />
+                                            <StarRating productId={lookId.toString()} />
                                         </div>
                                     </div>
 
                                     <div className="space-y-2 mb-[30px]">
                                         <label className="block text-gray-400 text-sm"> Do these recommendations match your personal style, in terms of color, fit, and design?</label>
                                         <div className="px-8">
-                                            <StarRating userId={userId} lookId={lookId} />
+                                             <StarRating productId={lookId.toString()} />
                                         </div>
                                     </div>
 
                                     <div className="space-y-2 mb-[30px]">
                                         <label className="block text-gray-400 text-sm"> Are you happy with the variety of looks shown here? </label>
                                         <div className="px-8">
-                                            <StarRating userId={userId} lookId={lookId} />
+                                            <StarRating productId={lookId.toString()} />
                                         </div>
                                     </div>
 
@@ -86,7 +86,7 @@ const Looksfeeback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId })
                                             value={formData.comment}
                                             onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
                                             placeholder="Anything you'd like us to know?"
-                                            className="w-full h-[186px] p-3 rounded-none bg-black text-gray-200 tracking-wider text-xs placeholder-gray-400 border border-gray-700 focus:outline-none focus:border-gray-500"
+                                            className="w-full h-[100px] p-3 rounded-none bg-black text-gray-200 tracking-wider text-xs placeholder-gray-400 border border-gray-700 focus:outline-none focus:border-gray-500"
                                         />
                                     </div>
                                 </div>
@@ -102,7 +102,7 @@ const Looksfeeback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId })
                             </form>
                         </div>
 
-                        <style jsx global>{`
+             <style jsx global>{`
                 @keyframes slideUp {
                   from {
                     transform: translateY(100%);
@@ -111,7 +111,8 @@ const Looksfeeback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId })
                     transform: translateY(0);
                   }
                 }
-              `}</style>
+              `}
+              </style>
 
                     </div>
                 </div>

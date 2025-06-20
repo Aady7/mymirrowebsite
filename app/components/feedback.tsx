@@ -187,7 +187,7 @@ const Feedback: React.FC<FeedbackProps> = ({ onClose }) => {
                             value={formData.comment}
                             onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
                             placeholder="Anything you'd like us to know?"
-                            className="w-full h-[186px] p-3 rounded-none bg-black text-gray-200 tracking-wider text-xs placeholder-gray-400 border border-gray-700 focus:outline-none focus:border-gray-500"
+                            className="w-full h-[100px] p-3 rounded-none bg-black text-gray-200 tracking-wider text-xs placeholder-gray-400 border border-gray-700 focus:outline-none focus:border-gray-500"
                         />
                     </div>
                 </div>

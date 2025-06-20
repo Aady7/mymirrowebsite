@@ -3,79 +3,78 @@ import Image from "next/image";
 
 const StylistHome = () => {
   return (
-    <div className="px-4 w-full max-w-[480px] mx-auto md:max-w-[768px] lg:max-w-[1024px] xl:max-w-[1280px]">
-      {/*stylist section*/}
-      <div className="p-4 md:p-6 lg:p-8">
-        <div className="p-0">
-          {/* Text + Image */}
-          <div className="flex flex-col items-center justify-between md:max-w-[80%] lg:max-w-[70%] mx-auto">
-            <p className="font-[Boston] text-[12px] md:text-[14px] lg:text-[16px] not-italic font-normal leading-normal text-center">
-              <span className="block max-w-[90%] mx-auto">
-                Your style shouldn't be left to trends, tabs, or trial and
-                error.
-              </span>
-              <span className="block max-w-[80%] mx-auto">
-                At MyMirro, every look is the result of a layered process — your
-                quiz inputs, refined by AI, and elevated by real stylists.
-              </span>
-              <span className="block max-w-[70%] mx-auto">
-                We don't just match clothes. We decode you — your preferences,
-                proportions, and personality — to build a wardrobe that knows
-                you better than you know yourself.
-              </span>
-              <br/>
-              <span className="block max-w-[60%] mx-auto">
-                This is styling, redefined. Personal, intentional, and built
-                around you.
-              </span>
-            </p>
+    <div className="px-8 w-full max-w-[480px] mx-auto md:max-w-2xl lg:max-w-4xl py-8">
+      <div className="relative border border-stone-400 p-6 pt-10 md:p-8 md:pt-12">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-2">
+          <h2 className="text-center font-[Boston] text-lg md:text-xl lg:text-2xl tracking-widest text-stone-800 whitespace-nowrap">
+            STYLIST SAYS
+          </h2>
+        </div>
 
-            <div className="flex flex-row items-center overflow-x-auto mt-6 px-4 gap-0 md:gap-4 lg:gap-8 md:justify-center md:overflow-visible">
-              <div className="flex flex-col items-center w-[90px] md:w-[120px] lg:w-[150px]">
+        <div className="flex flex-col items-start justify-center space-y-8">
+          <p className="text-xs md:text-base leading-relaxed text-left text-stone-600 max-w-prose">
+            Your style shouldn't be left to trends, tabs, or trial and error.
+            <br />
+            <br />
+            At MyMirro, every look blends your quiz inputs with AI precision and
+            stylist expertise.
+            <br />
+            <br />
+            We don't just match clothes, we decode your preferences,
+            proportions, and personality to build a wardrobe that knows you
+            better than you know yourself.
+            <br />
+            <br />
+            Styling, redefined. Personal. Intentional. Built around you.
+          </p>
+
+          <div className="flex flex-row items-center justify-center w-full gap-2 sm:gap-4">
+            <div className="flex flex-col items-center justify-center p-0   w-24 h-24 md:w-28 md:h-28">
+              <div className="relative w-20 h-20 md:w-20 md:h-20">
                 <Image
                   src="/assets/quiz.svg"
                   alt="quiz photo"
-                  width={80}
-                  height={70}
-                  className="object-contain shrink-0 md:w-[100px] md:h-[90px] lg:w-[120px] lg:h-[110px]"
+                  layout="fill"
+                  objectFit="contain"
                 />
-                <span className="font-light text-black text-[10px] md:text-[12px] lg:text-[14px] text-center">
-                  QUIZ
-                </span>
               </div>
+              <span className="font-light text-black text-[10px] md:text-xs text-center mt-1">
+                QUIZ
+              </span>
+            </div>
 
-              <p className="text-xs font-light md:text-base lg:text-lg">+</p>
+            
 
-              <div className="flex flex-col items-center w-[90px] md:w-[120px] lg:w-[150px]">
+            <div className="flex flex-col items-center justify-center p-0   w-24 h-24 md:w-28 md:h-28">
+              <div className="relative  w-20 h-20 md:w-20 md:h-20">
                 <Image
                   src="/assets/ai.svg"
                   alt="ai photo"
-                  width={80}
-                  height={70}
-                  className="object-contain shrink-0 md:w-[100px] md:h-[90px] lg:w-[120px] lg:h-[110px]"
+                  layout="fill"
+                  objectFit="contain"
                 />
-                <span className="font-light text-black text-[10px] md:text-[12px] lg:text-[14px] text-center">
-                  AI
-                </span>
               </div>
+              <span className="font-light text-black text-[10px] md:text-xs text-center mt-1">
+                AI
+              </span>
+            </div>
 
-              <p className="text-xs font-light md:text-base lg:text-lg">+</p>
+          
 
-              <div className="flex flex-col items-center w-[90px] md:w-[120px] lg:w-[150px]">
+            <div className="flex flex-col items-center justify-center p-0   w-24 h-24 md:w-28 md:h-28">
+              <div className="relative  w-20 h-20 md:w-20 md:h-20">
                 <Image
                   src="/assets/stylist.svg"
                   alt="stylist photo"
-                  width={80}
-                  height={70}
-                  className="object-contain shrink-0 md:w-[100px] md:h-[90px] lg:w-[120px] lg:h-[110px]"
+                  layout="fill"
+                  objectFit="contain"
                 />
-                <span className="font-light text-black text-[10px] md:text-[12px] lg:text-[14px] text-center">
-                  STYLIST
-                </span>
               </div>
+              <span className="font-light text-black text-[10px] md:text-xs text-center mt-2">
+                STYLIST
+              </span>
             </div>
           </div>
-   
         </div>
       </div>
     </div>

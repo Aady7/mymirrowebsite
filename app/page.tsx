@@ -164,13 +164,6 @@ const page = async () => {
 
         {/* stylist says headed added */}
         <div className="mt-[-3rem] mb-10">
-          <div>
-            <div className="flex items-center justify-center mt-4">
-              <h1 className="text-black font-[Boston] text-[30px] md:text-[40px] not-italic font-normal leading-normal [font-variant:all-small-caps] text-center">
-                STYLIST SAYS
-              </h1>
-            </div>
-          </div>
           {/* Stylist section */}
           <StylistHome />
         </div>

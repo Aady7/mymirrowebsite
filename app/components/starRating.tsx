@@ -56,8 +56,8 @@ const StarRating = ({ productId }: { productId: string }) => {
     }
 
     setRating(star);
-    setMessage("Thanks! Your response has been recorded.");
-    setShowMessage(true);
+    //setMessage("Thanks! Your response has been recorded.");
+    //setShowMessage(true);
 
     console.log('Attempting to save rating:', { user_id: currentUserId, product_id: parseInt(productId, 10), rating: star });
 

@@ -15,9 +15,9 @@ const LookSection = ({ look, lookId }: LookSectionProps) => {
 
   return (
     <div className="bg-white mt-6 px-6 py-2">
-      <h1 className="text-sm mx-6 font-semibold text-black text-left mb-1">
+      {/* <h1 className="text-sm mx-6 font-semibold text-black text-left mb-1">
         {look.title}
-      </h1>
+      </h1> */}
 
       <div>
         {displayProducts.length === 2 ? (

@@ -206,7 +206,7 @@ export default function ProductPage() {
         </div>
         <div className="w-full p-2 mt-[12px]">
           <h6 className="text-left font-thin text-sm">SIZE</h6>
-          <div className="flex gap-4 mt-2">
+          <div className="flex gap-3 mt-2 flex-wrap">
             {productSizes.map((size: string, index: number) => (
               <Button
                 key={index}
