@@ -45,12 +45,12 @@ const getDynamicStepHeading = (style: string): string => {
 const getFinalStepHeading = (step: number, totalDynamicSteps: number): string => {
   const finalStepsStart = STATIC_STEPS.length + totalDynamicSteps;
   const stepPosition = step - finalStepsStart;
-  
+
   switch (stepPosition) {
     case 1:
       return 'Style Personality';
     case 2:
-      return  `Let's Get to Know Your Skin Tone` ;
+      return `Let's Get to Know Your Skin Tone`;
     case 3:
       return 'Fashion Secrets Safe';
     case 4:
@@ -68,12 +68,15 @@ const StyleQuiz: React.FC = () => {
   const [formValues, setFormValues] = useState<FormValues>({ outfitAdventurous: [], goToStyle: [] });
   const [dynamicSteps, setDynamicSteps] = useState<DynamicStep[]>([]);
   const [userId, setUserId] = useState<string>('');
-  const[sessionID, setSessionID] = useState<string>('');
+  const [sessionID, setSessionID] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [otpSent, setOtpSent] = useState(false);
   const router = useRouter();
   const contentRef = useRef<HTMLDivElement>(null);
+  const [showNavButtons, setShowNavButtons] = useState(true);
+  const lastScrollYRef = useRef(0);
+
 
   useEffect(() => {
     let id = localStorage.getItem('userId');
@@ -91,14 +94,31 @@ const StyleQuiz: React.FC = () => {
     }
   }, []);
 
+  /* useEffect(() => {
+     if (contentRef.current) {
+       contentRef.current.scrollTo({
+         top: 0,
+         behavior: 'smooth'
+       });
+     }
+   }, [currentStep]);*/
   useEffect(() => {
-    if (contentRef.current) {
-      contentRef.current.scrollTo({
-        top: 0,
-        behavior: 'smooth'
-      });
-    }
-  }, [currentStep]);
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY < lastScrollYRef.current) {
+        setShowNavButtons(true);  // scrolling up → show
+      } else {
+        setShowNavButtons(false); // scrolling down → hide
+      }
+
+      lastScrollYRef.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
 
   const handleSendOtpClick = async () => {
     setIsSubmitting(true);
@@ -133,7 +153,7 @@ const StyleQuiz: React.FC = () => {
         if (session && !sessionError) {
           // Get the styleQuizId from localStorage
           const styleQuizId = localStorage.getItem('styleQuizId');
-          
+
           // Add user data to users table with styleQuizId
           console.log("Updating user data with styleQuizId:", styleQuizId);
           const { error: userError } = await supabase
@@ -155,7 +175,7 @@ const StyleQuiz: React.FC = () => {
 
           await sendFormData();
           router.push("/recommendations");
-          
+
         } else {
           setError('Session not available. Please try again.');
         }
@@ -233,7 +253,7 @@ const StyleQuiz: React.FC = () => {
       interface DynamicStyleQuizData extends StyleQuizData {
         [key: string]: any;
       }
-      
+
       const generateCaptions = (formValues: FormValues): { upperWearCaption: string; lowerWearCaption: string; fullBodyCaption: string } => {
         // Extract basic information
         const gender = formValues.gender || 'Not specified';
@@ -243,22 +263,22 @@ const StyleQuiz: React.FC = () => {
         const fullBodyFit = fitTags.fullBody?.join(', ') || 'Not specified';
         const upperSize = formValues.upperWear || 'Not specified';
         const lowerWaistSize = formValues.waistSize || 'Not specified';
-        
+
         // Extract personality tags
         const personalityTag1 = personalityTags[0] || 'Not specified';
         const personalityTag2 = personalityTags[1] || 'Not specified';
-        
+
         // Extract fashion style
         const fashionStyle = formValues.goToStyle?.join(', ') || 'Not specified';
-        
+
         // Extract color analysis
         let colorPalette = 'Not specified';
         if (formValues.color_analysis) {
           try {
-            const colorData = typeof formValues.color_analysis === 'string' 
-              ? JSON.parse(formValues.color_analysis) 
+            const colorData = typeof formValues.color_analysis === 'string'
+              ? JSON.parse(formValues.color_analysis)
               : formValues.color_analysis;
-            
+
             if (colorData.colors && Array.isArray(colorData.colors)) {
               colorPalette = colorData.colors
                 .map((color: { hex: string }) => color.hex)
@@ -268,34 +288,34 @@ const StyleQuiz: React.FC = () => {
             console.error('Error parsing color analysis:', e);
           }
         }
-        
+
         // Extract print preferences - now including all values
         const printType = printCharacteristics.printTypes?.join(', ') || 'Not specified';
         const printScale = printCharacteristics.printScales?.join(', ') || 'Not specified';
         const printDensity = printCharacteristics.printDensities?.join(', ') || 'Not specified';
         const patternPlacement = printCharacteristics.patternPlacements?.join(', ') || 'Not specified';
         const surfaceTexture = printCharacteristics.surfaceTextures?.join(', ') || 'Not specified';
-        
+
         // Define apparel categories
         const upperWearItems = [
           'Blazers', 'Shirts', 'Turtlenecks', 'Polo T-shirts', 'Tank Tops', 'Tshirts', 'Tshirt', 'Shirt',
           'Crop Top', 'Tanks', 'Sports Bra', 'Cropped T-shirt'
         ];
-        
+
         const lowerWearItems = [
           'Trousers', 'Jeans', 'Sweatpants', 'Shorts', 'Joggers', 'Leggings', 'Cargos', 'Cargoes',
           'Pants', 'Skirts'
         ];
-        
+
         const fullBodyItems = [
           'Co-ords & Onesies', 'Dressses', 'Ethnics'
         ];
-        
+
         // Extract specific wear interests
         let upperWearInterests: string[] = [];
         let lowerWearInterests: string[] = [];
         let fullBodyInterests: string[] = [];
-        
+
         if (formValues.goToStyle) {
           formValues.goToStyle.forEach(style => {
             const key = `preferred_${style}`;
@@ -313,25 +333,25 @@ const StyleQuiz: React.FC = () => {
             }
           });
         }
-        
-        const upperSpecificInterests = upperWearInterests.length > 0 
-          ? upperWearInterests.join(', ') 
-          : 'Not specified';
-          
-        const lowerSpecificInterests = lowerWearInterests.length > 0 
-          ? lowerWearInterests.join(', ') 
+
+        const upperSpecificInterests = upperWearInterests.length > 0
+          ? upperWearInterests.join(', ')
           : 'Not specified';
 
-        const fullBodySpecificInterests = fullBodyInterests.length > 0 
-          ? fullBodyInterests.join(', ') 
+        const lowerSpecificInterests = lowerWearInterests.length > 0
+          ? lowerWearInterests.join(', ')
           : 'Not specified';
-        
+
+        const fullBodySpecificInterests = fullBodyInterests.length > 0
+          ? fullBodyInterests.join(', ')
+          : 'Not specified';
+
         // Determine minimalistic preference
         const minimalistic = formValues.minimalistic === 'Yes' ? 'minimalistic' : 'non-minimalistic';
-        
+
         // Additional preferences
         const additionalPreferences = formValues.feedback || 'None';
-        
+
         // Construct the captions
         const upperWearCaption = `${gender} with ${bodyShape} body shape seeking ${upperFit} fitting tops in size ${upperSize}. Style personality combines ${personalityTag1} and ${personalityTag2} traits with ${fashionStyle} aesthetic. Color palette features ${colorPalette}. Print preferences include ${printType} patterns at ${printScale} scale with ${printDensity} density and ${patternPlacement} positioning. Prefers ${surfaceTexture} fabric textures. Specific upper wear interests: ${upperSpecificInterests}. Styling approach: ${minimalistic} design.
 Additional preferences: ${additionalPreferences}`;
@@ -346,7 +366,7 @@ Additional preferences: ${additionalPreferences}`;
       };
 
       const styleQuizId = localStorage.getItem('styleQuizId');
-      
+
       const { upperWearCaption, lowerWearCaption, fullBodyCaption } = generateCaptions(formValues);
 
       const cleanedData: DynamicStyleQuizData = {
@@ -385,14 +405,14 @@ Additional preferences: ${additionalPreferences}`;
         upper_wear_caption: upperWearCaption,
         lower_wear_caption: lowerWearCaption,
         full_body_dress_caption: fullBodyCaption,
-        undertone:colorAnalysisData?.undertone,
-        contrast:colorAnalysisData?.contrast,
-        hex_codes: colorAnalysisData?.recommendedColors?.map((c:any) => c.hex),
-        color_family:colorAnalysisData?.recommendedColors?.map((color:any) =>
+        undertone: colorAnalysisData?.undertone,
+        contrast: colorAnalysisData?.contrast,
+        hex_codes: colorAnalysisData?.recommendedColors?.map((c: any) => c.hex),
+        color_family: colorAnalysisData?.recommendedColors?.map((color: any) =>
           color.explanation.split(' - ')[0].trim()
         )
 
-        
+
       };
 
       const validApparelKeys = ['athleisure', 'streetwear', 'business_casual'];
@@ -400,7 +420,7 @@ Additional preferences: ${additionalPreferences}`;
       dynamicSteps.forEach(({ style }) => {
         const key = `preferred_${style}`;
         const dbKey = `apparel_pref_${style.replace(/\s+/g, '_')}`;
-      
+
         if (validApparelKeys.includes(style.replace(/\s+/g, '_')) && formValues[key]) {
           cleanedData[dbKey] = formValues[key];
         }
@@ -431,7 +451,7 @@ Additional preferences: ${additionalPreferences}`;
 
   const isStepValid = useCallback((): boolean => {
     if (currentStep === 1) return !!formValues.name && !!formValues.gender;
-    
+
     // Handle personality questions (steps 2-4)
     if (currentStep >= 2 && currentStep <= 4) {
       const personalityIdx = (() => {
@@ -442,9 +462,9 @@ Additional preferences: ${additionalPreferences}`;
           default: return 0;
         }
       })();
-      
+
       const question = PERSONALITY_QUESTIONS[personalityIdx];
-      
+
       // Validate all questions in the group
       const groupQuestions = PERSONALITY_QUESTIONS.filter(q => q.group === question.group);
       return groupQuestions.every(q => !!formValues[q.key]);
@@ -539,7 +559,7 @@ Additional preferences: ${additionalPreferences}`;
     // Update form values first
     setFormValues(prev => {
       const newVals = { ...prev };
-      
+
       // Handle personality questions (multi-select)
       if (type === 'checkbox' && (currentStep >= 2 && currentStep <= 4)) {
         const currentArray = Array.isArray(prev[name]) ? [...prev[name]] : [];
@@ -577,23 +597,23 @@ Additional preferences: ${additionalPreferences}`;
       'colorAnalysis',
       'minimalistic',
       'outfitAdventurous'
-      
+
     ].includes(name);
 
     // Also skip if the step is the GoToStyle step (multiple checkboxes)
     const isGoToStyleStep = currentStep === 7;
-    
+
     // Or if it's a dynamic style preference step (multiple options)
     const isDynamicStyleStep = currentStep > 7 && currentStep <= 7 + dynamicSteps.length;
-    
+
     // Skip auto-next for personality questions (steps 2-4) since they're now multi-select
     const isPersonalityStep = currentStep >= 2 && currentStep <= 4;
 
-    if(currentStep === 6){
-      const updatedValues={...formValues, [name]: value}
-      const bothSizeQuestionsAnswered= 
-      !!updatedValues.upperWear && !!updatedValues.waistSize;
-      if(!bothSizeQuestionsAnswered){
+    if (currentStep === 6) {
+      const updatedValues = { ...formValues, [name]: value }
+      const bothSizeQuestionsAnswered =
+        !!updatedValues.upperWear && !!updatedValues.waistSize;
+      if (!bothSizeQuestionsAnswered) {
         console.log("Both size questions must be answered before proceeding to the next step");
         return;
       }
@@ -602,16 +622,16 @@ Additional preferences: ${additionalPreferences}`;
     if (!skipAutoNext && !isGoToStyleStep && !isDynamicStyleStep && !isPersonalityStep) {
       // Auto advance for most radio button selections
       console.log(`Will auto-advance after selecting ${name}=${value} at step ${currentStep}`);
-      
+
       // Add a small delay to allow state to update
       setTimeout(async () => {
         console.log(`Auto-advancing now from step ${currentStep}`);
-        
+
         try {
           // First save the data
           await sendFormData();
           console.log("Data saved successfully");
-          
+
           // Directly advance the step without validation
           console.log(`Advancing from ${currentStep} to ${currentStep + 1}`);
           setCurrentStep(prev => prev + 1);
@@ -628,7 +648,7 @@ Additional preferences: ${additionalPreferences}`;
       if (currentStep === 1) {
         return <PersonalInfoStep formValues={formValues} handleChange={handleChange} />;
       }
-      
+
       // Handle personality questions (steps 2-4)
       if (currentStep >= 2 && currentStep <= 4) {
         const personalityIdx = (() => {
@@ -694,11 +714,10 @@ Additional preferences: ${additionalPreferences}`;
                     onChange={handleChange}
                     className="hidden"
                   />
-                  <div className={`w-full py-3 px-4 rounded-lg text-center cursor-pointer transition-all text-[14px] ${
-                    formValues.minimalistic === option 
-                      ? 'bg-[#007e90] text-white' 
-                      : 'bg-white text-gray-700 border-2 border-gray-200'
-                  }`}>
+                  <div className={`w-full py-3 px-4 rounded-lg text-center cursor-pointer transition-all text-[14px] ${formValues.minimalistic === option
+                    ? 'bg-[#007e90] text-white'
+                    : 'bg-white text-gray-700 border-2 border-gray-200'
+                    }`}>
                     {option}
                   </div>
                 </label>
@@ -752,7 +771,7 @@ Additional preferences: ${additionalPreferences}`;
         );
       }
 
-      
+
 
       if (currentStep === otpVerifyStep) {
         return (
@@ -785,9 +804,9 @@ Additional preferences: ${additionalPreferences}`;
           initial={{ x: 50, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -50, opacity: 0 }}
-          transition={{ 
-            duration: 0.3, 
-            ease: [0.2, 0.8, 0.2, 1] 
+          transition={{
+            duration: 0.3,
+            ease: [0.2, 0.8, 0.2, 1]
           }}
         >
           {content}
@@ -802,8 +821,8 @@ Additional preferences: ${additionalPreferences}`;
         {/* Desktop Sidebar */}
         <aside className="hidden md:block w-1/3 bg-[#007e90] text-white p-5 overflow-y-auto h-[calc(100vh-64px)]">
           <ul className="space-y-4 relative">
-            {[...STATIC_STEPS, 
-              ...dynamicSteps.map(step => getDynamicStepHeading(step.style)),
+            {[...STATIC_STEPS,
+            ...dynamicSteps.map(step => getDynamicStepHeading(step.style)),
               'Style Personality',
               `Let's Get to Know Your Skin Tone`,
               'Fashion Secrets Safe',
@@ -838,7 +857,7 @@ Additional preferences: ${additionalPreferences}`;
             <div className="md:hidden bg-[#007e90] text-white p-4">
               <div className="flex items-start gap-6">
                 <div className="relative shrink-0" style={{ width: '80px', height: '80px' }}>
-                  <motion.div 
+                  <motion.div
                     className="w-full h-full rounded-full flex items-center justify-center bg-white/10 backdrop-blur-sm"
                     style={{
                       background: `conic-gradient(
@@ -870,8 +889,8 @@ Additional preferences: ${additionalPreferences}`;
                 </div>
                 <div className="flex-1 min-w-0">
                   <h2 className="text-base md:text-xl font-semibold text-white break-words">
-                    {currentStep <= STATIC_STEPS.length 
-                      ? STATIC_STEPS[currentStep - 1] 
+                    {currentStep <= STATIC_STEPS.length
+                      ? STATIC_STEPS[currentStep - 1]
                       : currentStep <= STATIC_STEPS.length + dynamicSteps.length
                         ? getDynamicStepHeading(dynamicSteps[currentStep - STATIC_STEPS.length - 1].style)
                         : getFinalStepHeading(currentStep, dynamicSteps.length)}
@@ -894,10 +913,10 @@ Additional preferences: ${additionalPreferences}`;
                         return "Help us to recommend the best products for you";
                       } else if (currentStep === 8 + dynamicSteps.length + 2) {
                         return "Almost there! Let's verify your phone number";
-                       
+
                       } else if (currentStep === 8 + dynamicSteps.length + 3) {
-                        return"Help us to know what's on your mind";
-                     
+                        return "Help us to know what's on your mind";
+
                       } else if (currentStep === 8 + dynamicSteps.length + 4) {
                         return "Enter the verification code sent to your phone";
                       }
@@ -959,8 +978,14 @@ Additional preferences: ${additionalPreferences}`;
               </div>
             </div>
 
+            {/* Spacer to prevent content from being hidden behind navigation */}
+            <div className="h-20"></div>
+
             {/* Navigation Buttons */}
-            <div className="sticky bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
+            <div
+              className={`fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50 transition-transform duration-300 ${showNavButtons ? 'translate-y-0' : 'translate-y-full'
+                }`}
+            >
               <div className="max-w-3xl mx-auto px-4 py-4 md:px-8">
                 <div className="flex justify-between items-center">
                   <button
@@ -983,6 +1008,7 @@ Additional preferences: ${additionalPreferences}`;
                 </div>
               </div>
             </div>
+
           </form>
         </main>
       </div>

@@ -11,6 +11,7 @@ import { useEffect, useState, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
 import { useFetchSimilarProducts } from "@/lib/hooks/useFetchSimilarProducts";
 import Link from "next/link";
+import { addToCart } from "@/lib/utils/cart";
 
 import PageLoader from "@/app/components/common/PageLoader";
 
@@ -69,6 +70,37 @@ export default function ProductPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const [addToCartError, setAddToCartError] = useState<string | null>(null);
+  const [addToCartSuccess, setAddToCartSuccess] = useState(false);
+
+  // Auto-play functionality - moved to top to follow Rules of Hooks
+  useEffect(() => {
+    if (!product) return;
+    
+    // Parse product images to check length
+    let images: string[] = [];
+    try {
+      if (isLookProduct(product)) {
+        images = [product.images.foreground, product.images.background].filter(Boolean);
+      } else {
+        images = JSON.parse(product.productImages);
+      }
+    } catch {
+      images = [];
+    }
+
+    if (images.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setSelectedImageIndex((prevIndex) => 
+        prevIndex === images.length - 1 ? 0 : prevIndex + 1
+      );
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [product]);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -119,6 +151,48 @@ export default function ProductPage() {
     fetchProduct();
   }, [id]);
 
+  const handleSizeSelect = (size: string) => {
+    setSelectedSize(size);
+    setAddToCartError(null);
+    setAddToCartSuccess(false);
+  };
+
+  const handleAddToCart = async () => {
+    if (!selectedSize) {
+      setAddToCartError("Please select a size first");
+      return;
+    }
+
+    setIsAddingToCart(true);
+    setAddToCartError(null);
+    setAddToCartSuccess(false);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setAddToCartError("Please sign in to add items to cart");
+        return;
+      }
+
+      const { success, error } = await addToCart(
+        session.user.id,
+        product?.id as number,
+        selectedSize,
+        isLookProduct(product!) ? 'look' : 'product'
+      );
+
+      if (success) {
+        setAddToCartSuccess(true);
+        setTimeout(() => setAddToCartSuccess(false),);
+      } else {
+        setAddToCartError(error || "Failed to add item to cart");
+      }
+    } catch (err) {
+      setAddToCartError("Failed to add item to cart. Please try again.");
+    } finally {
+      setIsAddingToCart(false);
+    }
+  };
+
   if (loading) {
     return <PageLoader loadingText="Loading product details..." />;
   }
@@ -139,6 +213,10 @@ export default function ProductPage() {
       return [];
     }
   })();
+
+  const handleManualImageSelect = (index: number) => {
+    setSelectedImageIndex(index);
+  };
 
   // Handle sizes
   const productSizes = (() => {
@@ -189,7 +267,7 @@ export default function ProductPage() {
             {productImages.map((_: string, index: number) => (
               <button
                 key={index}
-                onClick={() => setSelectedImageIndex(index)}
+                onClick={() => handleManualImageSelect(index)}
                 className={`w-2 h-2 rounded-full ${selectedImageIndex === index ? "bg-black" : "bg-gray-300"
                   }`}
               />
@@ -210,13 +288,31 @@ export default function ProductPage() {
             {productSizes.map((size: string, index: number) => (
               <Button
                 key={index}
-                className="text-xs rounded-none text-black bg-amber-50 border-3"
+                onClick={() => handleSizeSelect(size)}
+                className={`text-xs rounded-none text-black bg-white border-3 transition-all duration-200 ${
+                  selectedSize === size 
+                    ? "border-black   text-black" 
+                    : "border-gray-400 hover:border-gray-600"
+                }`}
               >
                 {size}
               </Button>
             ))}
           </div>
         </div>
+
+        {/* Add to Cart Error/Success Messages */}
+        {addToCartError && (
+          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-600 text-xs">
+            {addToCartError}
+          </div>
+        )}
+        {addToCartSuccess && (
+          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-green-600 text-xs">
+            Item added to cart successfully!
+          </div>
+        )}
+
         {/* Buttons Section */}
         <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8">
           {/* Buttons Row */}
@@ -224,8 +320,16 @@ export default function ProductPage() {
             <Button className="flex-[1] min-w-[100px] max-w-[160px] bg-black rounded-none text-white h-10 text-xs">
               BUY NOW
             </Button>
-            <Button className="flex-[2] min-w-[140px] max-w-[240px] bg-black rounded-none text-white h-10 text-xs">
-              ADD TO CART
+            <Button 
+              onClick={handleAddToCart}
+              disabled={!selectedSize || isAddingToCart}
+              className={`flex-[2] min-w-[140px] max-w-[240px] rounded-none text-white h-10 text-xs transition-all duration-200 ${
+                selectedSize 
+                  ? "bg-black hover:bg-gray-800" 
+                  : "bg-gray-400 cursor-not-allowed"
+              }`}
+            >
+              {isAddingToCart ? "ADDING..." : "ADD TO CART"}
             </Button>
           </div>
 
