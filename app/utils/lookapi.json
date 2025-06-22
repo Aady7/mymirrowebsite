@@ -1,13 +1,13 @@
 [
     {
         "lookNumber": 1,
-        "lookName": "Urban Shift",
+        "lookName": "URBAN SHIFT",
         "lookDescription": "A modern, urban look with a twist. Perfect for a night out or a casual day.",
         "productids": [2694,4382,4389]
     },
     {
         "lookNumber": 2,
-        "lookName": "Classic Chic",
+        "lookName": "CLASSIC CHIC",
         "lookDescription": "A classic, chic look with a modern twist. Perfect for a night out or a casual day.",
         "productids": [4360]
 
@@ -15,19 +15,19 @@
     },
     {
         "lookNumber": 3,
-        "lookName": "Boho Chic",
+        "lookName": "BOHO CHIC",
         "lookDescription": "A boho, chic look with a modern twist. Perfect for a night out or a casual day.",
         "productids": [4314,4396]
     },
     {
         "lookNumber": 4,
-        "lookName": "Street Style",
+        "lookName": "STREET STYLE",
         "lookDescription": "A bold streetwear ensemble that combines comfort with attitude. Perfect for urban adventures.",
-        "productids": [2685,2690,2700]
+        "productids": [2686,2690,2702]
     },
     {
         "lookNumber": 5,
-        "lookName": "Minimalist Elegance",
+        "lookName": "MINIMALIST ELEGANCE",
         "lookDescription": "Clean lines and sophisticated simplicity. A timeless look for any occasion.",
         "productids": [2980,2990]
     }
