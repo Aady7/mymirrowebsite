@@ -15,8 +15,43 @@ import { FormValues } from '@/app/data/stylequizInterface';
 import { StyleQuizData } from '@/app/data/stylequizInterface';
 import { motion, AnimatePresence } from 'framer-motion';
 import AuthNav from '@/app/components/authNav';
+import { ArrowDown } from 'lucide-react';
 import DynamicStylePreferenceStep from '@/app/components/style-quiz/DynamicStylePreferenceStep';
 import ColorAnalyzer from '@/app/components/style-quiz/ColorAnalysis';
+
+// Arrow down button component
+const ScrollArrow = () => {
+  const [atTop, setAtTop] = useState(true);
+  
+  useEffect(() => {
+    const handleScroll = () => {
+      setAtTop(window.scrollY < 5);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  return (
+    <button
+      disabled={!atTop}
+      className={`fixed top-2/3 left-1/2 transform -translate-x-1/2 -translate-y-1/10 p-3 rounded-full shadow-lg transition-all duration-300 z-50 ${
+        atTop
+          ? 'bg-gray-400 text-white opacity-100 cursor-pointer'
+          : 'disabled:opacity-5 disabled:cursor-not-allowed text-white opacity-5 cursor-not-allowed'
+      }`}
+      onClick={() => {
+        // Scroll to top functionality
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
+      }}
+    >
+      <ArrowDown size={15} />
+    </button>
+  );
+};
+
 type DynamicStep = { style: string; options: string[] };
 
 const STATIC_STEPS = [
@@ -76,7 +111,7 @@ const StyleQuiz: React.FC = () => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [showNavButtons, setShowNavButtons] = useState(true);
   const lastScrollYRef = useRef(0);
-
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     let id = localStorage.getItem('userId');
@@ -92,6 +127,19 @@ const StyleQuiz: React.FC = () => {
       quizId = crypto.randomUUID();
       localStorage.setItem('styleQuizId', quizId);
     }
+
+    // Check if user is already authenticated
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        setIsAuthenticated(true);
+        // Pre-fill phone number if available
+        if (session.user.phone) {
+          setFormValues(prev => ({ ...prev, phone: session.user.phone }));
+        }
+      }
+    };
+    checkAuth();
   }, []);
 
   /* useEffect(() => {
@@ -102,6 +150,8 @@ const StyleQuiz: React.FC = () => {
        });
      }
    }, [currentStep]);*/
+
+   //floating button ka loggic
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -498,12 +548,12 @@ Additional preferences: ${additionalPreferences}`;
         return false;
       }
     }
-    if (currentStep === otpSendStep) return !!formValues.phone;
+    if (currentStep === otpSendStep) return !!formValues.phone || isAuthenticated;
     if (currentStep === otpVerifyStep) return !!formValues.otp;
     if (currentStep === feedbackStep) return true;
 
     return currentStep === getTotalSteps();
-  }, [currentStep, dynamicSteps, formValues]);
+  }, [currentStep, dynamicSteps, formValues, isAuthenticated]);
 
   const nextStep = async () => {
     if (!isStepValid()) return;
@@ -530,6 +580,11 @@ Additional preferences: ${additionalPreferences}`;
       const otpVerifyStep = feedbackStep + 1;
 
       if (currentStep === otpSendStep) {
+        if (isAuthenticated) {
+          // Skip OTP for authenticated users
+          setCurrentStep(prev => prev + 1);
+          return;
+        }
         await handleSendOtpClick();
       }
 
@@ -737,18 +792,32 @@ Additional preferences: ${additionalPreferences}`;
       if (currentStep === otpSendStep) {
         return (
           <div className="space-y-4">
-            <h3 className="text-[25px] font-medium text-gray-900">Enter your Phone Number</h3>
-            <p className="text-[14px] text-gray-600">We'll send you a verification code to secure your account.</p>
-            <div className="mt-8">
-              <input
-                type="tel"
-                name="phone"
-                value={formValues.phone || ''}
-                onChange={handleChange}
-                className="m-2 block w-full text-[14px] py-3 px-4 rounded-md border-gray-300 shadow-sm focus:border-[#007e90] focus:ring-[#007e90]"
-                placeholder="Enter your phone number"
-              />
-            </div>
+            {isAuthenticated ? (
+              <>
+                <h3 className="text-[25px] font-medium text-gray-900">Phone Number Verified</h3>
+                <p className="text-[14px] text-gray-600">Your phone number is already verified. You can proceed to the next step.</p>
+                <div className="mt-8 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="text-[14px] text-green-700">
+                    ✓ Phone: {formValues.phone || 'Verified'}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <h3 className="text-[25px] font-medium text-gray-900">Enter your Phone Number</h3>
+                <p className="text-[14px] text-gray-600">We'll send you a verification code to secure your account.</p>
+                <div className="mt-8">
+                  <input
+                    type="tel"
+                    name="phone"
+                    value={formValues.phone || ''}
+                    onChange={handleChange}
+                    className="m-2 block w-full text-[14px] py-3 px-4 rounded-md border-gray-300 shadow-sm focus:border-[#007e90] focus:ring-[#007e90]"
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+              </>
+            )}
           </div>
         );
       }
@@ -762,7 +831,7 @@ Additional preferences: ${additionalPreferences}`;
                 name="feedback"
                 value={formValues.feedback || ''}
                 onChange={handleChange}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#007e90] focus:ring-[#007e90] text-[14px]"
+                className="mt-1 px-4 py-4 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#007e90] focus:ring-[#007e90] text-[16px]"
                 rows={4}
                 placeholder="Share any additional preferences or requirements..."
               />
@@ -772,7 +841,7 @@ Additional preferences: ${additionalPreferences}`;
       }
 
 
-
+ 
       if (currentStep === otpVerifyStep) {
         return (
           <div className="space-y-4">
@@ -928,6 +997,12 @@ Additional preferences: ${additionalPreferences}`;
                       return "";
                     })()}
                   </p>
+                  {/* multi-select hint for relevant steps */}
+                  {((currentStep >= 2 && currentStep <= 4) || currentStep === 7 || currentStep==8|| (currentStep > 8 && currentStep <= 8 + dynamicSteps.length)) && (
+                    <p className="text-xs text-white/70 mt-1 italic">
+                      *You can select more than one option.
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -976,6 +1051,11 @@ Additional preferences: ${additionalPreferences}`;
                   </div>
                 </div>
               </div>
+              
+              {/* Arrow button for multiple choice sections */}
+              {((currentStep >= 2 && currentStep <= 4) || currentStep === 7 || (currentStep > 8 && currentStep <= 8 + dynamicSteps.length)) && (
+                <ScrollArrow />
+              )}
             </div>
 
             {/* Spacer to prevent content from being hidden behind navigation */}

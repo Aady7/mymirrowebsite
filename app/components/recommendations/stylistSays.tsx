@@ -94,14 +94,14 @@ const StylistSays = () => {
         <div className="p-2 mt-10 md:p-6 lg:p-8">
           <div className="flex flex-col items-center justify-center space-y-1 md:space-y-3">
             {/* Heading in a fixed width to control centering */}
-            <h1 className="text-center font-[Boston] text-[18px] md:text-[24px] not-italic font-normal leading-normal w-[290px] md:w-auto">
+            <h1 className="text-center font-[Boston] text-[18px] md:text-[25px] not-italic font-normal leading-normal w-[290px] md:w-auto">
               CURATED LOOKS JUST FOR YOU
             </h1>
 
             {/* Paragraph aligned under "U" by padding-left */}
-            <p className="font-[Boston] text-[14px] md:text-[16px] not-italic font-normal leading-normal pl-[15px] pr-[2px] w-[280px] md:w-auto md:text-center md:px-0">
+            <p className="font-[Boston] text-[14px] md:text-[16px] not-italic font-normal leading-normal pl-[20px] pr-[2px] w-[280px] md:w-auto md:text-center md:px-0">
               Handpicked outfit combinations tailored to
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;your
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;your
               unique style profile
             </p>
           </div>

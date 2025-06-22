@@ -47,6 +47,7 @@ interface LoadingState {
 const LookPage = () => {
   const { id } = useParams();
   const { getSession } = useAuth();
+  const [userId, setUserId] = useState<string | null>(null);
   const [look, setLook] = useState<Look | null>(null);
   const [selectedSizes, setSelectedSizes] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState<LoadingState>({});
@@ -72,6 +73,16 @@ const LookPage = () => {
     };
     if (id) fetchLook();
   }, [id]);
+
+  useEffect(() => {
+    const fetchSession = async () => {
+      const { session } = await getSession();
+      if (session) {
+        setUserId(session.user.id);
+      }
+    };
+    fetchSession();
+  }, [getSession]);
 
   if (!look) return <PageLoader loadingText="Loading look details..." />;
 
@@ -128,10 +139,10 @@ const LookPage = () => {
   return (
     <>
       {/* Header */}
-      <div className="flex items-center justify-center mb-2">
-        <span className="text-[26px] font-thin">{look.lookName.toUpperCase()}</span>
-        <hr className="border-black border-1 w-[30px] mx-3" />
-        <span className="text-[26px] font-thin">LOOK {look.lookNumber}</span>
+      <div className="w-[90%] mx-auto flex items-center justify-center mb-2">
+        <span className="text-[20px] font-thin whitespace-nowrap">{look.lookName.toUpperCase()}</span>
+        <hr className="border-black border-1 w-[25px] mx-2 flex-shrink-0" />
+        <span className="text-[20px] font-thin whitespace-nowrap">LOOK {look.lookNumber}</span>
       </div>
       <hr className="border-t-1 border-black w-[90%] mx-auto" />
 
@@ -148,25 +159,35 @@ const LookPage = () => {
             </div>
             <div className="relative flex flex-col flex-1 max-w-[400px] h-[280.5px] pl-2 pr-2">
               <h1 className="text-lg text-center font-thin mb-1 mt-0 text-[14px]">{product.name}</h1>
-              <h4 className="flex  text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-4">
-                <FaIndianRupeeSign className="h-4 mt-2" /> {product.price}
-              </h4>
-              <div className=" absolute bottom-8 left-2 right-2  gap-4 mb-2">
-                <span className="text-black  font-[Boston] text-[16px] font-light [font-variant:all-small-caps]">SIZE</span>
-                <ul className="flex gap-2 flex-wrap">
-                  {sizes.map(sz => (
-                    <li key={sz} onClick={() => setSelectedSizes(prev => ({ ...prev, [idx]: sz }))}
-                      className={`cursor-pointer border-1 px-2 py-1   text-black font-[Boston] text-[11px] font-light [font-variant:all-small-caps] hover:font-bold transition-all min-w-[2rem] text-center flex items-center justify-center ${selectedSizes[idx]===sz?'font-bold border-black':'border-gray-400'}`}
-                    >{sz}</li>
-                  ))}
-                </ul>
+              
+              {/* Price and Size Section - Fixed positioning */}
+              <div className="absolute bottom-10 left-2 right-2">
+                {/* Price - Always above SIZE */}
+                <div className="mb-0">
+                  <h4 className="flex text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps]">
+                    <FaIndianRupeeSign className="h-4 mt-2" /> {product.price}
+                  </h4>
+                </div>
+                
+                {/* Size Section */}
+                <div>
+                  <span className="text-black font-[Boston] text-[16px] font-light [font-variant:all-small-caps]">SIZE</span>
+                  <ul className="flex gap-2 flex-wrap mt-1">
+                    {sizes.map(sz => (
+                      <li key={sz} onClick={() => setSelectedSizes(prev => ({ ...prev, [idx]: sz }))}
+                        className={`cursor-pointer border-1 px-2 py-1 w-8 h-8 text-black font-[Boston] text-[12px] font-light [font-variant:all-small-caps] hover:font-bold transition-all text-center flex items-center justify-center ${selectedSizes[idx]===sz?'font-bold border-black':'border-gray-400'}`}
+                      >{sz}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
+              
               <div className="absolute bottom-0 left-2 right-2 flex gap-2">
                 <button onClick={() => handleAddProduct(idx)} disabled={loading[idx]}
                   className="flex items-center h-8 w-12 justify-center bg-black text-white rounded-none disabled:bg-gray-400 hover:bg-gray-800 transition-colors">
                   <FaCartArrowDown className="w-4" />
                 </button>
-                <Link href={`/products/${product.id}`} className="flex-1">
+                <Link href={`/products/${product.id}`} className="w-32">
                   <button className="w-full bg-black h-8 text-white text-sm rounded-none hover:bg-gray-800 transition-colors">View Product</button>
                 </Link>
               </div>
@@ -178,7 +199,7 @@ const LookPage = () => {
       {/* Total & Actions */}
       <div className="mt-12 px-6">
       <h1 className="flex font-thin text-2xl mb-4">
-      <span className="text-[26px] font-thin">{look.lookName.toUpperCase()}</span>
+      <span className="text-[20px] font-thin">{look.lookName.toUpperCase()}</span>
         </h1>
         <h1 className="flex font-thin text-2xl mb-4">
           <FaIndianRupeeSign className="h-5 mt-1.5" /> {look.totalPrice}
@@ -202,11 +223,11 @@ const LookPage = () => {
         <div className="text-[14px] font-light leading-6 font-[Boston] space-y-6">
           <p>{look?.lookDescription}</p>
           <p className='font-semibold'>Rating</p>
-          <StarRating userId={getSession()?.id} lookId={Number(id)} />
-          <div className='mt-6 flex items-centre justify-centre px-[8rem]'>
+          <StarRating productId={String(id)} />
+          <div className='mt-6 flex items-center justify-center px-8 md:px-[8rem]'>
            <Looksfeeback 
              onClose={() => { }} 
-             userId={getSession()?.id || ''} 
+             userId={userId || ''} 
              lookId={Number(id)}
            />
         </div>
