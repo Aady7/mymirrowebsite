@@ -18,6 +18,18 @@
         "lookName": "Boho Chic",
         "lookDescription": "A boho, chic look with a modern twist. Perfect for a night out or a casual day.",
         "productids": [4314,4396]
+    },
+    {
+        "lookNumber": 4,
+        "lookName": "Street Style",
+        "lookDescription": "A bold streetwear ensemble that combines comfort with attitude. Perfect for urban adventures.",
+        "productids": [2685,2690,2700]
+    },
+    {
+        "lookNumber": 5,
+        "lookName": "Minimalist Elegance",
+        "lookDescription": "Clean lines and sophisticated simplicity. A timeless look for any occasion.",
+        "productids": [2980,2990]
     }
    
 

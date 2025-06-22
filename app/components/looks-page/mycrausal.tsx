@@ -14,7 +14,7 @@ const MyCarousel = () => {
   // Convert looksData object to array and filter out current look
   const looks = Object.entries(looksData)
     .filter(([lookId]) => lookId !== id)
-    .map(([lookId, look]) => ({ lookId, ...look })).slice(0,3);
+    .map(([lookId, look]) => ({ lookId, ...look })).slice(0,5);
 
   return (
     <Swiper
@@ -42,7 +42,7 @@ const MyCarousel = () => {
           width: 25px !important;
           height: 25px !important;
           background: none !important;
-          opacity: 0;
+          opacity: 1;
           transition: opacity 0.3s;
           top: 50% !important;
         }
@@ -68,7 +68,7 @@ const MyCarousel = () => {
 
         .group:hover .swiper-button-next,
         .group:hover .swiper-button-prev {
-          opacity: 2;
+          opacity: 1;
         }
       `}</style>
       {looks.map(({ lookId, ...look }) => (

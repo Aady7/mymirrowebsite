@@ -143,23 +143,20 @@ const LookPage = () => {
         
         return (
           <div key={product.id} className={`flex w-full mt-8 mb-2 gap-2 ${idx % 2 ? 'flex-row-reverse' : ''}`}>            
-            <div className="relative w-[221px] h-[260.5px] overflow-hidden">
+            <div className="relative w-[210px] h-[280.5px] overflow-hidden">
               <Image src={firstImg} alt={product.name} fill className="object-cover" />
             </div>
-            <div className="relative flex flex-col flex-1 max-w-[400px] h-[260.5px] pl-2 pr-2">
+            <div className="relative flex flex-col flex-1 max-w-[400px] h-[280.5px] pl-2 pr-2">
               <h1 className="text-lg text-center font-thin mb-1 mt-0 text-[14px]">{product.name}</h1>
-              <p className="font-[Boston] text-[10px] font-medium leading-normal mb-1 pr-4 mx-2">
-                {product.specifications}
-              </p>
-              <h4 className="flex text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-2">
+              <h4 className="flex  text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-4">
                 <FaIndianRupeeSign className="h-4 mt-2" /> {product.price}
               </h4>
-              <div className=" absolute bottom-8 left-2 right-2 flex gap-4 mb-2">
-                <span className="text-black font-[Boston] text-[16px] font-light [font-variant:all-small-caps]">SIZE</span>
-                <ul className="flex gap-2">
+              <div className=" absolute bottom-8 left-2 right-2  gap-4 mb-2">
+                <span className="text-black  font-[Boston] text-[16px] font-light [font-variant:all-small-caps]">SIZE</span>
+                <ul className="flex gap-2 flex-wrap">
                   {sizes.map(sz => (
                     <li key={sz} onClick={() => setSelectedSizes(prev => ({ ...prev, [idx]: sz }))}
-                      className={`cursor-pointer text-black font-[Boston] text-[16px] font-light [font-variant:all-small-caps] hover:font-bold transition-all ${selectedSizes[idx]===sz?'font-bold':''}`}
+                      className={`cursor-pointer border-1 px-2 py-1   text-black font-[Boston] text-[11px] font-light [font-variant:all-small-caps] hover:font-bold transition-all min-w-[2rem] text-center flex items-center justify-center ${selectedSizes[idx]===sz?'font-bold border-black':'border-gray-400'}`}
                     >{sz}</li>
                   ))}
                 </ul>
@@ -180,6 +177,9 @@ const LookPage = () => {
 
       {/* Total & Actions */}
       <div className="mt-12 px-6">
+      <h1 className="flex font-thin text-2xl mb-4">
+      <span className="text-[26px] font-thin">{look.lookName.toUpperCase()}</span>
+        </h1>
         <h1 className="flex font-thin text-2xl mb-4">
           <FaIndianRupeeSign className="h-5 mt-1.5" /> {look.totalPrice}
         </h1>
@@ -197,7 +197,7 @@ const LookPage = () => {
       <hr className="border-t-1 border-black w-[92%] mx-auto my-12" />
 
       {/* Description */}
-      <div className="px-6 py-8">
+      <div className="px-6 py-8 mt-[-4rem] ">
         <h1 className="text-lg text-black font-thin mb-6 font-[Boston]">DESCRIPTION</h1>
         <div className="text-[14px] font-light leading-6 font-[Boston] space-y-6">
           <p>{look?.lookDescription}</p>
