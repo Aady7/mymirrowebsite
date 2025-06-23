@@ -8,11 +8,11 @@ import FeedbackRating from "./feedbackRating";
 
 interface FeedbackProps {
     onClose: () => void;
+    productId: number;
 }
 
-const Feedback: React.FC<FeedbackProps> = ({ onClose }) => {
+const Feedback: React.FC<FeedbackProps> = ({ onClose, productId }) => {
     const [userId, setUserId] = useState<string | null>(null);
-    const [lookId, setLookId] = useState<number>(1);
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [formData, setFormData] = useState({
@@ -30,6 +30,22 @@ const Feedback: React.FC<FeedbackProps> = ({ onClose }) => {
                 if (user) {
                     setUserId(user.id);
                     setIsAuthenticated(true);
+                    //fetch exiting feedaback
+                    const {data:feedbackData,error}=await supabase
+                    .from('product-feedback')
+                    .select('*')
+                    .eq('user_id',user.id)
+                    .eq('product_id',productId)
+                    .single();
+
+                    if(feedbackData){
+                        setFormData({
+                            overallRating: feedbackData.overall_rating || 0,
+                            designRating: feedbackData.design_rating || 0,
+                            colorRating: feedbackData.color_rating || 0,
+                            comment: feedbackData.comment || ""
+                        })
+                    }
                 } else {
                     setIsAuthenticated(false);
                 }
@@ -41,7 +57,7 @@ const Feedback: React.FC<FeedbackProps> = ({ onClose }) => {
             }
         };
         getUser();
-    }, []);
+    }, [productId]);
 
     const handleRatingChange = (type: 'overall' | 'design' | 'color', value: number) => {
         if (!isAuthenticated) {
@@ -62,27 +78,48 @@ const Feedback: React.FC<FeedbackProps> = ({ onClose }) => {
         }
         setIsSubmitting(true);
         try {
-            const { error } = await supabase
+            // First check if feedback already exists
+            const { data: existingFeedback, error: checkError } = await supabase
                 .from('product-feedback')
-                .insert([
-                    {
-                        user_id: userId,
-                        product_id: lookId,
+                .select('*')
+                .eq('user_id', userId)
+                .eq('product_id', productId)
+                .single();
+
+            if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found" error
+                throw checkError;
+            }
+
+            let result;
+            if (existingFeedback) {
+                // Update existing feedback
+                result = await supabase
+                    .from('product-feedback')
+                    .update({
                         overall_rating: formData.overallRating,
                         design_rating: formData.designRating,
                         color_rating: formData.colorRating,
                         comment: formData.comment
-                    }
-                ]);
+                    })
+                    .eq('user_id', userId)
+                    .eq('product_id', productId);
+            } else {
+                // Insert new feedback
+                result = await supabase
+                    .from('product-feedback')
+                    .insert([
+                        {
+                            user_id: userId,
+                            product_id: productId,
+                            overall_rating: formData.overallRating,
+                            design_rating: formData.designRating,
+                            color_rating: formData.colorRating,
+                            comment: formData.comment
+                        }
+                    ]);
+            }
 
-            if (error) throw error;
-            // Reset form after successful submission
-            setFormData({
-                overallRating: 0,
-                designRating: 0,
-                colorRating: 0,
-                comment: ""
-            });
+            if (result.error) throw result.error;
             alert("Thanks for your feedback!");
             onClose(); // Close the feedback form after successful submission
         } catch (error) {
