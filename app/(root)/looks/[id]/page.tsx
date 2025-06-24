@@ -450,6 +450,10 @@ const LookPage = () => {
               <p className='text-[12px] tracking-wide font-semibold'>Body Type: {parsed.bodyShapeLabel}</p>
               <p className='text-[12px] tracking-wide'>{parsed.bodyShape}</p>
             </div>
+            <div className="space-y-0.1">
+              <p className='text-[12px] tracking-wide font-semibold'>Occasion: {parsed.occasionLabel}</p>
+              <p className='text-[12px] tracking-wide'>{parsed.occasion}</p>
+            </div>
           </div>
 
           <p className='font-semibold'>Rating</p>
