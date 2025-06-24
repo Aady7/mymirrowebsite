@@ -93,7 +93,6 @@ export const useAuth = () => {
         return { session: null, error }
       }
       
-      console.log('Current session:', session)
       return { session, error: null }
     } catch (error) {
       console.error('Unexpected session error:', error)

@@ -89,7 +89,7 @@ const MyCarousel = ({ similarOutfits }: MyCarouselProps) => {
 
       {filteredOutfits.map((outfit) => (
         <SwiperSlide key={outfit.outfit_data.main_outfit_id}>
-          <Link href={`/looks/${outfit.outfit_data.main_outfit_id}`}>
+        
             <div className="flex gap-2 h-[300px] ml-4 mr-4 mt-6">
               {/* Top garment */}
               <div className="flex-1 relative">
@@ -110,7 +110,7 @@ const MyCarousel = ({ similarOutfits }: MyCarouselProps) => {
                 />
               </div>
             </div>
-          </Link>
+        
         </SwiperSlide>
       ))}
     </Swiper>

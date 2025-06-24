@@ -48,6 +48,12 @@ interface KeyAttributes {
   occasion?: string;
   [key: string]: string | undefined;
 }
+interface StyleSummary {
+  styleVibe: string;
+  occasion: string;
+  skinTone: string;
+  bodyShape: string;
+}
 
 const LookPage = () => {
   const { id } = useParams();
@@ -274,6 +280,33 @@ const LookPage = () => {
       return {};
     }
   };
+ 
+
+  
+
+  const parts = matchedOutfit?.why_picked_explanation?.split(' | ') || [];
+
+  const raw = {
+    styleVibe: parts.find(p => p.startsWith('Style Vibe:'))?.replace('Style Vibe:', '').trim() || '',
+    occasion: parts.find(p => p.startsWith('Occasions:'))?.replace('Occasions:', '').trim() || '',
+    skinTone: parts.find(p => p.startsWith('Skin Tone:'))?.replace('Skin Tone:', '').trim() || '',
+    bodyShape: parts.find(p => p.startsWith('Body Shape:'))?.replace('Body Shape:', '').trim() || '',
+  };
+  
+  const parsed = {
+    styleVibeLabel: raw.styleVibe.split(' - ')[0]?.trim(),
+    styleVibe: raw.styleVibe.split(' - ')[1]?.trim(),
+  
+    occasionLabel: raw.occasion.split(' - ')[0]?.trim(),
+    occasion: raw.occasion.split(' - ')[1]?.trim(),
+  
+    skinToneLabel: raw.skinTone.split(' - ')[0]?.trim(),
+    skinTone: raw.skinTone.split(' - ')[1]?.trim(),
+  
+    bodyShapeLabel: raw.bodyShape.split(' - ')[0]?.trim(),
+    bodyShape: raw.bodyShape.split(' - ')[1]?.trim(),
+  };
+  
 
   return (
     <>
@@ -398,10 +431,26 @@ const LookPage = () => {
       {/* Description */}
       <div className="px-6 py-8">
         <h1 className="text-[14px] text-black font-bold mb-6 font-[Boston] tracking-wide " style={{ fontVariant: 'small-caps' }}>DESCRIPTION</h1>
-        <div className="text-[14px] font-light leading-6 font-[Boston] space-y-6">
+        <div className="text-[14px] font-light leading-6 font-[Boston] space-y-2">
           <p className='text-[12px] tracking-wide'>{matchedOutfit?.outfit_description}</p>
-          <p className='text-[14px] text-black font-bold mb-6 font-[Boston] tracking-wide'style={{ fontVariant: 'small-caps' }}>WHY THIS LOOK WAS PICKED FOR YOU</p>
-          <p className='text-[12px] tracking-wide'>{matchedOutfit?.why_picked_explanation}</p>
+          <p className='text-[14px] text-black font-bold mb-4 font-[Boston] tracking-wide' style={{ fontVariant: 'small-caps' }}>WHY THIS LOOK WAS PICKED FOR YOU</p>
+          
+          <div className="space-y-3">
+            <div className="space-y-0.1">
+              <p className='text-[12px] tracking-wide font-semibold'>Style Vibe: {parsed.styleVibeLabel}</p>
+              <p className='text-[12px] tracking-wide'>{parsed.styleVibe}</p>
+            </div>
+            
+            <div className="space-y-0.1">
+              <p className='text-[12px] tracking-wide font-semibold'>Skin Tone: {parsed.skinToneLabel}</p>
+              <p className='text-[12px] tracking-wide'>{parsed.skinTone}</p>
+            </div>
+            
+            <div className="space-y-0.1">
+              <p className='text-[12px] tracking-wide font-semibold'>Body Type: {parsed.bodyShapeLabel}</p>
+              <p className='text-[12px] tracking-wide'>{parsed.bodyShape}</p>
+            </div>
+          </div>
 
           <p className='font-semibold'>Rating</p>
           <StarRating productId={String(products[0]?.id)} />
