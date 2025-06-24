@@ -319,7 +319,7 @@ const LookPage = () => {
       <hr className="border-t-1 border-black w-[90%] mx-auto" />
 
       {/* Products */}
-      {products.map((product, idx) => {
+      {products.map((product, index) => {
         const sizes = parseSizes(product.sizesAvailable);
         const imageUrl = product.id === Number(productInfo?.topId) 
           ? productInfo?.topImage 
@@ -331,7 +331,7 @@ const LookPage = () => {
           : {};
         
         return (
-          <div key={product.id} className={`flex w-full mt-8 mb-2 gap-2 ${product.id == Number(productInfo?.topId) ? 'flex-row-reverse' : ''}`}>            
+          <div key={product.id} className={`flex w-full mt-8 mb-2 gap-2 ${index % 2 === 0 ? '' : 'flex-row-reverse'}`}>            
             <div className="relative w-[221px] h-[260.5px] overflow-hidden">
               <Image 
                 src={validImageUrl}
@@ -449,6 +449,10 @@ const LookPage = () => {
             <div className="space-y-0.1">
               <p className='text-[12px] tracking-wide font-semibold'>Body Type: {parsed.bodyShapeLabel}</p>
               <p className='text-[12px] tracking-wide'>{parsed.bodyShape}</p>
+            </div>
+            <div className="space-y-0.1">
+              <p className='text-[12px] tracking-wide font-semibold'>Occasion: {parsed.occasionLabel}</p>
+              <p className='text-[12px] tracking-wide'>{parsed.occasion}</p>
             </div>
           </div>
 
