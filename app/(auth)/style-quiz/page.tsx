@@ -48,7 +48,7 @@ const ScrollArrow = ({ contentRef }: { contentRef: React.RefObject<HTMLDivElemen
     <button
       type="button"
       disabled={atBottom}
-      className={`fixed top-6/7 left-1/2 transform -translate-x-1/2 -translate-y-1/10 p-3 rounded-full shadow-lg transition-all duration-300 z-50 ${!atBottom
+      className={`fixed top-5/6 left-1/2 transform -translate-x-1/2 -translate-y-1/10 p-3 rounded-full shadow-lg transition-all duration-300 z-50 md:hidden   ${!atBottom
           ? 'bg-gray-300 text-black opacity-100 cursor-pointer hover:bg-gray-500'
           : 'text-gray-400 opacity-10 cursor-not-allowed'
         }`}
@@ -241,7 +241,7 @@ const StyleQuiz: React.FC = () => {
           }
 
           await sendFormData();
-          router.push("/recommendations");
+          router.push("/recommendations?from=style-quiz");
 
         } else {
           setError('Session not available. Please try again.');
@@ -624,7 +624,7 @@ Additional preferences: ${additionalPreferences}`;
         if (isAuthenticated) {
           // Skip OTP for authenticated users
           await sendFormData(); // save if needed
-          router.push("/recommendations");
+          router.push("/recommendations?from=style-quiz");
           return;
         }
         await handleSendOtpClick();

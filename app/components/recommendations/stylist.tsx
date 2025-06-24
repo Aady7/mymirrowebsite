@@ -48,7 +48,7 @@ const Stylist = () => {
   ];
 
   if (isLoading) {
-    return <PageLoader loadingText="Loading stylist recommendations..." />;
+   // return <PageLoader loadingText="Loading stylist recommendations..." />;
   }
 
   if (error) {
@@ -68,7 +68,7 @@ const Stylist = () => {
               <span className="font-semibold"> quiz</span> answers, layered
               <br className="hidden md:block"/> with <span className="font-semibold">AI </span>
               insights and<span className="font-semibold"> stylist </span>
-              expertise — all working together to{" "}
+              expertise, all working together to{" "}
               <span className="flex items-center justify-center">
                 tailor every look just for you.
               </span>
