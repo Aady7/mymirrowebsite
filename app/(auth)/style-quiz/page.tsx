@@ -435,6 +435,32 @@ Additional preferences: ${additionalPreferences}`;
       const styleQuizId = localStorage.getItem('styleQuizId');
 
       const { upperWearCaption, lowerWearCaption, fullBodyCaption } = generateCaptions(formValues);
+      const recommended_colors = colorAnalysisData?.recommended_colours;
+      console.log(recommended_colors);
+     
+      // Define types for the color data
+      type ColorPair = [string, string]; // [name, hex]
+      type CategoryColors = {
+        [category: string]: ColorPair[];
+      };
+
+      const colorNamesMap: Record<string, string[]> = {};
+      const hexCodesMap: Record<string, string[]> = {}; 
+
+      if (recommended_colors) {
+        // Type assertion to help TypeScript understand the structure
+        const typedColors = recommended_colors as CategoryColors;
+        
+        for (const category in typedColors) {
+          const items = typedColors[category];
+          
+          // Extract color names (first element of each pair)
+          colorNamesMap[category] = items.map((item: ColorPair) => item[0]);
+          
+          // Extract hex codes (second element of each pair)
+          hexCodesMap[category] = items.map((item: ColorPair) => item[1]);
+        }
+      }
 
       const cleanedData: DynamicStyleQuizData = {
         id: styleQuizId || undefined,
@@ -472,14 +498,10 @@ Additional preferences: ${additionalPreferences}`;
         upper_wear_caption: upperWearCaption,
         lower_wear_caption: lowerWearCaption,
         full_body_dress_caption: fullBodyCaption,
-        undertone: colorAnalysisData?.undertone,
-        contrast: colorAnalysisData?.contrast,
-        hex_codes: colorAnalysisData?.recommendedColors?.map((c: any) => c.hex),
-        color_family: colorAnalysisData?.recommendedColors?.map((color: any) =>
-          color.explanation.split(' - ')[0].trim()
-        )
-
-
+        undertone:colorAnalysisData?.undertone,
+        contrast:colorAnalysisData?.contrast,
+        hex_codes:hexCodesMap,
+        color_family: colorNamesMap,
       };
 
       const validApparelKeys = ['athleisure', 'streetwear', 'business_casual'];

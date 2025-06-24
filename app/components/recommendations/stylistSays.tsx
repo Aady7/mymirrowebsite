@@ -4,62 +4,63 @@ import Image from "next/image";
 import Link from "next/link";
 import FashionTarot from "./fashionTarot";
 import Stylist from "./stylist";
-import { useFetchLookProducts } from "@/lib/hooks/useFetchLookProducts";
 import { useEffect, useState } from "react";
 import PageLoader from "@/app/components/common/PageLoader";
-
-interface Product {
-  id: number;
-  created_at: string;
-  title: string;
-  name: string;
-  overallRating: number;
-  price: number;
-  mrp: number;
-  discount: string;
-  sizesAvailable: string;
-  productImages: string;
-  specifications: string;
-}
-
-interface Look {
-  lookNumber: number;
-  lookName: string;
-  lookDescription: string;
-  productids: number[];
-  products: Product[];
-}
-
-// Helper function to safely parse product images
-const getFirstProductImage = (productImages: string): string => {
-  try {
-    const images = JSON.parse(productImages);
-    return Array.isArray(images) && images.length > 0 ? images[0] : '/fallback.jpg';
-  } catch (error) {
-    console.error('Error parsing product images:', error);
-    return '/fallback.jpg';
-  }
-};
+import { generateOutfit, fetchUserOutfits } from "@/app/utils/outfitsapi";
+import { Outfit } from "@/lib/interface/outfit";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { supabase } from "@/lib/supabase";
 
 const StylistSays = () => {
-  const [looks, setLooks] = useState<Look[]>([]);
+  const { getSession } = useAuth();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [outfits, setOutfits] = useState<Outfit[]>([]);
+  const [userId, setUserId] = useState<number | null>(null);
 
   useEffect(() => {
-    const fetchLooks = async () => {
+    const fetchUserData = async () => {
       try {
         setLoading(true);
-        const looksData = await useFetchLookProducts();
-        setLooks(looksData as Look[]);
+        
+        // Get current session
+        const { session } = await getSession();
+        if (!session?.user?.id) {
+          throw new Error("No session found");
+        }
+
+        // Fetch user ID from users_updated table
+        const { data: userData, error: userError } = await supabase
+          .from('users_updated')
+          .select('id')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (userError) throw userError;
+        if (!userData?.id) throw new Error("User not found");
+
+        setUserId(userData.id);
+
+        // Generate outfit using the fetched user ID
+        const outfit = await generateOutfit(userData.id);
+        console.log('Generated outfit:', outfit);
+
+        // Fetch user outfits using the same ID
+        const userOutfits = await fetchUserOutfits({ 
+          userId: userData.id, 
+          limit: 5 
+        });
+        setOutfits(userOutfits?.outfits || []);
+
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch looks");
+        console.error('Error fetching user data:', err);
+        setError(err instanceof Error ? err.message : "Failed to fetch user data");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchLooks();
+    fetchUserData();
   }, []);
 
   if (loading) {
@@ -81,11 +82,9 @@ const StylistSays = () => {
             </h1>
           </div>
         </div>
-        {/*Stylist section*/}
 
+        {/*Stylist section*/}
         <Stylist />
-        {/*color analysis */}
-        
 
         {/*fashion taro card */}
         <FashionTarot />
@@ -108,9 +107,9 @@ const StylistSays = () => {
 
           {/* Looks section container */}
           <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:mt-12">
-            {looks.map((look, index) => (
+            {outfits.map((outfit, index) => (
               <div 
-                key={look.lookNumber}
+                key={outfit.main_outfit_id}
                 className={`${
                   index === 0 ? 'md:col-span-2 lg:col-span-1' : 'md:col-span-1'
                 } p-7 flex flex-col`}
@@ -118,64 +117,40 @@ const StylistSays = () => {
                 {/* Look header section */}
                 <div className="flex justify-between mb-2">
                   <h3 className="text-sm font-semibold md:text-lg">
-                    LOOK {look.lookNumber}
+                    LOOK {index + 1}
                   </h3>
                   <h3 className="text-sm font-semibold md:hidden">
-                    {look.lookName}
+                    {outfit.outfit_name}
                   </h3>
                 </div>
 
                 {/* Images container - Fixed height for all layouts */}
                 <div className="h-[400px] flex-grow">
-                  {look.products.length >= 3 ? (
-                    // Layout for 3 or more products
-                    <div className="flex gap-2 h-full">
-                      {/* Left side - First image */}
-                      <div className="w-1/2 h-full">
-                        <div className="w-full h-full relative">
-                          <Image
-                            src={getFirstProductImage(look.products[0].productImages)}
-                            alt={`Product 1`}
-                            fill
-                            className="object-cover border-2"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Right side - Second and third images */}
-                      <div className="w-1/2 flex flex-col gap-2">
-                        {look.products.slice(1, 3).map((product, idx) => (
-                          <div key={product.id} className="w-full h-[calc(50%-1px)] relative">
-                            <Image
-                              src={getFirstProductImage(product.productImages)}
-                              alt={`Product ${idx + 2}`}
-                              fill
-                              className="object-cover border-2"
-                            />
-                          </div>
-                        ))}
-                      </div>
+                  <div className="flex gap-2 h-full">
+                    {/* Top garment */}
+                    <div className="flex-1 h-full relative">
+                      <Image
+                        src={outfit.top.image}
+                        alt={outfit.top.title}
+                        fill
+                        className="object-cover border-0"
+                      />
                     </div>
-                  ) : (
-                    // Layout for 1 or 2 products
-                    <div className="flex gap-2 h-full">
-                      {look.products.map((product, idx) => (
-                        <div key={product.id} className="flex-1 h-full relative">
-                          <Image
-                            src={getFirstProductImage(product.productImages)}
-                            alt={`Product ${idx + 1}`}
-                            fill
-                            className="object-cover border-2"
-                          />
-                        </div>
-                      ))}
+                    {/* Bottom garment */}
+                    <div className="flex-1 h-full relative">
+                      <Image
+                        src={outfit.bottom.image}
+                        alt={outfit.bottom.title}
+                        fill
+                        className="object-cover border-0"
+                      />
                     </div>
-                  )}
+                  </div>
                 </div>
 
                 {/* View More Button */}
                 <div className="flex justify-end mt-2">
-                  <Link href={`/looks/${look.lookNumber}`}>
+                  <Link href={`/looks/${outfit.main_outfit_id}`}>
                     <Button className="bg-black rounded-none w-20 h-6 md:h-8 md:w-25 md:px-6 text-xs">
                       VIEW MORE
                     </Button>
