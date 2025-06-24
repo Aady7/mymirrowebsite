@@ -159,31 +159,50 @@ const StyleQuiz: React.FC = () => {
     checkAuth();
   }, []);
 
-  /* useEffect(() => {
+  useEffect(() => {
      if (contentRef.current) {
        contentRef.current.scrollTo({
          top: 0,
          behavior: 'smooth'
        });
      }
-   }, [currentStep]);*/
+   }, [currentStep]);
 
-  //floating button ka loggic
+  //floating button ka logic
   useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    const SCROLL_THRESHOLD = 150; // minimum scroll distance to trigger change
+    const DEBOUNCE_DELAY = 150; // milliseconds to wait before updating
+
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      const scrollDiff = currentScrollY - lastScrollYRef.current;
 
-      if (currentScrollY < lastScrollYRef.current) {
-        setShowNavButtons(true);  // scrolling up → show
-      } else {
-        setShowNavButtons(false); // scrolling down → hide
+      // Clear any existing timeout
+      if (timeoutId) {
+        clearTimeout(timeoutId);
       }
 
-      lastScrollYRef.current = currentScrollY;
+      // Only update after debounce delay and if scroll difference is significant
+      timeoutId = setTimeout(() => {
+        if (Math.abs(scrollDiff) > SCROLL_THRESHOLD) {
+          if (scrollDiff < 0) {
+            setShowNavButtons(true);  // scrolling up → show
+          } else if (scrollDiff > SCROLL_THRESHOLD) {
+            setShowNavButtons(false); // scrolling down → hide
+          }
+        }
+        lastScrollYRef.current = currentScrollY;
+      }, DEBOUNCE_DELAY);
     };
 
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, []);
 
 

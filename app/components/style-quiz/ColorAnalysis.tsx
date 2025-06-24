@@ -649,7 +649,23 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
         )}
       </div>
 
- 
+      {/* Success Message */}
+      {isAnalysisComplete && (
+        <div className="mt-8 p-4 bg-green-50 border border-green-200 rounded-lg animate-fade-in">
+          <div className="flex items-center space-x-3">
+            <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            </svg>
+            <div>
+           
+              <p className="text-sm text-green-600 mt-1">
+              {`Successfully analyzed your ${mode === 'upload' ? 'photo' : 'skin tone'}. Proceed to next step.`}
+
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

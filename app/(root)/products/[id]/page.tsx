@@ -67,14 +67,21 @@ export default function ProductPage() {
 
   // Session check
   useEffect(() => {
+    let mounted = true;
+    
     const checkSession = async () => {
       const { session } = await getSession();
-      if (session?.user) {
+      if (mounted && session?.user) {
         setUser(session.user);
       }
     };
+    
     checkSession();
-  }, [getSession]);
+    
+    return () => {
+      mounted = false;
+    };
+  }, [getSession]); // Include getSession as dependency since it's from useAuth hook
 
   // Auto-play functionality
   useEffect(() => {
