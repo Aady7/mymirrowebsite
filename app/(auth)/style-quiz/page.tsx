@@ -20,31 +20,48 @@ import DynamicStylePreferenceStep from '@/app/components/style-quiz/DynamicStyle
 import ColorAnalyzer from '@/app/components/style-quiz/ColorAnalysis';
 
 // Arrow down button component
-const ScrollArrow = () => {
-  const [atTop, setAtTop] = useState(true);
-  
+const ScrollArrow = ({ contentRef }: { contentRef: React.RefObject<HTMLDivElement | null> }) => {
+  const [atBottom, setAtBottom] = useState(false);
+
   useEffect(() => {
     const handleScroll = () => {
-      setAtTop(window.scrollY < 5);
+      if (contentRef.current) {
+        const { scrollTop, scrollHeight, clientHeight } = contentRef.current;
+        // Check if we're near the bottom of the content area (within 50px)
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
+        setAtBottom(isNearBottom);
+      }
     };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+
+    // Listen to scroll events on the content area
+    const contentElement = contentRef.current;
+    if (contentElement) {
+      contentElement.addEventListener('scroll', handleScroll);
+      // Call once on mount to set initial state
+      handleScroll();
+
+      return () => contentElement.removeEventListener('scroll', handleScroll);
+    }
+  }, [contentRef]);
 
   return (
     <button
-      disabled={!atTop}
-      className={`fixed top-2/3 left-1/2 transform -translate-x-1/2 -translate-y-1/10 p-3 rounded-full shadow-lg transition-all duration-300 z-50 ${
-        atTop
-          ? 'bg-gray-400 text-white opacity-100 cursor-pointer'
-          : 'disabled:opacity-5 disabled:cursor-not-allowed text-white opacity-5 cursor-not-allowed'
-      }`}
-      onClick={() => {
-        // Scroll to top functionality
-        window.scrollTo({
-          top: 0,
-          behavior: 'smooth'
-        });
+      type="button"
+      disabled={atBottom}
+      className={`fixed top-6/7 left-1/2 transform -translate-x-1/2 -translate-y-1/10 p-3 rounded-full shadow-lg transition-all duration-300 z-50 ${!atBottom
+          ? 'bg-gray-300 text-black opacity-100 cursor-pointer hover:bg-gray-500'
+          : 'text-gray-400 opacity-10 cursor-not-allowed'
+        }`}
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // Scroll to bottom of the content area
+        if (contentRef.current) {
+          contentRef.current.scrollTo({
+            top: contentRef.current.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
       }}
     >
       <ArrowDown size={15} />
@@ -151,7 +168,7 @@ const StyleQuiz: React.FC = () => {
      }
    }, [currentStep]);*/
 
-   //floating button ka loggic
+  //floating button ka loggic
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -549,7 +566,7 @@ Additional preferences: ${additionalPreferences}`;
       }
     }
     if (currentStep === otpSendStep) return !!formValues.phone || isAuthenticated;
-    if (currentStep === otpVerifyStep) return !!formValues.otp;
+    if (currentStep === otpVerifyStep) return !!formValues.otp || isAuthenticated;
     if (currentStep === feedbackStep) return true;
 
     return currentStep === getTotalSteps();
@@ -558,6 +575,8 @@ Additional preferences: ${additionalPreferences}`;
   const nextStep = async () => {
     if (!isStepValid()) return;
     await sendFormData();
+
+
 
     try {
       setError(null);
@@ -582,7 +601,8 @@ Additional preferences: ${additionalPreferences}`;
       if (currentStep === otpSendStep) {
         if (isAuthenticated) {
           // Skip OTP for authenticated users
-          setCurrentStep(prev => prev + 1);
+          await sendFormData(); // save if needed
+          router.push("/recommendations");
           return;
         }
         await handleSendOtpClick();
@@ -593,6 +613,10 @@ Additional preferences: ${additionalPreferences}`;
         await sendFormData();
         return;
       }
+      
+
+
+
 
       setCurrentStep(prev => prev + 1);
     } catch (error) {
@@ -841,7 +865,7 @@ Additional preferences: ${additionalPreferences}`;
       }
 
 
- 
+
       if (currentStep === otpVerifyStep) {
         return (
           <div className="space-y-4">
@@ -857,6 +881,7 @@ Additional preferences: ${additionalPreferences}`;
                 className="m-2 block w-full text-[14px] py-3 px-4 rounded-md border-gray-300 shadow-sm focus:border-[#007e90] focus:ring-[#007e90] tracking-wider"
                 placeholder="Enter the verification code"
                 maxLength={6}
+                disabled={isAuthenticated}
               />
             </div>
           </div>
@@ -998,7 +1023,7 @@ Additional preferences: ${additionalPreferences}`;
                     })()}
                   </p>
                   {/* multi-select hint for relevant steps */}
-                  {((currentStep >= 2 && currentStep <= 4) || currentStep === 7 || currentStep==8|| (currentStep > 8 && currentStep <= 8 + dynamicSteps.length)) && (
+                  {((currentStep >= 2 && currentStep <= 4) || currentStep === 7 || currentStep == 8 || (currentStep > 8 && currentStep <= 8 + dynamicSteps.length)) && (
                     <p className="text-xs text-white/70 mt-1 italic">
                       *You can select more than one option.
                     </p>
@@ -1051,10 +1076,10 @@ Additional preferences: ${additionalPreferences}`;
                   </div>
                 </div>
               </div>
-              
-              {/* Arrow button for multiple choice sections */}
-              {((currentStep >= 2 && currentStep <= 4) || currentStep === 7 || (currentStep > 8 && currentStep <= 8 + dynamicSteps.length)) && (
-                <ScrollArrow />
+
+              {/* show the Arrow button for multiple choice sections */}
+              {((currentStep >= 2 && currentStep <= 4) || currentStep === 8 || (currentStep > 9 && currentStep <= 8 + dynamicSteps.length)) && (
+                <ScrollArrow contentRef={contentRef} />
               )}
             </div>
 
@@ -1080,6 +1105,7 @@ Additional preferences: ${additionalPreferences}`;
                     <button
                       type="submit"
                       disabled={!isStepValid() || isSubmitting}
+
                       className="px-6 py-2.5 bg-[#007e90] text-white rounded-lg disabled:opacity-50 hover:bg-[#006d7d] transition-colors font-medium"
                     >
                       {isSubmitting ? 'Saving...' : currentStep === getTotalSteps() ? 'Submit' : 'Next'}

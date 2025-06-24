@@ -99,11 +99,11 @@ const StylistSays = () => {
             </h1>
 
             {/* Paragraph aligned under "U" by padding-left */}
-            <p className="font-[Boston] text-[14px] md:text-[16px] not-italic font-normal leading-normal pl-[20px] pr-[2px] w-[280px] md:w-auto md:text-center md:px-0">
-              Handpicked outfit combinations tailored to
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;your
-              unique style profile
-            </p>
+            <div className="text-center">
+              <p className="font-[Boston] text-[13px] md:text-[18px] not-italic font-normal leading-normal max-w-[280px] md:max-w-none mx-auto">
+                Handpicked outfit combinations tailored to your unique style profile
+              </p>
+            </div>
           </div>
 
           {/* Looks section container */}
