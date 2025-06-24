@@ -310,7 +310,7 @@ const LookPage = () => {
             <div className="relative flex flex-col flex-1 max-w-[400px] h-[280.5px] pl-2 pr-2">
               <h1 className="text-lg text-center font-thin mb-1 mt-0 text-[14px]">{product.name}</h1>
               
-              <div className="font-[Boston] text-[12px] font-medium leading-normal mb-1 pr-4 mx-4 mt-2 tracking-wide text-gray-600">
+              <div className="font-[Boston] text-[12px] font-medium leading-normal mb-1 pr-4 mx-2  tracking-wide text-gray-600">
                 {keyAttributes.color && (
                   <p className="mb-0.5">Color - {keyAttributes.color}</p>
                 )}
@@ -334,16 +334,24 @@ const LookPage = () => {
               </div>
 
               <div className="absolute bottom-8 left-2 right-2">
-                <h4 className="flex text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-4">
+                <h4 className="flex text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-1">
                   <FaIndianRupeeSign className="h-4 mt-2" /> {product.price}
                 </h4>
-                <div className="flex gap-4 mb-2">
-                  <span className="text-black font-[Boston] text-[16px] font-light [font-variant:all-small-caps]">SIZE</span>
-                  <ul className="flex gap-2">
+                <div className="flex flex-col gap-2 mb-2">
+                  <span className="text-black font-[Boston] text-[12px] [font-variant:all-small-caps]">SIZE</span>
+                  <ul className="grid grid-cols-4 gap-2 max-w-[160px]">
                     {sizes.map(sz => (
-                      <li key={sz} onClick={() => setSelectedSizes(prev => ({ ...prev, [product.id]: sz }))}
-                        className={`cursor-pointer text-black font-[Boston] text-[16px] font-light [font-variant:all-small-caps] hover:font-bold transition-all ${selectedSizes[product.id]===sz?'font-bold':''}`}
-                      >{sz}</li>
+                      <li 
+                        key={sz} 
+                        onClick={() => setSelectedSizes(prev => ({ ...prev, [product.id]: sz }))}
+                        className={`cursor-pointer w-[30px] h-[30px] flex items-center justify-center border-[1px] ${
+                          selectedSizes[product.id] === sz 
+                            ? 'border-black text-black' 
+                            : 'border-gray-300 hover:border-gray-600'
+                        } text-black font-[Boston] text-[14px] transition-all`}
+                      >
+                        {sz}
+                      </li>
                     ))}
                   </ul>
                 </div>
