@@ -5,6 +5,30 @@ export interface ColorAnalysis {
   method: string;
   selectedHex: string;
   selectedToneName: string;
+  undertone: string;
+  fitzpatrick_scale: string;
+  recommended_colours: {
+    Formal: [string, string][];
+    Streetwear: [string, string][];
+    Athleisure: [string, string][];
+  };
+  color_family: {
+    Formal: string[];
+    Streetwear: string[];
+    Athleisure: string[];
+  };
+  hex_codes: {
+    Formal: string[];
+    Streetwear: string[];
+    Athleisure: string[];
+  };
+  analysis_metadata: {
+    lab_values: number[];
+    skin_pixel_count: number;
+    total_pixels: number;
+    input_method: string;
+    input_hex: string;
+  };
   isComplete: boolean;
   timestamp: string;
 }
@@ -23,7 +47,9 @@ interface UserTagsData {
 
 export interface StyleQuizData {
   name: string;
-  colorAnalysis: string;
+  color_analysis: string;
+  color_family: string;
+  hex_codes: string;
   gender: string;
   body_shape: string;
   upperWear: string;
@@ -41,6 +67,8 @@ export interface StyleQuizData {
   wardrobeContent: string;
   personality_tag_1:string;
   personality_tag_2:string;
+  
+
   // Add other fields as needed
 }
 
@@ -51,15 +79,43 @@ export const useStyleQuizData = () => {
   const [error, setError] = useState<string | null>(null);
   const [parsedData, setParsedData] = useState<(StyleQuizData & { usertags: UserTagsData[] }) | null>(null);
 
+  const parseColorData = (data: StyleQuizData) => {
+    try {
+      // Parse all color-related columns
+      const parsedColorAnalysis = JSON.parse(data.color_analysis);
+      const parsedColorFamily = data.color_family ? JSON.parse(data.color_family) : null;
+      const parsedHexCodes = data.hex_codes ? JSON.parse(data.hex_codes) : null;
+
+      // Validate the parsed data has the required structure
+      if (
+        parsedColorAnalysis.method &&
+        parsedColorAnalysis.recommended_colours &&
+        parsedColorAnalysis.analysis_metadata &&
+        parsedColorFamily &&
+        parsedHexCodes
+      ) {
+        // Merge all color data into one object
+        return {
+          ...parsedColorAnalysis,
+          color_family: parsedColorFamily,
+          hex_codes: parsedHexCodes
+        };
+      } else {
+        throw new Error("Invalid or missing color data structure");
+      }
+    } catch (e) {
+      console.error("Error parsing color data:", e);
+      throw e;
+    }
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
         const { data, error } = await getStyleQuizData();
         
-        if (error) {
-          throw error;
-        }
+        if (error) throw error;
 
         if (data) {
           setQuizData(data);
@@ -80,14 +136,14 @@ export const useStyleQuizData = () => {
           
           setParsedData(processedData as StyleQuizData & { usertags: UserTagsData[] });
           
-          // Parse colorAnalysis if it exists
-          if (data.color_analysis) {
+          // Parse all color data if it exists
+          if (data.color_analysis && data.color_family && data.hex_codes) {
             try {
-              const parsedColorAnalysis = JSON.parse(data.color_analysis);
-              setColorAnalysis(parsedColorAnalysis);
+              const colorData = parseColorData(data);
+              setColorAnalysis(colorData);
             } catch (e) {
-              console.error("Error parsing color analysis:", e);
-              setError("Error parsing color analysis data");
+              console.error("Error parsing color data:", e);
+              setError("Error parsing color data");
             }
           }
         }
@@ -122,12 +178,12 @@ export const useStyleQuizData = () => {
         }
         setParsedData(processedData as StyleQuizData & { usertags: UserTagsData[] });
         
-        if (data.color_analysis) {
+        if (data.color_analysis && data.color_family && data.hex_codes) {
           try {
-            const parsedColorAnalysis = JSON.parse(data.color_analysis);
-            setColorAnalysis(parsedColorAnalysis);
+            const colorData = parseColorData(data);
+            setColorAnalysis(colorData);
           } catch (e) {
-            console.error("Error parsing color analysis:", e);
+            console.error("Error parsing color data:", e);
           }
         }
       }

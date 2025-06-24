@@ -1,27 +1,46 @@
 "use client";
 
-import { looksData } from "@/app/utils/lookData";
 import { useParams } from "next/navigation";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-import ThreeImgGreed from "../three-image-greed";
+import Image from "next/image";
+import Link from "next/link";
 
-const MyCarousel = () => {
+interface SimilarOutfit {
+  outfit_data: {
+    main_outfit_id: string;
+    top: {
+      id: string;
+      title: string;
+      image: string;
+    };
+    bottom: {
+      id: string;
+      title: string;
+      image: string;
+    };
+  };
+  similarity_score: number;
+}
+
+interface MyCarouselProps {
+  similarOutfits: SimilarOutfit[];
+}
+
+const MyCarousel = ({ similarOutfits }: MyCarouselProps) => {
   const { id } = useParams();
-  // Convert looksData object to array and filter out current look
-  const looks = Object.entries(looksData)
-    .filter(([lookId]) => lookId !== id)
-    .map(([lookId, look]) => ({ lookId, ...look })).slice(0,3);
+
+  // Filter out current outfit if it exists in similarOutfits
+  const filteredOutfits = similarOutfits.filter(outfit => outfit.outfit_data.main_outfit_id !== id);
 
   return (
     <Swiper
       modules={[Navigation, Pagination, Autoplay]}
       spaceBetween={12}
       slidesPerView={1}
-       
       autoplay={{
         delay: 3000,
         disableOnInteraction: true,
@@ -34,7 +53,7 @@ const MyCarousel = () => {
       pagination={{ clickable: true }}
       navigation={true}
       loop={true}
-      className="w-full max-w-none relative group"
+      className="w-full max-w-none relative group mt-8"
     >
       <style jsx global>{`
         .swiper-button-next,
@@ -62,20 +81,36 @@ const MyCarousel = () => {
           color: #333;
         }
 
-        .swiper-button-next:active,
-        .swiper-button-prev:active,
-         
-
         .group:hover .swiper-button-next,
         .group:hover .swiper-button-prev {
           opacity: 2;
         }
       `}</style>
-      {looks.map(({ lookId, ...look }) => (
-        <SwiperSlide key={lookId}>
-          <div className="w-full max-w-none">
-            <ThreeImgGreed look={look} lookId={lookId} />
-          </div>
+
+      {filteredOutfits.map((outfit) => (
+        <SwiperSlide key={outfit.outfit_data.main_outfit_id}>
+          <Link href={`/looks/${outfit.outfit_data.main_outfit_id}`}>
+            <div className="flex gap-2 h-[300px] ml-4 mr-4 mt-6">
+              {/* Top garment */}
+              <div className="flex-1 relative">
+                <Image
+                  src={outfit.outfit_data.top.image}
+                  alt={outfit.outfit_data.top.title}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              {/* Bottom garment */}
+              <div className="flex-1 relative">
+                <Image
+                  src={outfit.outfit_data.bottom.image}
+                  alt={outfit.outfit_data.bottom.title}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            </div>
+          </Link>
         </SwiperSlide>
       ))}
     </Swiper>

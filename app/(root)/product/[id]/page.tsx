@@ -20,6 +20,10 @@ interface Product {
   sizesAvailable: string
   productImages: string
   specifications: string
+  tagged_products: {
+    customer_short_description: string;
+    customer_long_recommendation: string;
+  }[];
 }
 
 interface CartItem {
@@ -37,6 +41,7 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [userId, setUserId] = useState<number | null>(null);
   const { getSession } = useAuth()
 
   useEffect(() => {
@@ -44,7 +49,13 @@ const ProductDetail = () => {
       try {
         const { data, error } = await supabase
           .from('products')
-          .select('*')
+          .select(`*,
+            tagged_products(
+             customer_short_description,
+             customer_long_recommendation
+            )`
+            
+          )
           .eq('id', id)
           .single()
 

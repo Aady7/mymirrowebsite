@@ -2,12 +2,27 @@ import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 
 interface ColorResult {
+  success: boolean;
+  average_skin_tone: number[];
   undertone: string;
-  contrast: string;
-  recommended_colors: Array<{
-    hex: string;
-    explanation: string;
-  }>;
+  fitzpatrick_scale: string;
+  lightness: number;
+  a_value: number;
+  b_value: number;
+  dominant_colors: number[][];
+  recommended_colours: {
+    Formal: string[][];
+    Streetwear: string[][];
+    Athleisure: string[][];
+  };
+  skin_regions_detected: boolean;
+  analysis_metadata: {
+    lab_values: number[];
+    skin_pixel_count: number;
+    total_pixels: number;
+    input_method: string;
+    input_hex: string;
+  };
 }
 
 interface ColorAnalyzerProps {
@@ -160,7 +175,6 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
   };
 
   const handleImageData = async (imageData: string) => {
-    // Create new AbortController for this request
     const controller = new AbortController();
     setAbortController(controller);
 
@@ -168,13 +182,13 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
       setIsAnalyzing(true);
       setApiError(null);
       const base64 = imageData.split(",")[1];
-      console.log("base64", base64);
-      const res = await fetch("https://color-analysis-production.up.railway.app/analyze", {
+      
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/color/analyze`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({image:base64}),
+        body: JSON.stringify({ image: imageData }),
         signal: controller.signal
       });
 
@@ -191,8 +205,9 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
         method: 'upload',
         imageBase64: base64,
         undertone: data.undertone,
-        contrast: data.contrast,
-        recommendedColors: data.recommended_colors,
+        fitzpatrick_scale: data.fitzpatrick_scale,
+        recommended_colours: data.recommended_colours,
+        analysis_metadata: data.analysis_metadata,
         isComplete: true,
         timestamp: new Date().toISOString()
       };
@@ -208,7 +223,6 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
       handleChange(syntheticEvent);
       console.log("Color Analysis Data:", analysisData);
     } catch (error) {
-      // Only set error if it's not an abort error
       if (!(error instanceof DOMException && error.name === 'AbortError')) {
         console.error("Error analyzing image:", error);
         setApiError(error instanceof Error ? error.message : "Failed to analyze the image. Please try again.");
@@ -270,28 +284,56 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
     }
   };
 
-  const handleManualSelect = (hex: string) => {
+  const handleManualSelect = async (hex: string) => {
     setSelectedTone(hex);
-    setIsAnalysisComplete(true);
-    
-    // Create a detailed manual selection object
-    const manualSelectionData = {
-      method: 'manual',
-      selectedHex: hex,
-      selectedToneName: SKIN_TONES.find(tone => tone.hex === hex)?.name || '',
-      isComplete: true,
-      timestamp: new Date().toISOString()
-    };
-    
-    const syntheticEvent = {
-      target: {
-        name: 'colorAnalysis',
-        value: JSON.stringify(manualSelectionData)
+    setIsAnalyzing(true);
+    setApiError(null);
+
+    try {
+      const res = await fetch("https://backend.mymirro.in/api/v1/color/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ hex_color: hex })
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to analyze color: ${res.statusText}`);
       }
-    } as React.ChangeEvent<HTMLInputElement>;
-    
-    handleChange(syntheticEvent);
-    console.log("Manual Selection Data:", manualSelectionData);
+
+      const data = await res.json();
+      setResult(data);
+      setIsAnalysisComplete(true);
+      
+      // Create a detailed manual selection object
+      const manualSelectionData = {
+        method: 'manual',
+        selectedHex: hex,
+        selectedToneName: SKIN_TONES.find(tone => tone.hex === hex)?.name || '',
+        undertone: data.undertone,
+        fitzpatrick_scale: data.fitzpatrick_scale,
+        recommended_colours: data.recommended_colours,
+        analysis_metadata: data.analysis_metadata,
+        isComplete: true,
+        timestamp: new Date().toISOString()
+      };
+      
+      const syntheticEvent = {
+        target: {
+          name: 'colorAnalysis',
+          value: JSON.stringify(manualSelectionData)
+        }
+      } as React.ChangeEvent<HTMLInputElement>;
+      
+      handleChange(syntheticEvent);
+      console.log("Manual Selection Data:", manualSelectionData);
+    } catch (error) {
+      console.error("Error analyzing color:", error);
+      setApiError(error instanceof Error ? error.message : "Failed to analyze the color. Please try again.");
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleModeChange = (newMode: 'upload' | 'manual') => {
