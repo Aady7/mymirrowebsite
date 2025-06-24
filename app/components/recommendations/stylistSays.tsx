@@ -64,7 +64,7 @@ const StylistSays = () => {
   }, []);
 
   if (loading) {
-    return <PageLoader loadingText="Loading looks..." />;
+  //  return <PageLoader loadingText="Loading looks..." />;
   }
 
   if (error) {
