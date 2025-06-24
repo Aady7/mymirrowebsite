@@ -61,7 +61,7 @@ const MyCarousel = ({ similarOutfits }: MyCarouselProps) => {
           width: 25px !important;
           height: 25px !important;
           background: none !important;
-          opacity: 0;
+          opacity: 1;
           transition: opacity 0.3s;
           top: 50% !important;
         }
@@ -83,7 +83,7 @@ const MyCarousel = ({ similarOutfits }: MyCarouselProps) => {
 
         .group:hover .swiper-button-next,
         .group:hover .swiper-button-prev {
-          opacity: 2;
+          opacity: 1;
         }
       `}</style>
 

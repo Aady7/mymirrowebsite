@@ -89,7 +89,21 @@ export default function Navigation() {
           </div>
 
           {/*Mobile Menu Button */}
-          <div className='sm:hidden'>
+          <div className='sm:hidden flex items-center space-x-4'>
+            {/* Cart Icon for Mobile */}
+            <Link href="/cart" onClick={handleLinkClick}>
+              <button className='text-gray-700 focus:outline-none p-1'>
+                <Image 
+                  src="/assets/cartIcon.png" 
+                  alt="Cart" 
+                  width={24} 
+                  height={24}
+                  className="w-6 h-6"
+                />
+              </button>
+            </Link>
+            
+            {/* Hamburger Menu Button */}
             <button 
               onClick={() => setIsOpen(!isOpen)}
               className='text-gray-700 focus:outline-none'

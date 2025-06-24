@@ -157,7 +157,7 @@ export const PERSONALITY_QUESTIONS = [
       'Designer labels or premium pieces you treasure',
       'Neutral basics that mix-and-match effortlessly',
       'Curated ethnic + western classics, all paired up',
-      'Eclectic thrift finds, DIY patches—totally you'
+      'Electic thrift finds, DIY patches—totally you'
     ],
     group: 'social1'
   },

@@ -307,7 +307,7 @@ const LookPage = () => {
                 className="object-cover"
               />
             </div>
-            <div className="relative flex flex-col flex-1 max-w-[400px] h-[260.5px] pl-2 pr-2">
+            <div className="relative flex flex-col flex-1 max-w-[400px] h-[280.5px] pl-2 pr-2">
               <h1 className="text-lg text-center font-thin mb-1 mt-0 text-[14px]">{product.name}</h1>
               
               <div className="font-[Boston] text-[12px] font-medium leading-normal mb-1 pr-4 mx-4 mt-2 tracking-wide text-gray-600">

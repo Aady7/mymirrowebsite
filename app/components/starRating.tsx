@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-const StarRating = ({ productId }: { productId: string }) => {
+const StarRating = ({ productId, productType = 'product' }: { productId: string, productType?: 'product' | 'look' }) => {
   const { getSession } = useAuth();
   const supabase = createClientComponentClient();
   const [rating, setRating] = useState<number>(0);
@@ -13,6 +13,17 @@ const StarRating = ({ productId }: { productId: string }) => {
   const [message, setMessage] = useState<string>("");
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Create a unique identifier for the product
+  const getProductIdentifier = () => {
+    if (productType === 'look') {
+      return `look_${productId}`;
+    }
+    return productId;
+  };
+
+  const productIdentifier = getProductIdentifier();
 
   useEffect(() => {
     const checkLoginStatus = async () => {
@@ -32,7 +43,7 @@ const StarRating = ({ productId }: { productId: string }) => {
         .from("product-rating")
         .select("rating")
         .eq("user_id", currentUserId)
-        .eq("product_id", parseInt(productId, 10))
+        .eq("product_id", productIdentifier)
         .single();
 
       if (data?.rating) {
@@ -45,54 +56,63 @@ const StarRating = ({ productId }: { productId: string }) => {
     };
 
     fetchRating();
-  }, [supabase, currentUserId, productId]);
+  }, [supabase, currentUserId, productIdentifier]);
 
   // Handle rating click
   const handleRatingChange = async (star: number) => {
     if (!isLoggedIn || !currentUserId) {
       setMessage("Please log in to rate this product");
       setShowMessage(true);
+      setTimeout(() => setShowMessage(false), 3000);
       return;
     }
 
+    setIsLoading(true);
     setRating(star);
-    //setMessage("Thanks! Your response has been recorded.");
-    //setShowMessage(true);
 
-    console.log('Attempting to save rating:', { user_id: currentUserId, product_id: parseInt(productId, 10), rating: star });
+    console.log('Attempting to save rating:', { user_id: currentUserId, product_id: productIdentifier, rating: star });
 
-    // First check if rating exists
-    const { data: existingRating } = await supabase
-      .from("product-rating")
-      .select("rating")
-      .eq("user_id", currentUserId)
-      .eq("product_id", parseInt(productId, 10))
-      .single();
-
-    let error;
-    if (existingRating) {
-      // Update existing rating
-      const { error: updateError } = await supabase
+    try {
+      // Delete any existing rating first, then insert new one
+      // This approach avoids all unique constraint issues
+      console.log("Deleting any existing rating...");
+      const { error: deleteError } = await supabase
         .from("product-rating")
-        .update({ rating: star })
+        .delete()
         .eq("user_id", currentUserId)
-        .eq("product_id", parseInt(productId, 10));
-      error = updateError;
-    } else {
+        .eq("product_id", productIdentifier);
+
+      if (deleteError) {
+        console.error("Error deleting existing rating:", deleteError);
+        // Continue anyway, might be no existing rating
+      }
+
       // Insert new rating
+      console.log("Inserting new rating...");
       const { error: insertError } = await supabase
         .from("product-rating")
         .insert({
           user_id: currentUserId,
-          product_id: parseInt(productId, 10),
+          product_id: productIdentifier,
           rating: star,
         });
-      error = insertError;
-    }
 
-    if (error) {
-      console.error("Error saving rating:", error.message);
-      setShowMessage(false);
+      if (insertError) {
+        console.error("Error inserting rating:", insertError);
+        setMessage(`Failed to save rating: ${insertError.message}`);
+        setShowMessage(true);
+        setTimeout(() => setShowMessage(false), 5000);
+        return;
+      }
+
+      console.log("Rating saved successfully!");
+    } catch (error) {
+      console.error("Unexpected error:", error);
+      setMessage("An unexpected error occurred. Please try again.");
+      setShowMessage(true);
+      setTimeout(() => setShowMessage(false), 5000);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -104,15 +124,22 @@ const StarRating = ({ productId }: { productId: string }) => {
             key={star}
             size={40}
             className={`cursor-pointer transition-colors ${
+              isLoading ? "opacity-50 cursor-not-allowed" : ""
+            } ${
               rating >= star ? "text-yellow-400" : "text-gray-300"
             }`}
-            onClick={() => handleRatingChange(star)}
+            onClick={() => !isLoading && handleRatingChange(star)}
           />
         ))}
       </div>
+      {isLoading && (
+        <div className="text-blue-600 font-medium mb-2">
+          Saving rating...
+        </div>
+      )}
       {showMessage && (
         <div className={`bg-white shadow-lg rounded-lg px-6 py-3 text-center font-medium ${
-          !isLoggedIn ? "text-red-600" : "text-green-600"
+          message.includes("Error") || message.includes("Failed") ? "text-red-600" : "text-green-600"
         }`}>
           {message}
         </div>

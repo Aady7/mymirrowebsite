@@ -92,8 +92,7 @@ const FashionTarot = () => {
         </h1>           
 
         <p className="pt-2 flex items-center text-center font-[Boston] text-[14px] md:text-[16px] lg:text-[18px] not-italic font-normal leading-normal justify-center">
-          Uncover your style spirit — each card reveals a <br className="md:hidden" />
-          fashion truth based on your personality.
+        Flip the card to reveal your style spirit, a<br/>fashion truth shaped by your personality.
         </p>                                                  
       </div>
 

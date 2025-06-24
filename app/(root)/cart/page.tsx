@@ -95,9 +95,9 @@ const CartPage = () => {
       }
 
       const { error: updateError } = await supabase
-        .from('users')
-        .update({ cartitems: JSON.stringify(updatedItems) })
-        .eq('userid', session.user.id)
+        .from('users_updated')
+        .update({ cart_items: JSON.stringify(updatedItems) })
+        .eq('user_id', session.user.id)
 
       if (updateError) throw updateError
 

@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { notFound, useParams } from "next/navigation";
+import { notFound, useParams, useSearchParams } from "next/navigation";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import { useEffect, useState, Suspense } from "react";
 import { supabase } from "@/lib/supabase";
@@ -175,15 +175,17 @@ const outfitId = searchParams.get('outfitId');
     }
   })();
 
+  const handleManualImageSelect = (index: number) => {
+    setSelectedImageIndex(index);
+  };
+
   // Handle sizes
   const productSizes = (() => {
     if (!product) return [];
     try {
-      // First try to parse as JSON
       const parsedSizes = JSON.parse(product.sizesAvailable);
       return Array.isArray(parsedSizes) ? parsedSizes : [];
     } catch {
-      // If not JSON, split by comma and clean up
       return product.sizesAvailable
         .split(',')
         .map(s => s.trim())
@@ -249,6 +251,19 @@ const outfitId = searchParams.get('outfitId');
             ))}
           </div>
         </div>
+
+        {/* Add to Cart Error/Success Messages */}
+        {addToCartError && (
+          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-600 text-xs">
+            {addToCartError}
+          </div>
+        )}
+        {addToCartSuccess && (
+          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-green-600 text-xs">
+            Item added to cart successfully!
+          </div>
+        )}
+
         {/* Buttons Section */}
         <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8">
           {/* Buttons Row */}
@@ -256,8 +271,16 @@ const outfitId = searchParams.get('outfitId');
             <Button className="flex-[1] min-w-[100px] max-w-[160px] bg-black rounded-none text-white h-10 text-xs">
               BUY NOW
             </Button>
-            <Button className="flex-[2] min-w-[140px] max-w-[240px] bg-black rounded-none text-white h-10 text-xs">
-              ADD TO CART
+            <Button 
+              onClick={handleAddToCart}
+              disabled={!selectedSize || isAddingToCart}
+              className={`flex-[2] min-w-[140px] max-w-[240px] rounded-none text-white h-10 text-xs transition-all duration-200 ${
+                selectedSize 
+                  ? "bg-black hover:bg-gray-800" 
+                  : "bg-gray-400 cursor-not-allowed"
+              }`}
+            >
+              {isAddingToCart ? "ADDING..." : "ADD TO CART"}
             </Button>
           </div>
 
@@ -278,18 +301,17 @@ const outfitId = searchParams.get('outfitId');
             {product.tagged_products.customer_long_recommendation}
           </p>
         </div>
- 
+
         {/*star rating section */}
         <div className="w-full mt-4 flex flex-col">
           <h1 className="font-[Boston] font-black text-[12px] text-left"style={{fontVariant:'small-caps'}}>RATING</h1>
           <StarRating productId={id as string} />
         </div>
-
       </div>
        
        {/*button feedback section */}
       <div className="flex sm:px-30 px-31 mt-6">
-        <FeedbackButton/>
+        <FeedbackButton productId={parseInt(id as string, 10)}/>
       </div>
       {/* Horizontal Line */}
       <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8">

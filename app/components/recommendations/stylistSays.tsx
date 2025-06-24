@@ -92,15 +92,17 @@ const StylistSays = () => {
         {/*curated looks just for you*/}
         <div className="p-2 mt-10 md:p-6 lg:p-8">
           <div className="flex flex-col items-center justify-center space-y-1 md:space-y-3">
-            <h1 className="text-center font-[Boston] text-[18px] md:text-[24px] not-italic font-normal leading-normal w-[290px] md:w-auto">
+            {/* Heading in a fixed width to control centering */}
+            <h1 className="text-center font-[Boston] text-[18px] md:text-[25px] not-italic font-normal leading-normal w-[290px] md:w-auto">
               CURATED LOOKS JUST FOR YOU
             </h1>
 
-            <p className="font-[Boston] text-[14px] md:text-[16px] not-italic font-normal leading-normal pl-[15px] pr-[2px] w-[280px] md:w-auto md:text-center md:px-0">
-              Handpicked outfit combinations tailored to
-              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;your
-              unique style profile
-            </p>
+            {/* Paragraph aligned under "U" by padding-left */}
+            <div className="text-center">
+              <p className="font-[Boston] text-[13px] md:text-[18px] not-italic font-normal leading-normal max-w-[280px] md:max-w-none mx-auto">
+                Handpicked outfit combinations tailored to your unique style profile
+              </p>
+            </div>
           </div>
 
           {/* Looks section container */}
