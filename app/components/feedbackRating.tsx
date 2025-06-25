@@ -8,6 +8,7 @@ interface FeedbackRatingProps {
     onRatingChange: (value: number) => void;
 }
 
+//product feedback rating
 const FeedbackRating = ({ rating, onRatingChange }: FeedbackRatingProps) => {
     const [hoverRating, setHoverRating] = useState(0);
 

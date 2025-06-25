@@ -321,7 +321,9 @@ const LookPage = () => {
       <hr className="border-t-1 border-black w-[90%] mx-auto" />
 
       {/* Products */}
+
       {[...products].reverse().map((product, idx) => {
+
         const sizes = parseSizes(product.sizesAvailable);
         const imageUrl = product.id === Number(productInfo?.topId) 
           ? productInfo?.topImage 
@@ -333,8 +335,11 @@ const LookPage = () => {
           : {};
         
         return (
+
           <div key={product.id} className={`flex w-full mt-8 mb-2 gap-2 px-2 min-h-[280px]  ${idx % 2 === 0 ? '' : 'flex-row-reverse'}`}>            
             <div className="relative w-[45%] max-w-[221px] min-h-[260px]">
+
+         
               <Image 
                 src={validImageUrl}
                 alt={product.name || 'Product Image'} 
@@ -450,6 +455,10 @@ const LookPage = () => {
             <div className="space-y-0.1">
               <p className='text-[12px] tracking-wide font-semibold'>Body Type: {parsed.bodyShapeLabel}</p>
               <p className='text-[12px] tracking-wide'>{parsed.bodyShape}</p>
+            </div>
+            <div className="space-y-0.1">
+              <p className='text-[12px] tracking-wide font-semibold'>Occasion: {parsed.occasionLabel}</p>
+              <p className='text-[12px] tracking-wide'>{parsed.occasion}</p>
             </div>
           </div>
 
