@@ -321,7 +321,7 @@ const LookPage = () => {
       <hr className="border-t-1 border-black w-[90%] mx-auto" />
 
       {/* Products */}
-      {products.map((product, idx) => {
+      {[...products].reverse().map((product, idx) => {
         const sizes = parseSizes(product.sizesAvailable);
         const imageUrl = product.id === Number(productInfo?.topId) 
           ? productInfo?.topImage 
@@ -333,7 +333,7 @@ const LookPage = () => {
           : {};
         
         return (
-          <div key={product.id} className={`flex w-full mt-8 mb-2 gap-2 px-2 min-h-[280px] ${product.id == Number(productInfo?.topId) ? 'flex-row-reverse' : ''}`}>            
+          <div key={product.id} className={`flex w-full mt-8 mb-2 gap-2 px-2 min-h-[280px]  ${idx % 2 === 0 ? '' : 'flex-row-reverse'}`}>            
             <div className="relative w-[45%] max-w-[221px] min-h-[260px]">
               <Image 
                 src={validImageUrl}
