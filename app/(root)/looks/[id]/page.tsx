@@ -48,12 +48,7 @@ interface KeyAttributes {
   occasion?: string;
   [key: string]: string | undefined;
 }
-interface StyleSummary {
-  styleVibe: string;
-  occasion: string;
-  skinTone: string;
-  bodyShape: string;
-}
+
 
 const LookPage = () => {
   const { id } = useParams();
@@ -230,7 +225,7 @@ const LookPage = () => {
   };
 
   const handleAddAll = async () => {
-    const allSelected = products.every((_, i) => selectedSizes[i]);
+    const allSelected = products.every(product => selectedSizes[product.id]);
     if (!allSelected) { 
       setError('Please select sizes for all items'); 
       return; 
@@ -247,13 +242,22 @@ const LookPage = () => {
         return;
       }
 
-      const results = await Promise.all(
-        products.map((p, i) => addToCart(session.user.id, p.id, selectedSizes[i]))
-      );
-
-      if (!results.every(r => r.success)) {
-        setError('Some items failed to add to cart');
+      // Add products one by one to ensure proper cart updates
+      for (const product of products) {
+        const { success, error: cartError } = await addToCart(
+          session.user.id, 
+          product.id, 
+          selectedSizes[product.id]
+        );
+        
+        if (!success) {
+          setError(cartError || `Failed to add ${product.name} to cart`);
+          return;
+        }
       }
+
+      // Clear error if all products were added successfully
+      setError(null);
     } catch (err) {
       setError('An error occurred while adding items to cart');
     } finally {
@@ -312,8 +316,6 @@ const LookPage = () => {
     <>
       {/* Header */}
       <div className="flex items-center justify-center mb-2">
-      
-       
         <span className="text-[26px] font-thin">{matchedOutfit?.outfit_name}</span>
       </div>
       <hr className="border-t-1 border-black w-[90%] mx-auto" />
@@ -331,8 +333,8 @@ const LookPage = () => {
           : {};
         
         return (
-          <div key={product.id} className={`flex w-full mt-8 mb-2 gap-2 ${product.id == Number(productInfo?.topId) ? 'flex-row-reverse' : ''}`}>            
-            <div className="relative w-[221px] h-[260.5px] overflow-hidden">
+          <div key={product.id} className={`flex w-full mt-8 mb-2 gap-2 px-2 min-h-[280px] ${product.id == Number(productInfo?.topId) ? 'flex-row-reverse' : ''}`}>            
+            <div className="relative w-[45%] max-w-[221px] min-h-[260px]">
               <Image 
                 src={validImageUrl}
                 alt={product.name || 'Product Image'} 
@@ -340,10 +342,10 @@ const LookPage = () => {
                 className="object-cover"
               />
             </div>
-            <div className="relative flex flex-col flex-1 max-w-[400px] h-[280.5px] pl-2 pr-2">
+            <div className="relative flex flex-col flex-1 min-h-[280px] w-[55%] px-2">
               <h1 className="text-lg text-center font-thin mb-1 mt-0 text-[14px]">{product.name}</h1>
               
-              <div className="font-[Boston] text-[12px] font-medium leading-normal mb-1 pr-4 mx-2  tracking-wide text-gray-600">
+              <div className="font-[Boston] text-[12px] font-medium leading-normal mb-1 pr-2 tracking-wide text-gray-600">
                 {keyAttributes.color && (
                   <p className="mb-0.5">Color - {keyAttributes.color}</p>
                 )}
@@ -356,7 +358,6 @@ const LookPage = () => {
                 {keyAttributes.occasion && (
                   <p className="mb-0.5">Occasion - {keyAttributes.occasion}</p>
                 )}
-                {/* Display any additional attributes that might be present */}
                 {Object.entries(keyAttributes)
                   .filter(([key]) => !['color', 'fit', 'fabric', 'occasion'].includes(key))
                   .map(([key, value]) => (
@@ -366,18 +367,18 @@ const LookPage = () => {
                   ))}
               </div>
 
-              <div className="absolute bottom-8 left-2 right-2">
+              <div className="absolute bottom-12 left-2 right-2">
                 <h4 className="flex text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-1">
                   <FaIndianRupeeSign className="h-4 mt-2" /> {product.price}
                 </h4>
-                <div className="flex flex-col gap-2 mb-2">
+                <div className="flex flex-col gap-1 mb-2">
                   <span className="text-black font-[Boston] text-[12px] [font-variant:all-small-caps]">SIZE</span>
-                  <ul className="grid grid-cols-4 gap-2 max-w-[160px]">
+                  <ul className="grid grid-cols-4 gap-1 max-w-[160px]">
                     {sizes.map(sz => (
                       <li 
                         key={sz} 
                         onClick={() => setSelectedSizes(prev => ({ ...prev, [product.id]: sz }))}
-                        className={`cursor-pointer w-[30px] h-[30px] flex items-center justify-center border-[1px] ${
+                        className={`cursor-pointer w-[28px] h-[28px] flex items-center justify-center border-[1px] ${
                           selectedSizes[product.id] === sz 
                             ? 'border-black text-black' 
                             : 'border-gray-300 hover:border-gray-600'
@@ -411,12 +412,12 @@ const LookPage = () => {
       })}
 
       {/* Total & Actions */}
-      <div className="mt-12 px-6">
+      <div className="mt-8 px-4">
         <h1 className="flex font-thin text-2xl mb-4">
           <FaIndianRupeeSign className="h-5 mt-1.5" /> {totalPrice}
         </h1>
         <div className="flex gap-4">
-          <button className="flex items-center h-10 px-6 justify-center bg-black text-white text-sm rounded-none hover:bg-gray-800 transition-colors">
+          <button className="flex items-center h-10 px-4 justify-center bg-black text-white text-sm rounded-none hover:bg-gray-800 transition-colors">
             Buy Now
           </button>
           <button onClick={handleAddAll} disabled={loading.all}
@@ -426,11 +427,11 @@ const LookPage = () => {
         </div>
         {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
       </div>
-      <hr className="border-t-1 border-black w-[92%] mx-auto my-12" />
+      <hr className="border-t-1 border-black w-[92%] mx-auto my-8" />
 
       {/* Description */}
-      <div className="px-6 py-8">
-        <h1 className="text-[14px] text-black font-bold mb-6 font-[Boston] tracking-wide " style={{ fontVariant: 'small-caps' }}>DESCRIPTION</h1>
+      <div className="px-4 py-6">
+        <h1 className="text-[14px] text-black font-bold mb-4 font-[Boston] tracking-wide " style={{ fontVariant: 'small-caps' }}>DESCRIPTION</h1>
         <div className="text-[14px] font-light leading-6 font-[Boston] space-y-2">
           <p className='text-[12px] tracking-wide'>{matchedOutfit?.outfit_description}</p>
           <p className='text-[14px] text-black font-bold mb-4 font-[Boston] tracking-wide' style={{ fontVariant: 'small-caps' }}>WHY THIS LOOK WAS PICKED FOR YOU</p>
@@ -454,7 +455,7 @@ const LookPage = () => {
 
           <p className='font-semibold'>Rating</p>
           <StarRating productId={String(products[0]?.id)} />
-          <div className='mt-6 flex items-centre justify-centre px-[8rem]'>
+          <div className='mt-6 flex items-center justify-center w-full'>
            <Looksfeeback 
              onClose={() => { }} 
              userId={''}
@@ -463,12 +464,12 @@ const LookPage = () => {
           </div>
         </div>
         
-        <hr className="border-t-1 border-black w-full mt-12" />
+        <hr className="border-t-1 border-black w-full mt-8" />
       </div>
 
       {/* Carousel */}
-      <div className="px-6 py-8 mt-[-2rem]">
-        <h1 className="font-thin text-[22px] font-[Boston] mb-[-2rem]">YOU MAY ALSO LIKE</h1>
+      <div className="px-4 py-6">
+        <h1 className="font-thin text-[22px] font-[Boston] mb-4">YOU MAY ALSO LIKE</h1>
         <MyCarousel similarOutfits={similarOutfits} />
       </div>
     </>
