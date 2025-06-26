@@ -27,7 +27,7 @@ const LooksFeedback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId }
 
     return (
         <>
-            <button onClick={() => setShow(true)} className="rounded-none text-sm font-extralight bg-black text-white px-6 py-3 whitespace-nowrap font-[Boston] w-[120px]">
+            <button onClick={() => setShow(true)} className="rounded-none text-sm font-extralight bg-[#007e90] hover:bg-[#006d7d] text-white px-6 py-3 whitespace-nowrap font-[Boston] w-[120px] transition-colors">
                 Give Feedback
             </button>
             {show && (

@@ -2,7 +2,12 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 
-const ThreeImgGreed = ({ look, lookId }) => {
+interface ThreeImgGreedProps {
+  look: any;
+  lookId: string;
+}
+
+const ThreeImgGreed = ({ look, lookId }: ThreeImgGreedProps) => {
   return (
     <div className="md:col-span-2 lg:col-span-1 p-[30px]">
       <div className="flex flex-row gap-1 mt-8 md:mt-0">
@@ -50,7 +55,7 @@ const ThreeImgGreed = ({ look, lookId }) => {
 
       <span className="flex items-end justify-end mt-3">
         <Link href={`/looks/${lookId}`}>
-          <Button className="bg-black rounded-none w-25 h-6 md:h-8 md:px-6">
+          <Button className="bg-[#007e90] hover:bg-[#006d7d] rounded-none w-25 h-6 md:h-8 md:px-6 transition-colors">
             VIEW MORE
           </Button>
         </Link>

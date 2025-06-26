@@ -8,7 +8,7 @@ import { FaIndianRupeeSign } from 'react-icons/fa6';
 import SimilarOutfitsCarousel from '@/app/components/looks/SimilarOutfitsCarousel';
 import { addToCart } from '@/lib/utils/cart';
 import { useAuth } from '@/lib/hooks/useAuth';
-import PageLoader from '@/app/components/common/PageLoader';
+import SmartLoader from '@/app/components/loader/SmartLoader';
 import StarRating from '@/app/components/starRating';
 import LooksFeedback from '@/app/components/looks/LooksFeedback';
 import { supabase } from '@/lib/supabase';
@@ -75,6 +75,7 @@ const LookPage = () => {
   const [outfitData, setOutfitData] = useState<OutfitData | null>(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showLoader, setShowLoader] = useState(true);
   
   // Add ref to prevent duplicate API calls
   const hasFetched = useRef(false);
@@ -229,8 +230,23 @@ const LookPage = () => {
     };
   }, [id, isAuthenticated, isCheckingAuth]);
 
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    if (isLoadingOutfit || isCheckingAuth) {
+      setShowLoader(true);
+      timer = setTimeout(() => {
+        if (!isLoadingOutfit && !isCheckingAuth) setShowLoader(false);
+      }, 5000);
+    } else {
+      timer = setTimeout(() => setShowLoader(false), 5000);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isLoadingOutfit, isCheckingAuth]);
+
   // Show loading while checking authentication
-  if (isCheckingAuth) return <PageLoader loadingText="Checking authentication..." />;
+  if (showLoader) return <SmartLoader />;
 
   // Show authentication required message
   if (!isAuthenticated) {
@@ -260,7 +276,7 @@ const LookPage = () => {
     );
   }
 
-  if (isLoadingOutfit) return <PageLoader loadingText="Loading look details..." />;
+  if (isLoadingOutfit) return <SmartLoader />;
 
   if (error) {
     return (
@@ -483,10 +499,10 @@ const LookPage = () => {
                       <button
                         key={size}
                         onClick={() => setSelectedSizes(prev => ({ ...prev, [product.id]: size }))}
-                        className={`px-2 py-1 border text-xs rounded ${
+                        className={`px-2 py-1 border text-xs rounded transition-colors ${
                           selectedSizes[product.id] === size
-                            ? 'bg-black text-white border-black'
-                            : 'bg-white text-black border-gray-300 hover:border-black'
+                            ? 'bg-[#007e90] text-white border-[#007e90]'
+                            : 'bg-white text-black border-gray-300 hover:border-[#007e90]'
                         }`}
                       >
                         {size}
@@ -497,7 +513,7 @@ const LookPage = () => {
                   <button
                     onClick={() => handleAddProduct(product.id)}
                     disabled={loading[product.id] || !selectedSizes[product.id]}
-                    className="flex items-center justify-center gap-1 w-full py-1.5 bg-black text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                    className="flex items-center justify-center gap-1 w-full py-1.5 bg-[#007e90] text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#006d7d] transition-colors"
                   >
                     {loading[product.id] ? (
                       'Adding...'
@@ -533,7 +549,7 @@ const LookPage = () => {
         <button
           onClick={handleAddAll}
           disabled={loading.all || products.some((_, i) => !selectedSizes[i])}
-          className="w-full py-3 bg-black text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+          className="w-full py-3 bg-[#007e90] text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#006d7d] transition-colors"
         >
           {loading.all ? 'Adding All...' : `ADD ALL TO CART - ₹${totalPrice}`}
         </button>

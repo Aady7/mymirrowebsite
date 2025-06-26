@@ -11,7 +11,7 @@ import { User } from "@supabase/supabase-js";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { addToCart } from "@/lib/utils/cart";
 
-import PageLoader from "@/app/components/common/PageLoader";
+import SmartLoader from "@/app/components/loader/SmartLoader";
 import StarRating from "@/app/components/starRating";
 import FeedbackButton from "@/app/components/feedbackButton";
 import { getSimilarProducts } from "@/app/utils/productsapi";
@@ -217,7 +217,7 @@ export default function ProductPage() {
   };
 
   if (loading) {
-    return <PageLoader loadingText="Loading product details..." />;
+    return <SmartLoader />;
   }
 
   if (error || !product) {
@@ -327,7 +327,7 @@ export default function ProductPage() {
         <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8">
           {/* Buttons Row */}
           <div className="flex items-center gap-4 mt-5">
-            <Button className="flex-[1] min-w-[100px] max-w-[160px] bg-black rounded-none text-white h-10 text-xs">
+            <Button className="flex-[1] min-w-[100px] max-w-[160px] bg-[#007e90] hover:bg-[#006d7d] rounded-none text-white h-10 text-xs transition-colors">
               BUY NOW
             </Button>
             <Button 
@@ -335,7 +335,7 @@ export default function ProductPage() {
               disabled={!selectedSize || isAddingToCart}
               className={`flex-[2] min-w-[140px] max-w-[240px] rounded-none text-white h-10 text-xs transition-all duration-200 ${
                 selectedSize 
-                  ? "bg-black hover:bg-gray-800" 
+                  ? "bg-[#007e90] hover:bg-[#006d7d]" 
                   : "bg-gray-400 cursor-not-allowed"
               }`}
             >
@@ -357,7 +357,7 @@ export default function ProductPage() {
 
         <div className="w-full mt-2">
           <p className="text-[12px] font-light font-[Boston] text-left tracking-wide">
-            {product.tagged_products?.customer_long_recommendation}
+            {product.tagged_products?.[0]?.customer_long_recommendation}
           </p>
         </div>
 
@@ -405,7 +405,7 @@ export default function ProductPage() {
           {/* View More Button */}
           <div className="flex justify-end mt-6 mb-8">
             <Link href={`/looks/${outfit.main_outfit_id}`}>
-              <button className="bg-black text-white px-6 py-2 text-sm hover:bg-gray-800 transition-colors">
+              <button className="bg-[#007e90] hover:bg-[#006d7d] text-white px-6 py-2 text-sm transition-colors">
                 View More
               </button>
             </Link>
@@ -441,7 +441,7 @@ export default function ProductPage() {
               <p className="text-xs text-left mt-2 line-clamp-2 h-8">{similarProduct.name}</p>
               <p className="text-xs mt-2 font-thin">₹ {similarProduct.price}</p>
               <Link href={`/products/${similarProduct.id}`} className="w-full mt-2">
-                <Button className="w-full h-7 bg-black text-white text-xs py-[10px] rounded-none hover:bg-gray-800">
+                <Button className="w-full h-7 bg-[#007e90] hover:bg-[#006d7d] text-white text-xs py-[10px] rounded-none transition-colors">
                   VIEW MORE
                 </Button>
               </Link>

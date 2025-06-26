@@ -91,11 +91,11 @@ const UrbanShift = async() => {
 
               {/* Buttons */}
               <div className="flex flex-row gap-2 mt-2">
-                <button className="flex items-center h-6 w-10 justify-center bg-black text-white rounded-none">
+                <button className="flex items-center h-6 w-10 justify-center bg-[#007e90] hover:bg-[#006d7d] text-white rounded-none transition-colors">
                   <FaCartArrowDown className="w-3" />
                 </button>
                 <Link href="/looks/texture">
-                  <button className="bg-black h-6 px-4 text-white text-xs rounded-none">
+                  <button className="bg-[#007e90] hover:bg-[#006d7d] h-6 px-4 text-white text-xs rounded-none transition-colors">
                     View Product
                   </button>
                 </Link>
@@ -115,11 +115,11 @@ const UrbanShift = async() => {
   
       {/* Buy Now / Add to Cart */}
       <div className="flex gap-4 mt-6 w-[90%] mx-auto">
-        <button className="flex-[0.35] h-9 text-sm bg-black text-white rounded-none">
+        <button className="flex-[0.35] h-9 text-sm bg-[#007e90] hover:bg-[#006d7d] text-white rounded-none transition-colors">
           Buy Now
         </button>
         <Link href="/cart" className="flex-[0.65]">
-          <button className="w-full h-9 text-sm bg-black text-white rounded-none">
+          <button className="w-full h-9 text-sm bg-[#007e90] hover:bg-[#006d7d] text-white rounded-none transition-colors">
             Add To Cart
           </button>
         </Link>
@@ -167,7 +167,7 @@ const UrbanShift = async() => {
         </p>
          {/*rating */}
           {user && (
-            <StarRating userId={user.id} lookId={lookData.lookNumber} />
+            <StarRating productId={lookData.lookNumber.toString()} productType="look" />
           )}
 
 

@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
-import PageLoader from '@/app/components/common/PageLoader'
+import SmartLoader from '@/app/components/loader/SmartLoader'
 
 export default function ProtectedLayout({
   children,
@@ -42,10 +42,17 @@ export default function ProtectedLayout({
 
     checkAuth()
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_IN' && session) {
         setIsLoading(false)
       } else if (event === 'SIGNED_OUT') {
+        // Clear all user data when signed out
+        try {
+          const { cache } = await import('@/lib/utils/cache');
+          cache.clearAllUserData();
+        } catch (error) {
+          console.warn('Failed to clear user data on sign out:', error);
+        }
         router.push('/mobile-sign-in')
       }
     })
@@ -56,7 +63,7 @@ export default function ProtectedLayout({
   }, [])
 
   if (isLoading) {
-    return <PageLoader loadingText="Checking authorization..." />
+    return <SmartLoader />
   }
 
   return (

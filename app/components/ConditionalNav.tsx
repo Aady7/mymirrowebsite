@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import AuthNav from './authNav'
 import RootNav from './rootNav'
 import { supabase } from '@/lib/supabase'
-import PageLoader from '@/app/components/common/PageLoader'
+import SmartLoader from '@/app/components/loader/SmartLoader'
 
 const ConditionalNav = () => {
   const { getSession } = useAuth()
@@ -29,8 +29,19 @@ const ConditionalNav = () => {
     checkAuth()
 
     // Set up real-time auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('Auth state changed:', event)
+      
+      if (event === 'SIGNED_OUT') {
+        // Clear all user data when signed out
+        try {
+          const { cache } = await import('@/lib/utils/cache');
+          cache.clearAllUserData();
+        } catch (error) {
+          console.warn('Failed to clear user data on sign out:', error);
+        }
+      }
+      
       setIsAuthenticated(!!session)
       setIsLoading(false)
     })
@@ -42,7 +53,7 @@ const ConditionalNav = () => {
   }, [getSession])
 
   if (isLoading) {
-    return <PageLoader loadingText="Loading navigation..." />
+    return <SmartLoader />
   }
 
   return isAuthenticated ? <RootNav /> : <AuthNav />

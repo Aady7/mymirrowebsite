@@ -68,18 +68,28 @@ export const useAuth = () => {
 
   const signOut = async () => {
     try {
-      // Remove both styleQuizId and userId from localStorage
-      localStorage.removeItem('styleQuizId');
-      localStorage.removeItem('userId');
+      // Import cache utility and clear all user data
+      const { cache } = await import('../utils/cache');
+      cache.clearAllUserData();
   
-      // Sign out from Supabase
+      // Sign out from Supabase (this will also clear auth tokens and cookies)
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
   
+      console.log('Successfully cleared all user data and signed out');
+      
       // Redirect to mobile-sign-in page
       router.push('/mobile-sign-in');
     } catch (error) {
       console.error('Error signing out:', error);
+      // Even if there's an error, try to clear data and redirect
+      try {
+        const { cache } = await import('../utils/cache');
+        cache.clearAllUserData();
+        router.push('/mobile-sign-in');
+      } catch (fallbackError) {
+        console.error('Fallback cleanup failed:', fallbackError);
+      }
     }
   };
   

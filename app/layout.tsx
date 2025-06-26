@@ -5,6 +5,7 @@ import Footer from "./components/footer";
 import Provider from './components/provider';
 import "./globals.css";
 import ConditionalNav from './components/ConditionalNav';
+import ScrollToTop from './components/ScrollToTop';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -50,6 +51,7 @@ export default function RootLayout({
         className={`${inter.variable} font-sans antialiased`} 
       >
         <Provider>
+          <ScrollToTop />
           <ConditionalNav />
           {children}
         </Provider>

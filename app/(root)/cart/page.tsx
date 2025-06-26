@@ -6,7 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { FaIndianRupeeSign } from "react-icons/fa6"
 import { Button } from "@/components/ui/button"
-import PageLoader from '@/app/components/common/PageLoader'
+import SmartLoader from '@/app/components/loader/SmartLoader'
 
 interface CartItem {
   productId: number
@@ -148,7 +148,7 @@ const CartPage = () => {
   }
 
   if (loading) {
-    return <PageLoader loadingText="Loading your cart..." />
+    return <SmartLoader />
   }
 
   if (error) {

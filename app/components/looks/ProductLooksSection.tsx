@@ -72,7 +72,7 @@ const LooksSection = ({ currentProductId, user }: LooksSectionProps) => {
       {displayProducts.length >= 2 && (
         <div className="flex gap-2 m-2 text-black">
           <div className="mt-6 mx-3 mb-10 text-xs justify-center items-center tracking-wider font-light leading-4 flex flex-col">
-            <Button className="bg-black text-white h-6 mt-10 rounded-none self-start text-xs">
+            <Button className="bg-[#007e90] hover:bg-[#006d7d] text-white h-6 mt-10 rounded-none self-start text-xs transition-colors">
               VIEW MORE
             </Button>
           </div>
@@ -117,7 +117,7 @@ const LooksSection = ({ currentProductId, user }: LooksSectionProps) => {
 
           <div className="mt-[-12%] mx-3 tracking-wide font-light text-xs justify-center items-center leading-3.5">
             <Link href={`/looks/${lookId}`}>
-              <Button className="bg-black text-white h-5 mt-1 rounded-none">
+              <Button className="bg-[#007e90] hover:bg-[#006d7d] text-white h-5 mt-1 rounded-none transition-colors">
                 View More
               </Button>
             </Link>

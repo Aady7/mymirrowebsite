@@ -1,5 +1,5 @@
 'use client'
-import { Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import ErrorBoundary, { SectionErrorFallback } from "@/app/components/common/ErrorBoundary";
 import PersonalizedStyleAdvice from "@/app/components/recommendations/PersonalizedStyleAdvice";
 import PersonalityBasedTarotCards from "@/app/components/recommendations/PersonalityBasedTarotCards";
@@ -7,9 +7,34 @@ import CuratedOutfitsSection from "@/app/components/recommendations/CuratedOutfi
 import { useStyleQuizData } from "@/lib/hooks/useStyleQuizData";
 import SectionLoader from "@/app/components/common/SectionLoader";
 import { cache } from "@/lib/utils/cache";
+import SmartLoader from "@/app/components/loader/SmartLoader";
 
 const Recommendations = () => {
   const { quizData, colorAnalysis, isLoading, error, refetch } = useStyleQuizData();
+  const [showInitialLoader, setShowInitialLoader] = useState(true);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout | null = null;
+    if (isLoading) {
+      setShowInitialLoader(true);
+      timer = setTimeout(() => {
+        if (!isLoading) setShowInitialLoader(false);
+      }, 5000);
+    } else {
+      timer = setTimeout(() => setShowInitialLoader(false), 5000);
+    }
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isLoading]);
+
+  if (showInitialLoader) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <SmartLoader />
+      </div>
+    );
+  }
 
   // Show loading state for the entire page while data is being fetched
   if (isLoading) {
@@ -42,7 +67,7 @@ const Recommendations = () => {
               </button>
               <button
                 onClick={() => refetch(true)}
-                className="px-4 py-2 bg-[#006d7d] text-white rounded-lg hover:bg-[#005a66] transition-colors text-sm"
+                className="px-4 py-2 bg-[#007e90] text-white rounded-lg hover:bg-[#006d7d] transition-colors text-sm"
               >
                 Force Refresh
               </button>

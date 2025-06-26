@@ -43,7 +43,7 @@ const LookCard = ({ look, lookId }: LookCardProps) => {
               <div className="mt-[4.5rem] mx-3 text-xs justify-center items-center tracking-wide font-light leading-normal">
                 {displayProducts[1].description}<br/>
                 <Link href={`/looks/${lookId}`}>
-                  <Button className="bg-black text-white h-5 mt-[2rem] rounded-none">
+                  <Button className="bg-[#007e90] hover:bg-[#006d7d] text-white h-5 mt-[2rem] rounded-none transition-colors">
                     View More
                   </Button>
                 </Link>
@@ -75,7 +75,7 @@ const LookCard = ({ look, lookId }: LookCardProps) => {
             <div className="mt-[5rem] mx-4 tracking-wide font-light text-xs justify-center items-center leading-normal">
               {displayProducts[0].description}<br/>
               <Link href={`/looks/${lookId}`}>
-                <Button className="bg-black text-white h-5 mt-4 rounded-none">
+                <Button className="bg-[#007e90] hover:bg-[#006d7d] text-white h-5 mt-4 rounded-none transition-colors">
                   View More
                 </Button>
               </Link>

@@ -312,6 +312,7 @@ export default function StyleQuizNew() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isReturningUser, setIsReturningUser] = useState(false);
 
   // Form data - single state object
   const [formData, setFormData] = useState<FormData>({
@@ -360,14 +361,71 @@ export default function StyleQuizNew() {
   // Initialize and load from localStorage
   useEffect(() => {
     const initializeQuiz = async () => {
-      // Get or create IDs
+      // Check if user is authenticated and has completed quiz before
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session?.user) {
+        setIsAuthenticated(true);
+        
+        // Check if user has previously completed the style quiz
+        const { data: userData, error: userError } = await supabase
+          .from('users_updated')
+          .select('style_quiz_id')
+          .eq('user_id', session.user.id)
+          .maybeSingle();
+        
+        if (!userError && userData?.style_quiz_id) {
+          // User has previously completed the quiz - this is a return visit
+          console.log('User returning to edit style quiz - clearing cache and localStorage');
+          
+          // Import and clear cache
+          try {
+            const { cache } = await import('@/lib/utils/cache');
+            cache.clear();
+          } catch (cacheError) {
+            console.warn('Failed to clear cache:', cacheError);
+          }
+          
+          // Clear style quiz related localStorage items
+          localStorage.removeItem('styleQuizNewData');
+          localStorage.removeItem('styleQuizNewStep');
+          localStorage.removeItem('styleQuizNewId');
+          
+          // Create new IDs for the fresh quiz
+          const newUserId = crypto.randomUUID();
+          const newStyleQuizId = crypto.randomUUID();
+          
+          localStorage.setItem('userId', newUserId);
+          localStorage.setItem('styleQuizNewId', newStyleQuizId);
+          
+          // Initialize with fresh data
+          setFormData(prev => ({ 
+            ...prev, 
+            userId: newUserId, 
+            styleQuizId: newStyleQuizId,
+            phone: session.user.phone || ''
+          }));
+          
+          // Mark that this user will need regeneration
+          setIsReturningUser(true);
+          
+          return;
+        }
+        
+        // Pre-fill phone if available for new users
+        if (session.user.phone) {
+          setFormData(prev => ({ ...prev, phone: session.user.phone || '' }));
+        }
+      }
+      
+      // Get or create IDs (for new users or non-authenticated users)
       let userId = localStorage.getItem('userId') || crypto.randomUUID();
       let styleQuizId = localStorage.getItem('styleQuizNewId') || crypto.randomUUID();
       
       localStorage.setItem('userId', userId);
       localStorage.setItem('styleQuizNewId', styleQuizId);
 
-      // Load saved data
+      // Load saved data (only for non-returning users)
       const savedData = localStorage.getItem('styleQuizNewData');
       const savedStep = localStorage.getItem('styleQuizNewStep');
 
@@ -386,15 +444,6 @@ export default function StyleQuizNew() {
         if (step > 0) {
           setCurrentStep(step);
           setMaxCompletedStep(step - 1);
-        }
-      }
-
-      // Check auth
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        setIsAuthenticated(true);
-        if (session.user.phone) {
-          setFormData(prev => ({ ...prev, phone: session.user.phone || '' }));
         }
       }
     };
@@ -565,6 +614,39 @@ export default function StyleQuizNew() {
               console.error('Error saving user data:', userError);
               setError('Failed to save user data. Please try again.');
               return;
+            }
+          }
+          
+          // If this is a returning user, trigger outfit regeneration with regenerate: true
+          if (isReturningUser && session?.user?.id) {
+            try {
+              // Get the user ID from users_updated table
+              const { data: userData, error: userDataError } = await supabase
+                .from('users_updated')
+                .select('id')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
+              
+              if (!userDataError && userData?.id) {
+                // Call the outfit generation API with regenerate: true
+                const response = await fetch('/api/mymirrobackend/create-outfit', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ 
+                    user_id: userData.id,
+                    regenerate: true 
+                  }),
+                });
+                
+                if (response.ok) {
+                  console.log('Outfits regenerated successfully for returning user');
+                } else {
+                  console.warn('Failed to regenerate outfits, but continuing...');
+                }
+              }
+            } catch (regenerateError) {
+              console.error('Error regenerating outfits:', regenerateError);
+              // Don't block the flow, just log the error
             }
           }
           

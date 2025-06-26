@@ -79,6 +79,32 @@ class SessionCache {
     }
   }
 
+  // Clear all user-specific data (for sign out)
+  clearAllUserData(): void {
+    try {
+      // Clear cache
+      this.clear();
+      
+      // Clear localStorage items
+      const localStorageKeys = ['styleQuizId', 'userId', 'styleQuizNewId', 'styleQuizNewData', 'styleQuizNewStep'];
+      localStorageKeys.forEach(key => {
+        localStorage.removeItem(key);
+      });
+      
+      // Clear any sessionStorage items that might contain user data
+      const sessionKeys = Object.keys(sessionStorage);
+      sessionKeys.forEach(key => {
+        if (key.startsWith('mymirro_') || key.startsWith('supabase_')) {
+          sessionStorage.removeItem(key);
+        }
+      });
+      
+      console.log('All user data cleared from storage');
+    } catch (error) {
+      console.warn('Failed to clear all user data:', error);
+    }
+  }
+
   has(key: string): boolean {
     return this.get(key) !== null;
   }

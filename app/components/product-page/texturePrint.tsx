@@ -49,10 +49,10 @@ export default function TexturePrint() {
           <h6 className="text-left font-thin text-xs">SIZE</h6>
         </div>
         <div className="flex pr-1 items-center mt-8 gap-4">
-          <Button className="bg-black rounded-none text-white w-30 h-8 text-xs">
+          <Button className="bg-[#007e90] hover:bg-[#006d7d] rounded-none text-white w-30 h-8 text-xs transition-colors">
             BUY NOW
           </Button>
-          <Button className="bg-black rounded-none text-white w-48 h-8 text-xs">
+          <Button className="bg-[#007e90] hover:bg-[#006d7d] rounded-none text-white w-48 h-8 text-xs transition-colors">
             ADD TO CART
           </Button>
         </div>
@@ -91,7 +91,7 @@ export default function TexturePrint() {
       </div>
 
       {/*lookThreeSection*/}
-                      <ProductLooksSection />
+                      <ProductLooksSection currentProductId={1} />
 
       {/* Horizontal Line */}
       <hr className="border-thin w-[100%] border-black" />

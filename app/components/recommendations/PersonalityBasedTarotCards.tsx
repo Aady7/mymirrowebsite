@@ -161,7 +161,7 @@ const FashionTarot: React.FC<FashionTarotProps> = ({ quizData }) => {
                       <h3 className="font-['Lora'] text-[16px] md:text-[20px] lg:text-[24px] text-[#D4AF7F] mb-4">
                         {card.title}
                       </h3>
-                      <p className="font-['Boston'] italic text-[11px] md:text-[12px] lg:text-[16px] text-[#F3E9DC] leading-tight md:pl-8 md:pr-8 pl-1 pr-1 pb-1" >
+                      <p className="font-['Boston'] italic text-[10px] md:text-[11px] lg:text-[14px] text-[#F3E9DC] leading-tight md:px-6 px-2 pb-2 overflow-hidden max-h-[120px] md:max-h-[140px] lg:max-h-[180px]" >
                         {card.elaborate}
                       </p>
                     </div>
