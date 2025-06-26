@@ -39,14 +39,14 @@ export default function Navigation() {
         <div className="flex justify-between h-16 items-center">
           {/* Logo / Brand */}
           <div className="flex-shrink-0">
-            <Link href="/style-quiz" onClick={handleLinkClick} className="text-2xl font-bold text-indigo-600">
+            <Link href="/style-quiz-new" onClick={handleLinkClick} className="text-2xl font-bold text-indigo-600">
               <Image src="/assets/logo.png" alt='logo' width={100} height={30} />
             </Link>
           </div>
           {/* Desktop Navigation*/}
           <div className="hidden sm:flex space-x-6">
             <Link
-              href="/style-quiz"
+              href="/style-quiz-new"
               className="text-gray-700 hover:text-indigo-600 transition font-medium"
             >
               Quiz
@@ -146,7 +146,7 @@ export default function Navigation() {
               Home
             </Link>
             <Link 
-              href="/style-quiz" 
+              href="/style-quiz-new" 
               onClick={handleLinkClick}
               className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
             >

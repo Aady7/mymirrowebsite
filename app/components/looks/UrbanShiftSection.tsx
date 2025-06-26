@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FaCartArrowDown } from "react-icons/fa";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 import StarRating from "../starRating";
-import MyCarousel from "./mycrausal";
+import SimilarOutfitsCarousel from "./SimilarOutfitsCarousel";
 import { supabase } from "@/lib/supabase";
 
 const UrbanShift = async() => {
@@ -185,7 +185,7 @@ const UrbanShift = async() => {
       </div>
 
       {/* Carousel */}
-      <MyCarousel />
+              <SimilarOutfitsCarousel />
     </>
   );
 };

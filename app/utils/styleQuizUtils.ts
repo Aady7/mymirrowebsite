@@ -51,22 +51,42 @@ export const handleVerifyOtp = async (phone: string, otp: string) => {
 
 export const getStyleQuizData = async () => {
   try {
-    // Get the current session
-    const { data: { session } } = await supabase.auth.getSession();
+    // Get the current session with error handling
+    let { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      console.error('Session error:', sessionError);
+      // Try to refresh the session
+      const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError || !refreshedSession?.user) {
+        throw new Error('Authentication failed. Please sign in again.');
+      }
+      session = refreshedSession;
+    }
+    
     if (!session?.user) {
-      throw new Error('No authenticated user found');
+      throw new Error('No authenticated user found. Please sign in.');
     }
 
-    // Get the user's styleQuizId from users table
+    console.log('Fetching style quiz data for user:', session.user.id);
+
+    // Get the user's styleQuizId from users table with better error handling
     const { data: userData, error: userError } = await supabase
       .from('users_updated')
       .select('style_quiz_id')
       .eq('user_id', session.user.id)
-      .single();
+      .maybeSingle(); // Use maybeSingle to avoid throwing on no rows
 
-    if (userError || !userData?.style_quiz_id) {
-      throw new Error('No style quiz data found for user');
+    if (userError) {
+      console.error('User data fetch error:', userError);
+      throw new Error(`Failed to fetch user data: ${userError.message}`);
     }
+    
+    if (!userData?.style_quiz_id) {
+      throw new Error('No style quiz found for this user. Please complete the style quiz first.');
+    }
+
+    console.log('Found style quiz ID:', userData.style_quiz_id);
 
     // Fetch the style quiz data using styleQuizId
     const { data: quizData, error: quizError } = await supabase
@@ -76,13 +96,18 @@ export const getStyleQuizData = async () => {
       .single();
 
     if (quizError) {
-      throw new Error('Error fetching style quiz data');
+      console.error('Quiz data fetch error:', quizError);
+      throw new Error(`Error fetching style quiz data: ${quizError.message}`);
     }
 
+    console.log('Successfully fetched quiz data');
     return { data: quizData, error: null };
   } catch (error) {
     console.error('Error in getStyleQuizData:', error);
-    return { data: null, error };
+    return { 
+      data: null, 
+      error: error instanceof Error ? error.message : 'An unexpected error occurred' 
+    };
   }
 };
 
@@ -231,11 +256,9 @@ export const STYLE_PREFERENCE_IMAGES = {
       Turtlenecks: '/stylequizimages/GotoStyle/MalePrefBus/image158.png',
       Jeans: '/stylequizimages/GotoStyle/MalePrefBus/image161.png',
       'Polo T-shirts': '/stylequizimages/GotoStyle/MalePrefBus/image157.png',
-     
-     
     },
     female: {
-      Dressses: '/stylequizimages/GotoStyle/FemalePrefBus/image107.png',
+      Dresses: '/stylequizimages/GotoStyle/FemalePrefBus/image107.png',
       Shirts: '/stylequizimages/GotoStyle/FemalePrefBus/image108.png',
       Blouse: '/stylequizimages/GotoStyle/FemalePrefBus/image109.png',
       Ethnics: '/stylequizimages/GotoStyle/FemalePrefBus/image110.png',

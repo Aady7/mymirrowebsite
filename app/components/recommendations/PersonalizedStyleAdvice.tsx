@@ -1,15 +1,18 @@
 "use client"
 import Image from "next/image";
-import { useStyleQuizData } from "@/lib/hooks/useStyleQuizData";
-import PageLoader from "@/app/components/common/PageLoader";
+import { StyleQuizData, UserTagsData, ColorAnalysis } from "@/lib/hooks/useStyleQuizData";
 
 interface ColorInfo {
   name: string;
   hex: string;
 }
 
-const Stylist = () => {
-  const { quizData, colorAnalysis, isLoading, error } = useStyleQuizData();
+interface StylistProps {
+  quizData: (StyleQuizData & { usertags: UserTagsData[] }) | null;
+  colorAnalysis: ColorAnalysis | null;
+}
+
+const Stylist: React.FC<StylistProps> = ({ quizData, colorAnalysis }) => {
 
   // Function to get unique colors from recommended_colours
   const getUniqueColors = (): ColorInfo[] => {
@@ -47,13 +50,7 @@ const Stylist = () => {
     { hex: '#FDF6EC', name: 'Cream White' }
   ];
 
-  if (isLoading) {
-    return <PageLoader loadingText="Loading stylist recommendations..." />;
-  }
-
-  if (error) {
-    return <div className="text-red-500 text-center p-4">{error}</div>;
-  }
+  // Component now receives data as props, so no need for loading/error states
   
   return (
     <div className="px-4 mb-8 w-full max-w-[480px] mx-auto md:max-w-[768px] lg:max-w-[1024px] xl:max-w-[1280px]">

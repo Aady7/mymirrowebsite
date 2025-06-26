@@ -30,6 +30,13 @@ interface ColorAnalyzerProps {
   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
+// Expose the trigger function globally so the parent can call it
+declare global {
+  interface Window {
+    triggerColorAnalysis?: () => Promise<void>;
+  }
+}
+
 const SKIN_TONES = [
   { hex: '#F5E6E0', name: 'Fair' },
   { hex: '#EDD6C7', name: 'Light' },
@@ -57,6 +64,7 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [abortController, setAbortController] = useState<AbortController | null>(null);
   const [imageSource, setImageSource] = useState<'camera' | 'gallery' | null>(null);
+  const [isReadyForAnalysis, setIsReadyForAnalysis] = useState(false);
 
   // Cleanup effect to ensure camera is stopped when component unmounts
   useEffect(() => {
@@ -66,6 +74,82 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
       }
     };
   }, [stream]);
+
+  // Expose the analysis trigger function globally
+  useEffect(() => {
+    window.triggerColorAnalysis = async () => {
+      if (!isReadyForAnalysis) {
+        throw new Error('No image or manual selection ready for analysis');
+      }
+
+      const currentAnalysisData = formValues.colorAnalysis ? JSON.parse(formValues.colorAnalysis) : null;
+      
+      if (currentAnalysisData?.method === 'manual') {
+        // Handle manual selection
+        await handleManualAnalysis(currentAnalysisData.selectedHex);
+      } else if (currentAnalysisData?.imageData) {
+        // Handle image analysis
+        await handleImageData(currentAnalysisData.imageData);
+      }
+    };
+
+    return () => {
+      delete window.triggerColorAnalysis;
+    };
+  }, [isReadyForAnalysis, formValues.colorAnalysis]);
+
+  // Separate function for manual analysis
+  const handleManualAnalysis = async (hex: string) => {
+    setIsAnalyzing(true);
+    setApiError(null);
+
+    try {
+      const res = await fetch("https://backend.mymirro.in/api/v1/color/analyze", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ hex_color: hex })
+      });
+
+      if (!res.ok) {
+        throw new Error(`Failed to analyze color: ${res.statusText}`);
+      }
+
+      const data = await res.json();
+      setResult(data);
+      setIsAnalysisComplete(true);
+      
+      // Create a detailed manual selection object
+      const manualSelectionData = {
+        method: 'manual',
+        selectedHex: hex,
+        selectedToneName: SKIN_TONES.find(tone => tone.hex === hex)?.name || '',
+        undertone: data.undertone,
+        fitzpatrick_scale: data.fitzpatrick_scale,
+        recommended_colours: data.recommended_colours,
+        analysis_metadata: data.analysis_metadata,
+        isComplete: true,
+        timestamp: new Date().toISOString()
+      };
+      
+      const syntheticEvent = {
+        target: {
+          name: 'colorAnalysis',
+          value: JSON.stringify(manualSelectionData)
+        }
+      } as React.ChangeEvent<HTMLInputElement>;
+      
+      handleChange(syntheticEvent);
+      console.log("Manual Selection Analysis Complete:", manualSelectionData);
+    } catch (error) {
+      console.error("Error analyzing color:", error);
+      setApiError(error instanceof Error ? error.message : "Failed to analyze the color. Please try again.");
+      throw error;
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
 
   // Monitor video element to ensure it's working
   useEffect(() => {
@@ -164,10 +248,18 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
         const imageData = canvas.toDataURL('image/jpeg', 0.8);
         setCapturedImage(imageData);
         setImageSource('camera');
+        setIsReadyForAnalysis(true);
         stopCamera();
-        // Automatically start upload
-        handleImageData(imageData);
-        console.log("Image captured and upload started");
+        console.log("Image captured - ready for analysis");
+        
+        // Set the form to ready state without triggering API
+        const syntheticEvent = {
+          target: {
+            name: 'colorAnalysis',
+            value: JSON.stringify({ isReadyForAnalysis: true, imageData, method: 'upload' })
+          }
+        } as React.ChangeEvent<HTMLInputElement>;
+        handleChange(syntheticEvent);
       } else {
         setCameraError("Cannot capture image. Video not ready.");
       }
@@ -249,7 +341,16 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
     reader.onloadend = () => {
       const imageData = reader.result as string;
       setCapturedImage(imageData);
-      handleImageData(imageData);
+      setIsReadyForAnalysis(true);
+      
+      // Set the form to ready state without triggering API
+      const syntheticEvent = {
+        target: {
+          name: 'colorAnalysis',
+          value: JSON.stringify({ isReadyForAnalysis: true, imageData, method: 'upload' })
+        }
+      } as React.ChangeEvent<HTMLInputElement>;
+      handleChange(syntheticEvent);
     };
 
     reader.readAsDataURL(file);
@@ -284,56 +385,25 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
     }
   };
 
-  const handleManualSelect = async (hex: string) => {
+  const handleManualSelect = (hex: string) => {
     setSelectedTone(hex);
-    setIsAnalyzing(true);
-    setApiError(null);
-
-    try {
-      const res = await fetch("https://backend.mymirro.in/api/v1/color/analyze", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ hex_color: hex })
-      });
-
-      if (!res.ok) {
-        throw new Error(`Failed to analyze color: ${res.statusText}`);
+    setIsReadyForAnalysis(true);
+    
+    // Set the form to ready state without triggering API
+    const syntheticEvent = {
+      target: {
+        name: 'colorAnalysis',
+        value: JSON.stringify({ 
+          isReadyForAnalysis: true, 
+          selectedHex: hex,
+          selectedToneName: SKIN_TONES.find(tone => tone.hex === hex)?.name || '',
+          method: 'manual' 
+        })
       }
-
-      const data = await res.json();
-      setResult(data);
-      setIsAnalysisComplete(true);
-      
-      // Create a detailed manual selection object
-      const manualSelectionData = {
-        method: 'manual',
-        selectedHex: hex,
-        selectedToneName: SKIN_TONES.find(tone => tone.hex === hex)?.name || '',
-        undertone: data.undertone,
-        fitzpatrick_scale: data.fitzpatrick_scale,
-        recommended_colours: data.recommended_colours,
-        analysis_metadata: data.analysis_metadata,
-        isComplete: true,
-        timestamp: new Date().toISOString()
-      };
-      
-      const syntheticEvent = {
-        target: {
-          name: 'colorAnalysis',
-          value: JSON.stringify(manualSelectionData)
-        }
-      } as React.ChangeEvent<HTMLInputElement>;
-      
-      handleChange(syntheticEvent);
-      console.log("Manual Selection Data:", manualSelectionData);
-    } catch (error) {
-      console.error("Error analyzing color:", error);
-      setApiError(error instanceof Error ? error.message : "Failed to analyze the color. Please try again.");
-    } finally {
-      setIsAnalyzing(false);
-    }
+    } as React.ChangeEvent<HTMLInputElement>;
+    
+    handleChange(syntheticEvent);
+    console.log("Manual selection ready for analysis:", hex);
   };
 
   const handleModeChange = (newMode: 'upload' | 'manual') => {
@@ -477,13 +547,30 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
                   ) : null}
                 </div>
               </div>
-            ) : capturedImage ? (
+            ) : capturedImage || (isReadyForAnalysis && !isAnalysisComplete) ? (
               <div className="flex flex-col items-center gap-6">
-                <img
-                  src={capturedImage}
-                  alt="Preview"
-                  className="w-full max-w-xs rounded-lg border border-gray-300 object-contain bg-gray-100"
-                />
+                {capturedImage && (
+                  <img
+                    src={capturedImage}
+                    alt="Preview"
+                    className="w-full max-w-xs rounded-lg border border-gray-300 object-contain bg-gray-100"
+                  />
+                )}
+                {isReadyForAnalysis && !capturedImage && (
+                  <div className="w-full max-w-xs h-48 bg-gray-100 border border-gray-300 rounded-lg flex items-center justify-center">
+                    <p className="text-gray-500">Ready for analysis</p>
+                  </div>
+                )}
+                {isReadyForAnalysis && !isAnalysisComplete && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg w-full max-w-xs">
+                    <div className="flex items-center justify-center gap-2">
+                      <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <p className="text-sm text-green-700">Ready for analysis - click Next to continue</p>
+                    </div>
+                  </div>
+                )}
                 {imageSource === 'camera' ? (
                   <button
                     onClick={handleRetake}
@@ -642,6 +729,23 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
                 />
               ))}
             </div>
+            {selectedTone && (
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-8 h-8 rounded-full border border-gray-300"
+                    style={{ backgroundColor: selectedTone }}
+                  />
+                  <p className="text-green-700">
+                    Selected: {SKIN_TONES.find(tone => tone.hex === selectedTone)?.name}
+                  </p>
+                  <svg className="w-4 h-4 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <p className="text-sm text-green-600 mt-2">Ready for analysis - click Next to continue</p>
+              </div>
+            )}
             <p className="text-sm text-gray-500 italic">
               Tip: Choose the tone closest to your inner forearm or jawline.
             </p>

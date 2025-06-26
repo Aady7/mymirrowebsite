@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import StarRating from "./starRating";
+import StarRating from "../starRating";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
@@ -12,7 +12,7 @@ interface LooksFeedbackProps {
     lookId: number;
 }
 
-const Looksfeeback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId }) => {
+const LooksFeedback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId }) => {
     const [formData, setFormData] = useState({
         comment: ""
     });
@@ -27,7 +27,7 @@ const Looksfeeback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId })
 
     return (
         <>
-            <button onClick={() => setShow(true)} className="rounded-none text-xs font-extralight bg-black text-white px-4 py-2 whitespace-nowrap font-[Boston]">
+            <button onClick={() => setShow(true)} className="rounded-none text-sm font-extralight bg-black text-white px-6 py-3 whitespace-nowrap font-[Boston] w-[120px]">
                 Give Feedback
             </button>
             {show && (
@@ -122,4 +122,4 @@ const Looksfeeback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId })
     );
 }
 
-export default Looksfeeback;
+export default LooksFeedback;

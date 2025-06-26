@@ -50,7 +50,7 @@ const page = async () => {
                 <br /> Share your style and we will find the
                 <br /> perfect look!
               </p>
-              <Link href="/style-quiz">
+              <Link href="/style-quiz-new">
                 <Button className="px-6 py-3 h-14 w-45 bg-pink-100 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
                   Take your style quiz now!
                 </Button>
@@ -136,7 +136,7 @@ const page = async () => {
 
             {/* Quiz Button - Mobile Only */}
             <div className="flex md:hidden justify-center w-full mb-8">
-              <Link href="/style-quiz">
+              <Link href="/style-quiz-new">
 
                 <Button className="px-6 py-3 h-14 w-50 bg-pink-200 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
 
@@ -148,7 +148,7 @@ const page = async () => {
 
           {/* Quiz Button - Desktop Only */}
           <div className="hidden md:flex justify-center mb-12">
-            <Link href="/style-quiz">
+            <Link href="/style-quiz-new">
               <Button className="px-6 py-3 h-14 w-50 bg-pink-200 hover:bg-pink-100 text-gray-800 hover:text-gray-700 font-thin rounded-xl transition-all duration-300 ease-in-out transform hover:scale-105">
                 Take your style quiz now!
               </Button>

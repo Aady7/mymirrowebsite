@@ -46,7 +46,7 @@ const PersonalityQuestionStep: React.FC<PersonalityQuestionStepProps> = ({
                                             type="checkbox"
                                             name={question.key}
                                             value={option}
-                                            checked={isSelected}
+                                            checked={isSelected || false}
                                             onChange={handleChange}
                                             className="hidden"
                                         />

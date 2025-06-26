@@ -22,12 +22,12 @@ const GoToStyleStep: React.FC<GoToStyleStepProps> = ({ formValues, handleChange 
                             type="checkbox"
                             name="goToStyle"
                             value={style}
-                            checked={formValues.goToStyle?.includes(style)}
+                            checked={formValues.goToStyle?.includes(style) || false}
                             onChange={handleChange}
                             className="hidden"
                         />
                         <div className={`w-full aspect-[3/4] border-2 rounded-lg overflow-hidden transition-all ${
-                            formValues.goToStyle?.includes(style) ? 'border-[#007e90] shadow-lg' : 'border-gray-200'
+                            (formValues.goToStyle?.includes(style) || false) ? 'border-[#007e90] shadow-lg' : 'border-gray-200'
                         }`}>
                             <img
                                 src={STYLE_IMAGES[style as StyleKey][formValues.gender?.toLowerCase() === 'male' ? 'male' : 'female']}
@@ -36,7 +36,7 @@ const GoToStyleStep: React.FC<GoToStyleStepProps> = ({ formValues, handleChange 
                             />
                         </div>
                         <div className={`mt-2 py-2 px-4 rounded-lg text-center transition-all text-[14px] ${
-                            formValues.goToStyle?.includes(style) ? 'bg-[#007e90] text-white' : 'bg-white text-gray-700'
+                            (formValues.goToStyle?.includes(style) || false) ? 'bg-[#007e90] text-white' : 'bg-white text-gray-700'
                         }`}>
                             {style.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                         </div>

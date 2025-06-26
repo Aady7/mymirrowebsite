@@ -74,7 +74,7 @@ const MobileSignIn = () => {
       if (!users || users.length === 0) {
         setRedirectingToQuiz(true);
         setTimeout(() => {
-          router.push('/style-quiz');
+          router.push('/style-quiz-new');
         }, 3000);
         return;
       }
@@ -128,7 +128,7 @@ const MobileSignIn = () => {
 
       // If phone number doesn't exist in users table, redirect to style quiz
       if (!users || users.length === 0) {
-        router.push('/style-quiz');
+        router.push('/style-quiz-new');
         return;
       }
 

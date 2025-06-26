@@ -2,93 +2,37 @@
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import FashionTarot from "./fashionTarot";
-import Stylist from "./stylist";
-import { useEffect, useState } from "react";
-import PageLoader from "@/app/components/common/PageLoader";
-import { generateOutfit, fetchUserOutfits } from "@/app/utils/outfitsapi";
-import { Outfit } from "@/lib/interface/outfit";
-import { useAuth } from "@/lib/hooks/useAuth";
-import { supabase } from "@/lib/supabase";
+// Removed imports for FashionTarot and Stylist as they're handled separately
+import SectionLoader from "@/app/components/common/SectionLoader";
+import SectionError from "@/app/components/common/SectionError";
+import { useAuthenticatedOutfitData } from "@/lib/hooks/useAuthenticatedOutfitData";
 
 const StylistSays = () => {
-  const { getSession } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [outfits, setOutfits] = useState<Outfit[]>([]);
-  const [userId, setUserId] = useState<number | null>(null);
+  const { outfitData, isLoading, error, refetch } = useAuthenticatedOutfitData();
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        setLoading(true);
-        
-        // Get current session
-        const { session } = await getSession();
-        if (!session?.user?.id) {
-          throw new Error("No session found");
-        }
+  const handleRetry = () => {
+    refetch(true); // Force refresh on retry
+  };
 
-        // Fetch user ID from users_updated table
-        const { data: userData, error: userError } = await supabase
-          .from('users_updated')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (userError) throw userError;
-        if (!userData?.id) throw new Error("User not found");
-
-        setUserId(userData.id);
-
-        // Generate outfit using the fetched user ID
-        const outfit = await generateOutfit(userData.id);
-        console.log('Generated outfit:', outfit);
-
-        // Fetch user outfits using the same ID
-        const userOutfits = await fetchUserOutfits({ 
-          userId: userData.id, 
-          limit: 5 
-        });
-        setOutfits(userOutfits?.outfits || []);
-
-      } catch (err) {
-        console.error('Error fetching user data:', err);
-        setError(err instanceof Error ? err.message : "Failed to fetch user data");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, []);
-
-  if (loading) {
-    return <PageLoader loadingText="Loading looks..." />;
+  if (isLoading) {
+    return <SectionLoader text="Loading your curated looks..." />;
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <SectionError 
+        title="Unable to load outfits"
+        message={error}
+        onRetry={handleRetry}
+        showQuizButton={error.includes("style quiz")}
+        onTakeQuiz={() => window.location.href = '/style-quiz-new'}
+      />
+    );
   }
 
   return (
     <>
       <div className="max-w-7xl mx-auto">
-        {/*Heading section*/}
-        <div>
-          <div className="flex items-center justify-center mt-4">
-            <h1 className="text-black font-[Boston] text-[30px] md:text-[40px] not-italic font-normal leading-normal [font-variant:all-small-caps] text-center">
-              STYLIST SAYS
-            </h1>
-          </div>
-        </div>
-
-        {/*Stylist section*/}
-        <Stylist />
-
-        {/*fashion taro card */}
-        <FashionTarot />
-
         {/*curated looks just for you*/}
         <div className="p-2 mt-10 md:p-6 lg:p-8">
           <div className="flex flex-col items-center justify-center space-y-1 md:space-y-3">
@@ -107,7 +51,7 @@ const StylistSays = () => {
 
           {/* Looks section container */}
           <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:mt-12">
-            {outfits.map((outfit, index) => (
+            {outfitData?.userOutfits.map((outfit, index) => (
               <div 
                 key={outfit.main_outfit_id}
                 className={`${

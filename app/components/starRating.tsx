@@ -36,15 +36,32 @@ const StarRating = ({ productId, productType = 'product' }: { productId: string,
 
   // Fetch user's rating from Supabase
   useEffect(() => {
-    if (!currentUserId) return;
+    if (!currentUserId || !productId || productId === 'undefined') return;
     
     const fetchRating = async () => {
-      const { data, error } = await supabase
-        .from("product-rating")
-        .select("rating")
-        .eq("user_id", currentUserId)
-        .eq("product_id", productIdentifier)
-        .single();
+      let data, error;
+      
+      if (productType === 'look') {
+        // Use outfit_rating table for looks
+        const result = await supabase
+          .from("outfit_rating")
+          .select("rating")
+          .eq("user_id", currentUserId)
+          .eq("outfit_id", productId)
+          .single();
+        data = result.data;
+        error = result.error;
+      } else {
+        // Use product-rating table for products
+        const result = await supabase
+          .from("product-rating")
+          .select("rating")
+          .eq("user_id", currentUserId)
+          .eq("product_id", productIdentifier)
+          .single();
+        data = result.data;
+        error = result.error;
+      }
 
       if (data?.rating) {
         setRating(data.rating);
@@ -56,7 +73,7 @@ const StarRating = ({ productId, productType = 'product' }: { productId: string,
     };
 
     fetchRating();
-  }, [supabase, currentUserId, productIdentifier]);
+  }, [supabase, currentUserId, productIdentifier, productId, productType]);
 
   // Handle rating click
   const handleRatingChange = async (star: number) => {
@@ -73,36 +90,68 @@ const StarRating = ({ productId, productType = 'product' }: { productId: string,
     console.log('Attempting to save rating:', { user_id: currentUserId, product_id: productIdentifier, rating: star });
 
     try {
-      // Delete any existing rating first, then insert new one
-      // This approach avoids all unique constraint issues
-      console.log("Deleting any existing rating...");
-      const { error: deleteError } = await supabase
-        .from("product-rating")
-        .delete()
-        .eq("user_id", currentUserId)
-        .eq("product_id", productIdentifier);
+      if (productType === 'look') {
+        // Handle outfit rating
+        console.log("Deleting any existing outfit rating...");
+        const { error: deleteError } = await supabase
+          .from("outfit_rating")
+          .delete()
+          .eq("user_id", currentUserId)
+          .eq("outfit_id", productId);
 
-      if (deleteError) {
-        console.error("Error deleting existing rating:", deleteError);
-        // Continue anyway, might be no existing rating
-      }
+        if (deleteError) {
+          console.error("Error deleting existing outfit rating:", deleteError);
+          // Continue anyway, might be no existing rating
+        }
 
-      // Insert new rating
-      console.log("Inserting new rating...");
-      const { error: insertError } = await supabase
-        .from("product-rating")
-        .insert({
-          user_id: currentUserId,
-          product_id: productIdentifier,
-          rating: star,
-        });
+        // Insert new outfit rating
+        console.log("Inserting new outfit rating...");
+        const { error: insertError } = await supabase
+          .from("outfit_rating")
+          .insert({
+            user_id: currentUserId,
+            outfit_id: productId,
+            rating: star,
+          });
 
-      if (insertError) {
-        console.error("Error inserting rating:", insertError);
-        setMessage(`Failed to save rating: ${insertError.message}`);
-        setShowMessage(true);
-        setTimeout(() => setShowMessage(false), 5000);
-        return;
+        if (insertError) {
+          console.error("Error inserting outfit rating:", insertError);
+          setMessage(`Failed to save rating: ${insertError.message}`);
+          setShowMessage(true);
+          setTimeout(() => setShowMessage(false), 5000);
+          return;
+        }
+      } else {
+        // Handle product rating
+        console.log("Deleting any existing product rating...");
+        const { error: deleteError } = await supabase
+          .from("product-rating")
+          .delete()
+          .eq("user_id", currentUserId)
+          .eq("product_id", productIdentifier);
+
+        if (deleteError) {
+          console.error("Error deleting existing product rating:", deleteError);
+          // Continue anyway, might be no existing rating
+        }
+
+        // Insert new product rating
+        console.log("Inserting new product rating...");
+        const { error: insertError } = await supabase
+          .from("product-rating")
+          .insert({
+            user_id: currentUserId,
+            product_id: productIdentifier,
+            rating: star,
+          });
+
+        if (insertError) {
+          console.error("Error inserting product rating:", insertError);
+          setMessage(`Failed to save rating: ${insertError.message}`);
+          setShowMessage(true);
+          setTimeout(() => setShowMessage(false), 5000);
+          return;
+        }
       }
 
       console.log("Rating saved successfully!");

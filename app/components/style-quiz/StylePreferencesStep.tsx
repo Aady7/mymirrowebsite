@@ -25,13 +25,13 @@ const StylePreferencesStep: React.FC<StylePreferencesStepProps> = ({ formValues,
                                 type="checkbox"
                                 name="outfitAdventurous"
                                 value={level}
-                                checked={formValues.outfitAdventurous?.includes(level)}
+                                checked={formValues.outfitAdventurous?.includes(level) || false}
                                 onChange={handleChange}
                                 className="hidden"
                             />
                             <div
                                 className={`w-full py-3 px-4 rounded-lg text-center cursor-pointer transition-all text-[14px] ${
-                                    formValues.outfitAdventurous?.includes(level)
+                                    (formValues.outfitAdventurous?.includes(level) || false)
                                         ? 'bg-[#007e90] text-white'
                                         : 'bg-white text-gray-700 border-2 border-gray-200'
                                 }`}

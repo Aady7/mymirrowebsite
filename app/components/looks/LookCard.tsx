@@ -4,12 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { Look } from "@/app/utils/lookData";
 
-interface LookSectionProps {
+interface LookCardProps {
   look: Look;
   lookId: string;
 }
 
-const LookSection = ({ look, lookId }: LookSectionProps) => {
+const LookCard = ({ look, lookId }: LookCardProps) => {
   // Get first two products or all if only one product
   const displayProducts = look.products.slice(0, 2);
 
@@ -87,4 +87,4 @@ const LookSection = ({ look, lookId }: LookSectionProps) => {
   );
 };
 
-export default LookSection;
+export default LookCard;

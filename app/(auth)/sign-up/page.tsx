@@ -22,7 +22,7 @@ const SignUp = () => {
             setError(signUpError.message)
         } else {
            
-          router.push('/style-quiz')
+          router.push('/style-quiz-new')
            
 
         }

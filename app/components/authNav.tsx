@@ -21,7 +21,7 @@ const AuthNav = () => {
     }
 
     return (
-      <nav className="bg-white shadow-lg">
+      <nav className="bg-white shadow-lg sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between h-16">
             {/* Logo */}
@@ -41,7 +41,7 @@ const AuthNav = () => {
                   Home
                 </Link>
                 <Link
-                  href="/style-quiz"
+                  href="/style-quiz-new"
                   className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-gray-300"
                 >
                   Style Quiz
@@ -110,7 +110,7 @@ const AuthNav = () => {
                 Home
               </Link>
               <Link 
-                href="/style-quiz" 
+                href="/style-quiz-new" 
                 onClick={handleLinkClick}
                 className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
               >

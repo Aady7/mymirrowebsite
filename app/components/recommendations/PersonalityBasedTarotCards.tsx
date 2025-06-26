@@ -1,25 +1,57 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
-import { useStyleQuizData } from "@/lib/hooks/useStyleQuizData";
+import { useState, useEffect, useRef } from "react";
+import { StyleQuizData, UserTagsData } from "@/lib/hooks/useStyleQuizData";
 import tarrotMapping from "@/app/data/tarrotcartmapping.json";
 import maleTarrotMapping from "@/app/data/maletarrotcardmapping.json";
 
-const FashionTarot = () => {
+interface FashionTarotProps {
+  quizData: (StyleQuizData & { usertags: UserTagsData[] }) | null;
+}
+
+const FashionTarot: React.FC<FashionTarotProps> = ({ quizData }) => {
   const [selectedCards, setSelectedCards] = useState<Array<{ tag: string; image: string; title: string; elaborate: string }>>([]);
   const [flippedStates, setFlippedStates] = useState<boolean[]>([]);
-  const { quizData, isLoading, error } = useStyleQuizData();
+  const hasProcessedRef = useRef<string | null>(null);
 
   useEffect(() => {
-    console.log('Full quiz data:', quizData);
+    // Create a unique key for this data to prevent duplicate processing
+    const dataKey = quizData?.name || 'no-data';
     
-    if (!quizData?.usertags) {
-      console.error('No usertags found in quiz data');
+    // If we've already processed this exact data, skip
+    if (hasProcessedRef.current === dataKey) {
+      return;
+    }
+    
+    console.log('Processing tarot data for:', dataKey);
+    hasProcessedRef.current = dataKey;
+    
+    // Check for usertags in the processed data first
+    let userTags = quizData?.usertags;
+    
+    // If usertags is not available, try to parse from user_tags directly
+    if (!userTags && quizData?.user_tags) {
+      try {
+        if (typeof quizData.user_tags === 'string') {
+          userTags = JSON.parse(quizData.user_tags);
+          console.log('Parsed user_tags from string:', userTags);
+        } else {
+          userTags = quizData.user_tags;
+          console.log('Using user_tags directly:', userTags);
+        }
+      } catch (e) {
+        console.error('Error parsing user_tags:', e);
+        return;
+      }
+    }
+    
+    if (!userTags) {
+      console.error('No user_tags found in quiz data');
+      console.log('Available keys in quizData:', Object.keys(quizData || {}));
       return;
     }
 
-    const userTags = quizData.usertags;
     console.log('User tags:', userTags);
 
     if (!Array.isArray(userTags) || userTags.length === 0) {
@@ -28,7 +60,7 @@ const FashionTarot = () => {
     }
 
     const personalityTags = userTags[0].personality_tags;
-    const userGender = quizData.gender?.toLowerCase() || 'female';
+    const userGender = quizData?.gender?.toLowerCase() || 'female';
     console.log('Personality tags:', personalityTags);
     console.log('User gender:', userGender);
 
@@ -66,13 +98,7 @@ const FashionTarot = () => {
     });
   };
 
-  if (isLoading) {
-    return <div className="text-center mt-8">Loading your tarot cards...</div>;
-  }
-
-  if (error) {
-    return <div className="text-center mt-8">Error loading your tarot cards: {error}</div>;
-  }
+  // Component now receives data as props, so no need for loading/error states
 
   if (!selectedCards.length) {
     return (

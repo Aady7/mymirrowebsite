@@ -14,10 +14,20 @@ interface DynamicStylePreferenceStepProps {
 }
 
 const DynamicStylePreferenceStep: React.FC<DynamicStylePreferenceStepProps> = ({ style, formValues, handleChange }) => {
-    const key = `preferred_${style}`;
+    // Normalize the style name to remove spaces for the form key
+    const normalizedStyle = style.replace(/\s+/g, '_');
+    const key = `preferred_${normalizedStyle}`;
     const gender = formValues.gender?.toLowerCase() === 'male' ? 'male' : 'female';
     const images = STYLE_PREFERENCE_IMAGES[style as StyleKey][gender];
     const options = Object.entries(images);
+
+    // Debug logging to help identify the issue
+    console.log('DynamicStylePreferenceStep:', {
+        style,
+        normalizedStyle,
+        key,
+        currentFormValue: formValues[key]
+    });
 
     return (
         <div>
@@ -29,12 +39,12 @@ const DynamicStylePreferenceStep: React.FC<DynamicStylePreferenceStepProps> = ({
                             type="checkbox"
                             name={key}
                             value={itemName}
-                            checked={formValues[key]?.includes(itemName)}
+                            checked={formValues[key]?.includes(itemName) || false}
                             onChange={handleChange}
                             className="hidden"
                         />
                         <div className={`w-full aspect-[3/4] border-2 rounded-lg overflow-hidden transition-all ${
-                            formValues[key]?.includes(itemName) ? 'border-[#007e90] shadow-lg' : 'border-gray-200'
+                            (formValues[key]?.includes(itemName) || false) ? 'border-[#007e90] shadow-lg' : 'border-gray-200'
                         }`}>
                             <img
                                 src={imagePath}
@@ -43,7 +53,7 @@ const DynamicStylePreferenceStep: React.FC<DynamicStylePreferenceStepProps> = ({
                             />
                         </div>
                         <div className={`mt-2 py-2 px-4 rounded-lg text-center transition-all text-[14px] ${
-                            formValues[key]?.includes(itemName) ? 'bg-[#007e90] text-white' : 'bg-white text-gray-700'
+                            (formValues[key]?.includes(itemName) || false) ? 'bg-[#007e90] text-white' : 'bg-white text-gray-700'
                         }`}>
                             {itemName}
                         </div>

@@ -1,22 +1,17 @@
 "use client"
 import { useParams, notFound } from 'next/navigation';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaCartArrowDown } from 'react-icons/fa';
 import { FaIndianRupeeSign } from 'react-icons/fa6';
-import MyCarousel from '@/app/components/looks-page/mycrausal';
+import SimilarOutfitsCarousel from '@/app/components/looks/SimilarOutfitsCarousel';
 import { addToCart } from '@/lib/utils/cart';
 import { useAuth } from '@/lib/hooks/useAuth';
 import PageLoader from '@/app/components/common/PageLoader';
 import StarRating from '@/app/components/starRating';
-import Looksfeeback from '@/app/components/looks-feeback';
-import { fetchUserOutfits, getSimilarOutfits } from '@/app/utils/outfitsapi';
+import LooksFeedback from '@/app/components/looks/LooksFeedback';
 import { supabase } from '@/lib/supabase';
-import { Outfit } from '@/lib/interface/outfit';
-
-
-
 
 interface Product {
   id: number;
@@ -34,7 +29,7 @@ interface Product {
     customer_short_description: string;
     customer_long_recommendation: string;
     product_key_attributes: string;
-  }[];
+  };
 }
 
 interface LoadingState {
@@ -49,6 +44,25 @@ interface KeyAttributes {
   [key: string]: string | undefined;
 }
 
+interface OutfitData {
+  main_outfit_id: string;
+  outfit_name: string;
+  outfit_description?: string;
+  why_picked_explanation?: string;
+  top: {
+    id: number;
+    title: string;
+    image: string;
+    style: string;
+  };
+  bottom: {
+    id: number;
+    title: string;
+    image: string;
+    style: string;
+  };
+}
+
 const LookPage = () => {
   const { id } = useParams();
   const { getSession } = useAuth();
@@ -56,75 +70,109 @@ const LookPage = () => {
   const [selectedSizes, setSelectedSizes] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState<LoadingState>({});
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingOutfit, setIsLoadingOutfit] = useState(true);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [lookName, setLookName] = useState('');
-  const [matchedOutfit, setMatchedOutfit] = useState<Outfit | null>(null);
-  const [productInfo, setProductInfo] = useState<{
-    topId: number;
-    topImage: string;   
-    bottomId: number;
-    bottomImage: string;
-  } | null>(null);
-  const [similarOutfits, setSimilarOutfits] = useState<any[]>([]);
-  const [uId, suId] = useState<number | null>(null);
+  const [outfitData, setOutfitData] = useState<OutfitData | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  // Add ref to prevent duplicate API calls
+  const hasFetched = useRef(false);
+  const currentId = useRef<string | null>(null);
 
+  // Check authentication first
   useEffect(() => {
-    const fetchUserid = async () => {
+    const checkAuth = async () => {
       try {
-        const { session } = await getSession();
-        if (!session?.user?.id) {
-          throw new Error("No session found");
+        const { session, error: sessionError } = await getSession();
+        
+        if (sessionError || !session?.user?.id) {
+          setIsAuthenticated(false);
+          setIsCheckingAuth(false);
+          return;
         }
-
-        // Fetch user ID from users_updated table
-        const { data: userData, error: userError } = await supabase
-          .from('users_updated')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .single();
-
-        if (userError) throw userError;
-        if (!userData?.id) throw new Error("User not found");
-
-        suId(userData.id);
+        
+        setIsAuthenticated(true);
       } catch (err) {
-        console.error('Error fetching user ID:', err);
-        setError(err instanceof Error ? err.message : "Failed to fetch user ID");
+        console.error('Auth check failed:', err);
+        setIsAuthenticated(false);
+      } finally {
+        setIsCheckingAuth(false);
       }
     };
-    fetchUserid();
+
+    checkAuth();
   }, [getSession]);
 
+  // Fetch outfit data directly from Supabase (more efficient)
   useEffect(() => {
-    const fetchData = async () => {
+    // Only fetch data if user is authenticated
+    if (!isAuthenticated || isCheckingAuth) return;
+    
+    const fetchOutfitData = async () => {
       try {
-        setIsLoading(true);
+        setIsLoadingOutfit(true);
+        setError(null);
         
-        if (!uId) {
-          throw new Error('User ID not available');
+        if (!id) return;
+        
+        // Prevent duplicate calls for the same ID
+        if (hasFetched.current && currentId.current === String(id)) {
+          setIsLoadingOutfit(false);
+          return;
         }
 
-        const userOutfits = await fetchUserOutfits({ userId: uId, limit: 5 });
-        const foundOutfit = userOutfits?.outfits.find((o: Outfit) => o.main_outfit_id === id);
+        hasFetched.current = true;
+        currentId.current = String(id);
+
+        // Fetch outfit data directly from Supabase instead of API + separate call
+        const { data: outfitData, error: outfitError } = await supabase
+          .from('user_outfits')
+          .select(`
+            main_outfit_id,
+            outfit_name,
+            outfit_description,
+            why_picked_explanation,
+            top_id,
+            bottom_id,
+            top_image,
+            bottom_image,
+            top_style,
+            bottom_style,
+            top_title,
+            bottom_title
+          `)
+          .eq('main_outfit_id', id)
+          .single();
+
+        if (outfitError) throw outfitError;
+        if (!outfitData) throw new Error('Outfit not found');
+
+        // Transform the data to match the expected format
+        const transformedOutfit = {
+          main_outfit_id: outfitData.main_outfit_id,
+          outfit_name: outfitData.outfit_name,
+          outfit_description: outfitData.outfit_description,
+          why_picked_explanation: outfitData.why_picked_explanation,
+          top: {
+            id: outfitData.top_id,
+            title: outfitData.top_title,
+            image: outfitData.top_image,
+            style: outfitData.top_style,
+          },
+          bottom: {
+            id: outfitData.bottom_id,
+            title: outfitData.bottom_title,
+            image: outfitData.bottom_image,
+            style: outfitData.bottom_style,
+          }
+        };
+
+        setOutfitData(transformedOutfit);
+
+        // Fetch product details in the same effect
+        const productIds = [outfitData.top_id, outfitData.bottom_id];
         
-        if (!foundOutfit) {
-          throw new Error('Outfit not found');
-        }
-
-        setMatchedOutfit(foundOutfit);
-        console.log("Matched outfit", foundOutfit);
-
-        setProductInfo({
-          topId: foundOutfit.top.id,
-          topImage: foundOutfit.top.image,
-          bottomId: foundOutfit.bottom.id,
-          bottomImage: foundOutfit.bottom.image,
-        });
-
-        const productIds = [foundOutfit.top.id, foundOutfit.bottom.id];
-
-        // Fetch products from Supabase
         const { data: productsData, error: productsError } = await supabase
           .from('products')
           .select(`
@@ -143,33 +191,93 @@ const LookPage = () => {
         if (productsError) throw productsError;
         if (!productsData) throw new Error('No products found');
 
-        setProducts(productsData);
-        setTotalPrice(productsData.reduce((sum, product) => sum + product.price, 0));
-        setLookName(`${foundOutfit.top.style} ${foundOutfit.bottom.style}`);
+        // Sort products so top comes first, then bottom
+        const sortedProducts = productsData.sort((a, b) => {
+          // Convert IDs to strings for comparison since outfit data has string IDs
+          const topId = String(outfitData.top_id);
+          const bottomId = String(outfitData.bottom_id);
+          const aId = String(a.id);
+          const bId = String(b.id);
+          
+          if (aId === topId) return -1; // Top product comes first
+          if (bId === topId) return 1;  // If b is top, a should come after
+          if (aId === bottomId) return 1; // Bottom product comes second
+          if (bId === bottomId) return -1; // If b is bottom, a should come before
+          return 0; // Keep original order for any other products
+        });
+
+        setProducts(sortedProducts);
+        setTotalPrice(sortedProducts.reduce((sum, product) => sum + product.price, 0));
 
       } catch (err) {
-        console.error('Error fetching data:', err);
+        console.error('Error fetching outfit data:', err);
+        setError(err instanceof Error ? err.message : 'Failed to load outfit');
+        hasFetched.current = false; // Reset on error to allow retry
         notFound();
       } finally {
-        setIsLoading(false);
+        setIsLoadingOutfit(false);
       }
     };
 
-    if (id && uId) fetchData();
-
-    const fetchSimilar = async () => {
-      try {
-        const result = await getSimilarOutfits(String(id), 10);
-        setSimilarOutfits(result?.similar_outfits || []);
-      } catch (err) {
-        console.error('Error fetching similar outfits:', err);
+    fetchOutfitData();
+    
+    // Cleanup function to reset refs when component unmounts or id changes
+    return () => {
+      if (currentId.current !== String(id)) {
+        hasFetched.current = false;
       }
     };
+  }, [id, isAuthenticated, isCheckingAuth]);
 
-    if (id) fetchSimilar();
-  }, [id, uId]);
+  // Show loading while checking authentication
+  if (isCheckingAuth) return <PageLoader loadingText="Checking authentication..." />;
 
-  if (isLoading) return <PageLoader loadingText="Loading look details..." />;
+  // Show authentication required message
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center max-w-md mx-auto px-6">
+          <h2 className="text-2xl font-semibold mb-4">Authentication Required</h2>
+          <p className="text-gray-600 mb-6">
+            You need to be signed in to view your personalized looks.
+          </p>
+          <div className="space-y-3">
+            <Link
+              href="/sign-in"
+              className="block w-full py-3 px-6 bg-black text-white text-center rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              Sign In
+            </Link>
+            <Link
+              href="/sign-up"
+              className="block w-full py-3 px-6 border border-gray-300 text-gray-700 text-center rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              Create Account
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoadingOutfit) return <PageLoader loadingText="Loading look details..." />;
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">Error Loading Look</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const parseImages = (imgs: string): string[] => {
     try {
@@ -182,7 +290,7 @@ const LookPage = () => {
 
   const getValidImageUrl = (image: string | undefined): string => {
     if (!image || image === 'none' || image === 'undefined') {
-      return '/fallback.jpg'; // Make sure you have a fallback image in your public folder
+      return '/fallback.jpg';
     }
     return image;
   };
@@ -275,22 +383,48 @@ const LookPage = () => {
     }
   };
 
+  const parseWhyPickedExplanation = (explanation: string): Array<{title: string, description: string}> => {
+    if (!explanation) return [];
+    
+    // Split by " | " to get individual sections
+    const sections = explanation.split(' | ');
+    
+    return sections.map(section => {
+      // Split by " - " to separate title from description
+      const [title, ...descriptionParts] = section.split(' - ');
+      const description = descriptionParts.join(' - '); // In case there are multiple " - " in description
+      
+      return {
+        title: title.trim(),
+        description: description.trim()
+      };
+    }).filter(item => item.title && item.description);
+  };
+
   return (
     <>
       {/* Header */}
       <div className="flex items-center justify-center mb-2">
-      
-       
-        <span className="text-[26px] font-thin">{matchedOutfit?.outfit_name}</span>
+        <span className="text-[26px] font-thin">{outfitData?.outfit_name}</span>
       </div>
       <hr className="border-t-1 border-black w-[90%] mx-auto" />
 
       {/* Products */}
       {products.map((product, idx) => {
         const sizes = parseSizes(product.sizesAvailable);
-        const imageUrl = product.id === Number(productInfo?.topId) 
-          ? productInfo?.topImage 
-          : productInfo?.bottomImage;
+        
+        // Determine the correct image URL for this product
+        let imageUrl: string | undefined;
+        if (product.id === outfitData?.top.id) {
+          imageUrl = outfitData?.top.image;
+        } else if (product.id === outfitData?.bottom.id) {
+          imageUrl = outfitData?.bottom.image;
+        } else {
+          // Fallback to product's own images if available
+          const productImages = parseImages(product.productImages);
+          imageUrl = productImages.length > 0 ? productImages[0] : undefined;
+        }
+        
         const validImageUrl = getValidImageUrl(imageUrl);
         const taggedProduct = product.tagged_products;
         const keyAttributes = taggedProduct?.product_key_attributes 
@@ -298,7 +432,7 @@ const LookPage = () => {
           : {};
         
         return (
-          <div key={product.id} className={`flex w-full mt-8 mb-2 gap-2 ${product.id == Number(productInfo?.topId) ? 'flex-row-reverse' : ''}`}>            
+          <div key={product.id} className={`flex w-full mt-8 mb-2 gap-2 ${product.id == outfitData?.top.id ? 'flex-row-reverse' : ''}`}>            
             <div className="relative w-[221px] h-[260.5px] overflow-hidden">
               <Image 
                 src={validImageUrl}
@@ -308,119 +442,153 @@ const LookPage = () => {
               />
             </div>
             <div className="relative flex flex-col flex-1 max-w-[400px] h-[280.5px] pl-2 pr-2">
-              <h1 className="text-lg text-center font-thin mb-1 mt-0 text-[14px]">{product.name}</h1>
+              <h1 className="text-lg text-left mx-2 font-thin mb-1 mt-0 text-[14px]">{product.name}</h1>
               
-              <div className="font-[Boston] text-[12px] font-medium leading-normal mb-1 pr-4 mx-2  tracking-wide text-gray-600">
-                {keyAttributes.color && (
-                  <p className="mb-0.5">Color - {keyAttributes.color}</p>
+              <div className="font-[Boston] text-[12px] font-medium leading-normal mb-1 pr-4 mx-2 tracking-wide text-gray-600">
+                {Object.keys(keyAttributes).length > 0 ? (
+                  <>
+                    {keyAttributes.color && (
+                      <p className="mb-0.5">Color - {keyAttributes.color}</p>
+                    )}
+                    {keyAttributes.fit && (
+                      <p className="mb-0.5">Fit - {keyAttributes.fit}</p>
+                    )}
+                    {keyAttributes.fabric && (
+                      <p className="mb-0.5">Fabric - {keyAttributes.fabric}</p>
+                    )}
+                    {keyAttributes.occasion && (
+                      <p className="mb-0.5">Occasion - {keyAttributes.occasion}</p>
+                    )}
+                    {Object.entries(keyAttributes)
+                      .filter(([key]) => !['color', 'fit', 'fabric', 'occasion'].includes(key))
+                      .map(([key, value]) => (
+                        <p key={key} className="mb-0.5">
+                          {key.charAt(0).toUpperCase() + key.slice(1)} - {value}
+                        </p>
+                      ))}
+                  </>
+                ) : (
+                  <p className="mb-0.5 text-gray-500 italic">Product details loading...</p>
                 )}
-                {keyAttributes.fit && (
-                  <p className="mb-0.5">Fit - {keyAttributes.fit}</p>
-                )}
-                {keyAttributes.fabric && (
-                  <p className="mb-0.5">Fabric - {keyAttributes.fabric}</p>
-                )}
-                {keyAttributes.occasion && (
-                  <p className="mb-0.5">Occasion - {keyAttributes.occasion}</p>
-                )}
-                {/* Display any additional attributes that might be present */}
-                {Object.entries(keyAttributes)
-                  .filter(([key]) => !['color', 'fit', 'fabric', 'occasion'].includes(key))
-                  .map(([key, value]) => (
-                    <p key={key} className="mb-0.5">
-                      {key.charAt(0).toUpperCase() + key.slice(1)} - {value}
-                    </p>
-                  ))}
               </div>
 
               <div className="absolute bottom-8 left-2 right-2">
                 <h4 className="flex text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-1">
                   <FaIndianRupeeSign className="h-4 mt-2" /> {product.price}
                 </h4>
-                <div className="flex flex-col gap-2 mb-2">
-                  <span className="text-black font-[Boston] text-[12px] [font-variant:all-small-caps]">SIZE</span>
-                  <ul className="grid grid-cols-4 gap-2 max-w-[160px]">
-                    {sizes.map(sz => (
-                      <li 
-                        key={sz} 
-                        onClick={() => setSelectedSizes(prev => ({ ...prev, [product.id]: sz }))}
-                        className={`cursor-pointer w-[30px] h-[30px] flex items-center justify-center border-[1px] ${
-                          selectedSizes[product.id] === sz 
-                            ? 'border-black text-black' 
-                            : 'border-gray-300 hover:border-gray-600'
-                        } text-black font-[Boston] text-[14px] transition-all`}
-                      >
-                        {sz}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
 
-              <div className="absolute bottom-0 left-2 right-2 flex gap-2">
-                <button onClick={() => handleAddProduct(product.id)} disabled={loading[product.id]}
-                  className="flex items-center h-8 w-12 justify-center bg-black text-white rounded-none disabled:bg-gray-400 hover:bg-gray-800 transition-colors">
-                  <FaCartArrowDown className="w-4" />
-                </button>
-                <Link 
-                  href={{
-                    pathname: `/products/${product.id}`,
-                    query: matchedOutfit?.main_outfit_id ? { outfitId: matchedOutfit.main_outfit_id } : undefined
-                  }} 
-                  className="flex-1"
-                >
-                  <button className="w-full bg-black h-8 text-white text-sm rounded-none hover:bg-gray-800 transition-colors">View Product</button>
-                </Link>
+                <div className="flex flex-col gap-1">
+                  <div className="flex flex-wrap gap-1 mb-2">
+                    {sizes.map((size) => (
+                      <button
+                        key={size}
+                        onClick={() => setSelectedSizes(prev => ({ ...prev, [product.id]: size }))}
+                        className={`px-2 py-1 border text-xs rounded ${
+                          selectedSizes[product.id] === size
+                            ? 'bg-black text-white border-black'
+                            : 'bg-white text-black border-gray-300 hover:border-black'
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={() => handleAddProduct(product.id)}
+                    disabled={loading[product.id] || !selectedSizes[product.id]}
+                    className="flex items-center justify-center gap-1 w-full py-1.5 bg-black text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                  >
+                    {loading[product.id] ? (
+                      'Adding...'
+                    ) : (
+                      <>
+                        <FaCartArrowDown className="h-3 w-3" />
+                        ADD TO CART
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         );
       })}
 
-      {/* Total & Actions */}
-      <div className="mt-12 px-6">
-        <h1 className="flex font-thin text-2xl mb-4">
-          <FaIndianRupeeSign className="h-5 mt-1.5" /> {totalPrice}
-        </h1>
-        <div className="flex gap-4">
-          <button className="flex items-center h-10 px-6 justify-center bg-black text-white text-sm rounded-none hover:bg-gray-800 transition-colors">
-            Buy Now
-          </button>
-          <button onClick={handleAddAll} disabled={loading.all}
-            className="flex-1 bg-black h-10 text-white text-sm rounded-none disabled:bg-gray-400 hover:bg-gray-800 transition-colors">
-            {loading.all ? 'Adding...' : 'Add To Cart'}
+      {/* Error Message */}
+      {error && (
+        <div className="mx-6 mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          {error}
+          <button 
+            onClick={() => setError(null)} 
+            className="ml-2 text-red-900 hover:text-red-700"
+          >
+            ×
           </button>
         </div>
-        {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+      )}
+
+      {/* Add All Button */}
+      <div className="px-6 py-4">
+        <button
+          onClick={handleAddAll}
+          disabled={loading.all || products.some((_, i) => !selectedSizes[i])}
+          className="w-full py-3 bg-black text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+        >
+          {loading.all ? 'Adding All...' : `ADD ALL TO CART - ₹${totalPrice}`}
+        </button>
       </div>
-      <hr className="border-t-1 border-black w-[92%] mx-auto my-12" />
 
-      {/* Description */}
-      <div className="px-6 py-8">
-        <h1 className="text-[14px] text-black font-bold mb-6 font-[Boston] tracking-wide " style={{ fontVariant: 'small-caps' }}>DESCRIPTION</h1>
-        <div className="text-[14px] font-light leading-6 font-[Boston] space-y-6">
-          <p className='text-[12px] tracking-wide'>{matchedOutfit?.outfit_description}</p>
-          <p className='text-[14px] text-black font-bold mb-6 font-[Boston] tracking-wide'style={{ fontVariant: 'small-caps' }}>WHY THIS LOOK WAS PICKED FOR YOU</p>
-          <p className='text-[12px] tracking-wide'>{matchedOutfit?.why_picked_explanation}</p>
+      {/* Rating and Feedback */}
+      <div className="px-6 py-4">
+        {id && (
+          <StarRating productId={String(id)} productType="look" />
+        )}
+        <div className='mt-6 flex items-center justify-center px-[8rem]'>
+          <LooksFeedback 
+            onClose={() => { }} 
+            userId={''}
+            lookId={Number(id)}
+          />
+        </div>
+      </div>
 
-          <p className='font-semibold'>Rating</p>
-          <StarRating productId={String(products[0]?.id)} />
-          <div className='mt-6 flex items-centre justify-centre px-[8rem]'>
-           <Looksfeeback 
-             onClose={() => { }} 
-             userId={''}
-             lookId={Number(id)}
-           />
+      {/* Description and Why Picked Section */}
+      <div className="px-6 py-4">
+        {/* Description */}
+        {outfitData?.outfit_description && (
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold mb-3">DESCRIPTION</h2>
+            <p className="text-gray-700 leading-relaxed">
+              {outfitData.outfit_description}
+            </p>
           </div>
-        </div>
-        
-        <hr className="border-t-1 border-black w-full mt-12" />
+        )}
+
+        {/* Why This Look Was Picked For You */}
+        {outfitData?.why_picked_explanation && (
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold mb-4">WHY THIS LOOK WAS PICKED FOR YOU</h2>
+            <div className="space-y-4">
+              {parseWhyPickedExplanation(outfitData.why_picked_explanation).map((item, index) => (
+                <div key={index}>
+                  <h3 className="font-medium text-gray-900 mb-1">
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-700 leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Carousel */}
+      {/* Similar Outfits Section */}
       <div className="px-6 py-8 mt-[-2rem]">
         <h1 className="font-thin text-[22px] font-[Boston] mb-[-2rem]">YOU MAY ALSO LIKE</h1>
-        <MyCarousel similarOutfits={similarOutfits} />
+        <SimilarOutfitsCarousel />
       </div>
     </>
   );

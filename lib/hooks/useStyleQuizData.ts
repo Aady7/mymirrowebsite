@@ -1,5 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getStyleQuizData } from '@/app/utils/styleQuizUtils';
+import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/utils/cache';
+
+
 
 export interface ColorAnalysis {
   method: string;
@@ -33,7 +36,7 @@ export interface ColorAnalysis {
   timestamp: string;
 }
 
-interface UserTagsData {
+export interface UserTagsData {
   personality_tags: string[];
   fit_tags_upper: string[];
   fit_tags_lower: string[];
@@ -58,7 +61,8 @@ export interface StyleQuizData {
   minimalistic: string;
   goToStyle: string[];
   feedback: string;
-  usertags: UserTagsData[] | string; // Could be string if stored as JSON
+  user_tags: UserTagsData[] | string; // Database column name
+  usertags?: UserTagsData[]; // Processed field for component compatibility
   weekendPreference: string;
   shoppingStyle: string;
   workspaceStyle: string;
@@ -78,6 +82,7 @@ export const useStyleQuizData = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [parsedData, setParsedData] = useState<(StyleQuizData & { usertags: UserTagsData[] }) | null>(null);
+  const hasFetchedRef = useRef(false);
 
   const parseColorData = (data: StyleQuizData) => {
     try {
@@ -111,8 +116,32 @@ export const useStyleQuizData = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      // Prevent duplicate calls in React Strict Mode
+      if (hasFetchedRef.current) {
+        return;
+      }
+      
+      hasFetchedRef.current = true;
+      
       try {
         setIsLoading(true);
+        
+        // Check if we have cached data first
+        const cachedData = cache.get<{
+          quizData: StyleQuizData & { usertags: UserTagsData[] };
+          colorAnalysis: ColorAnalysis;
+        }>(CACHE_KEYS.STYLE_QUIZ_DATA);
+        
+        if (cachedData) {
+          console.log("Using cached style quiz data");
+          setQuizData(cachedData.quizData);
+          setParsedData(cachedData.quizData);
+          setColorAnalysis(cachedData.colorAnalysis);
+          setIsLoading(false);
+          return;
+        }
+        
+        console.log("Fetching style quiz data from API...");
         const { data, error } = await getStyleQuizData();
         
         if (error) throw error;
@@ -123,33 +152,54 @@ export const useStyleQuizData = () => {
           // Parse the data and handle usertags
           const processedData = { ...data };
           
-          // Parse usertags if it's a string
-          if (typeof data.user_tags === 'string') {
+          // Parse user_tags and create usertags for compatibility
+          if (data.user_tags) {
             try {
-              processedData.usertags = JSON.parse(data.user_tags);
+              if (typeof data.user_tags === 'string') {
+                processedData.usertags = JSON.parse(data.user_tags);
+              } else {
+                processedData.usertags = data.user_tags;
+              }
+              console.log("Successfully processed user_tags:", processedData.usertags);
             } catch (e) {
-              console.error("Error parsing usertags:", e);
-              setError("Error parsing usertags data");
+              console.error("Error parsing user_tags:", e);
+              setError("Error parsing user_tags data");
               return;
             }
+          } else {
+            console.log("No user_tags found in data, available keys:", Object.keys(data));
           }
           
-          setParsedData(processedData as StyleQuizData & { usertags: UserTagsData[] });
+          const finalProcessedData = processedData as StyleQuizData & { usertags: UserTagsData[] };
+          setParsedData(finalProcessedData);
           
           // Parse all color data if it exists
+          let colorData: ColorAnalysis | null = null;
           if (data.color_analysis && data.color_family && data.hex_codes) {
             try {
-              const colorData = parseColorData(data);
+              colorData = parseColorData(data);
               setColorAnalysis(colorData);
             } catch (e) {
               console.error("Error parsing color data:", e);
               setError("Error parsing color data");
+              return;
             }
+          }
+          
+          // Cache the processed data
+          if (colorData) {
+            cache.set(CACHE_KEYS.STYLE_QUIZ_DATA, {
+              quizData: finalProcessedData,
+              colorAnalysis: colorData
+            }, CACHE_TTL.MEDIUM);
+            console.log("Style quiz data cached successfully");
           }
         }
       } catch (err) {
         console.error("Error fetching style quiz data:", err);
         setError(err instanceof Error ? err.message : "Failed to fetch style quiz data");
+        // Reset the flag on error so retry can work
+        hasFetchedRef.current = false;
       } finally {
         setIsLoading(false);
       }
@@ -163,32 +213,85 @@ export const useStyleQuizData = () => {
     colorAnalysis,
     isLoading,
     error,
-    refetch: async () => {
+    refetch: async (forceRefresh = false) => {
+      // Reset the flag to allow refetch
+      hasFetchedRef.current = false;
       setIsLoading(true);
-      const { data, error } = await getStyleQuizData();
-      if (data) {
-        setQuizData(data);
-        const processedData = { ...data };
-        if (typeof data.user_tags === 'string') {
-          try {
-            processedData.usertags = JSON.parse(data.user_tags);
-          } catch (e) {
-            console.error("Error parsing usertags:", e);
+      setError(null);
+      
+      try {
+        // If not forcing refresh, check cache first
+        if (!forceRefresh) {
+          const cachedData = cache.get<{
+            quizData: StyleQuizData & { usertags: UserTagsData[] };
+            colorAnalysis: ColorAnalysis;
+          }>(CACHE_KEYS.STYLE_QUIZ_DATA);
+          
+          if (cachedData) {
+            console.log("Using cached style quiz data on refetch");
+            setQuizData(cachedData.quizData);
+            setParsedData(cachedData.quizData);
+            setColorAnalysis(cachedData.colorAnalysis);
+            setIsLoading(false);
+            return;
           }
+        } else {
+          // Clear cache if force refresh is requested
+          cache.remove(CACHE_KEYS.STYLE_QUIZ_DATA);
+          console.log("Force refreshing style quiz data...");
         }
-        setParsedData(processedData as StyleQuizData & { usertags: UserTagsData[] });
         
-        if (data.color_analysis && data.color_family && data.hex_codes) {
-          try {
-            const colorData = parseColorData(data);
-            setColorAnalysis(colorData);
-          } catch (e) {
-            console.error("Error parsing color data:", e);
+        console.log("Refetching style quiz data from API...");
+        const { data, error } = await getStyleQuizData();
+        
+        if (error) throw new Error(error as string);
+        
+        if (data) {
+          setQuizData(data);
+          const processedData = { ...data };
+          if (data.user_tags) {
+            try {
+              if (typeof data.user_tags === 'string') {
+                processedData.usertags = JSON.parse(data.user_tags);
+              } else {
+                processedData.usertags = data.user_tags;
+              }
+            } catch (e) {
+              console.error("Error parsing user_tags:", e);
+              throw new Error("Error parsing user_tags data");
+            }
+          }
+          
+          const finalProcessedData = processedData as StyleQuizData & { usertags: UserTagsData[] };
+          setParsedData(finalProcessedData);
+          
+          let colorData: ColorAnalysis | null = null;
+          if (data.color_analysis && data.color_family && data.hex_codes) {
+            try {
+              colorData = parseColorData(data);
+              setColorAnalysis(colorData);
+            } catch (e) {
+              console.error("Error parsing color data:", e);
+              throw new Error("Error parsing color data");
+            }
+          }
+          
+          // Cache the new data
+          if (colorData) {
+            cache.set(CACHE_KEYS.STYLE_QUIZ_DATA, {
+              quizData: finalProcessedData,
+              colorAnalysis: colorData
+            }, CACHE_TTL.MEDIUM);
+            console.log("Style quiz data re-cached successfully");
           }
         }
+      } catch (err) {
+        console.error("Error refetching style quiz data:", err);
+        setError(err instanceof Error ? err.message : "Failed to refetch style quiz data");
+        hasFetchedRef.current = false;
+      } finally {
+        setIsLoading(false);
       }
-      if (error) setError(error as string);
-      setIsLoading(false);
     }
   };
 }; 
