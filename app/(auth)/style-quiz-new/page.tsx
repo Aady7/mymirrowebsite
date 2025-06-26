@@ -752,10 +752,7 @@ export default function StyleQuizNew() {
               ? JSON.parse(formData.colorAnalysis)
               : formData.colorAnalysis;
             
-            console.log('Parsed Color Data:', colorData);
-            console.log('Selected Styles:', formData.goToStyle);
-            console.log('Undertone:', colorData.undertone);
-            console.log('Fitzpatrick Scale:', colorData.fitzpatrick_scale);
+          
 
             if (colorData.recommended_colours) {
               const styleColorMap: Record<string, string> = {
@@ -765,7 +762,7 @@ export default function StyleQuizNew() {
               };
 
               const selectedCategories = formData.goToStyle.map(style => styleColorMap[style.toLowerCase()]);
-              console.log('Selected Categories:', selectedCategories);
+             
 
               const colorDescriptions: string[] = [];
               selectedCategories.forEach(category => {
