@@ -745,20 +745,51 @@ export default function StyleQuizNew() {
 
         // Extract color analysis
         let colorPalette = 'Not specified';
-        if (formData.colorAnalysis) {
+        if (formData.colorAnalysis && formData.goToStyle && formData.goToStyle.length > 0) {
+          console.log('Color Analysis Raw Data:', formData.colorAnalysis);
           try {
             const colorData = typeof formData.colorAnalysis === 'string'
               ? JSON.parse(formData.colorAnalysis)
               : formData.colorAnalysis;
+            
+            console.log('Parsed Color Data:', colorData);
+            console.log('Selected Styles:', formData.goToStyle);
+            console.log('Undertone:', colorData.undertone);
+            console.log('Fitzpatrick Scale:', colorData.fitzpatrick_scale);
 
-            if (colorData.colors && Array.isArray(colorData.colors)) {
-              colorPalette = colorData.colors
-                .map((color: { hex: string }) => color.hex)
-                .join(', ');
+            if (colorData.recommended_colours) {
+              const styleColorMap: Record<string, string> = {
+                'athleisure': 'Athleisure',
+                'business casual': 'Formal',
+                'streetwear': 'Streetwear'
+              };
+
+              const selectedCategories = formData.goToStyle.map(style => styleColorMap[style.toLowerCase()]);
+              console.log('Selected Categories:', selectedCategories);
+
+              const colorDescriptions: string[] = [];
+              selectedCategories.forEach(category => {
+                if (colorData.recommended_colours[category]) {
+                  const categoryColors = colorData.recommended_colours[category] as [string, string][];
+                  const colorPairsDesc = categoryColors.map(([name, hex]: [string, string]) => `${name} (${hex})`).join(', ');
+                  colorDescriptions.push(`${category} style: ${colorPairsDesc}`);
+                }
+                console.log(`Processing category ${category}:`, colorData.recommended_colours[category]);
+              });
+
+              if (colorDescriptions.length > 0) {
+                colorPalette = colorDescriptions.join('; ');
+              }
+              console.log('Final color palette string:', colorPalette);
+            } else {
+              console.log('No recommended_colours found in color data');
             }
           } catch (e) {
             console.error('Error parsing color analysis:', e);
+            console.error('Error details:', e);
           }
+        } else {
+          console.log('No color analysis data or goToStyle preferences found in formData');
         }
 
         // Extract print preferences
