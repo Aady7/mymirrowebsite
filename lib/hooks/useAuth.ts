@@ -1,11 +1,12 @@
 import { AuthError } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
+import { useCallback } from 'react'
 import { supabase } from '../supabase'
 
 export const useAuth = () => {
   const router = useRouter()
 
-  const signInUser = async (email: string, password: string) => {
+  const signInUser = useCallback(async (email: string, password: string) => {
     try {
       console.log('Attempting to sign in...')
       
@@ -29,9 +30,9 @@ export const useAuth = () => {
       console.error('Unexpected error during sign in:', error)
       return { data: null, error: error as AuthError }
     }
-  }
+  }, [router])
 
-  const signUp = async (email: string, password: string) => {
+  const signUp = useCallback(async (email: string, password: string) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -64,9 +65,9 @@ export const useAuth = () => {
     } catch (error) {
       return { data: null, error: error as AuthError }
     }
-  }
+  }, [])
 
-  const signOut = async () => {
+  const signOut = useCallback(async () => {
     try {
       // Import cache utility and clear all user data
       const { cache } = await import('../utils/cache');
@@ -91,10 +92,10 @@ export const useAuth = () => {
         console.error('Fallback cleanup failed:', fallbackError);
       }
     }
-  };
+  }, [router]);
   
 
-  const getSession = async () => {
+  const getSession = useCallback(async () => {
     try {
       const { data: { session }, error } = await supabase.auth.getSession()
       
@@ -103,13 +104,14 @@ export const useAuth = () => {
         return { session: null, error }
       }
       
-      console.log('Current session:', session)
+      // Reduce console spam - only log when session changes
+      // console.log('Current session:', session)
       return { session, error: null }
     } catch (error) {
       console.error('Unexpected session error:', error)
       return { session: null, error: error as AuthError }
     }
-  }
+  }, [])
 
   return {
     signInUser,

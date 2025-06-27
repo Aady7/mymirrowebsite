@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { FaCartArrowDown } from 'react-icons/fa';
 import { FaIndianRupeeSign } from 'react-icons/fa6';
+import { Button } from '@/components/ui/button';
 import SimilarOutfitsCarousel from '@/app/components/looks/SimilarOutfitsCarousel';
 import { addToCart } from '@/lib/utils/cart';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -64,40 +65,56 @@ interface OutfitData {
 }
 
 const LookPage = () => {
-  const { id } = useParams();
+  const params = useParams();
+  const id = Array.isArray(params.id) ? params.id[0] : params.id;
+  console.log('🆔 LookPage ID from params:', { 
+    rawParams: params, 
+    id, 
+    idType: typeof id, 
+    idNumber: Number(id), 
+    isValidNumber: id ? !isNaN(Number(id)) : false 
+  });
   const { getSession } = useAuth();
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState<LoadingState>({});
   const [error, setError] = useState<string | null>(null);
-  const [isLoadingOutfit, setIsLoadingOutfit] = useState(true);
-  const [totalPrice, setTotalPrice] = useState(0);
   const [outfitData, setOutfitData] = useState<OutfitData | null>(null);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [totalPrice, setTotalPrice] = useState<number>(0);
+  const [isLoadingOutfit, setIsLoadingOutfit] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const hasFetched = useRef(false);
+  const currentId = useRef<string>('');
   const [showLoader, setShowLoader] = useState(true);
+  const [activeCarouselOutfitId, setActiveCarouselOutfitId] = useState<string | null>(null);
   
   // Add ref to prevent duplicate API calls
-  const hasFetched = useRef(false);
-  const currentId = useRef<string | null>(null);
+  const hasFetchedOutfit = useRef(false);
 
-  // Check authentication first
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { session, error: sessionError } = await getSession();
+        console.log('🔍 Checking authentication...');
+        const { session } = await getSession();
+        console.log('📋 Session result:', !!session?.user);
         
-        if (sessionError || !session?.user?.id) {
+        if (session?.user) {
+          setIsAuthenticated(true);
+          setCurrentUser(session.user);
+          console.log('✅ User authenticated:', session.user.id);
+        } else {
           setIsAuthenticated(false);
-          setIsCheckingAuth(false);
-          return;
+          setCurrentUser(null);
+          console.log('❌ No user found');
         }
-        
-        setIsAuthenticated(true);
-      } catch (err) {
-        console.error('Auth check failed:', err);
+      } catch (error) {
+        console.error('Auth check error:', error);
         setIsAuthenticated(false);
+        setCurrentUser(null);
       } finally {
+        console.log('🏁 Auth check complete, setting isCheckingAuth to false');
         setIsCheckingAuth(false);
       }
     };
@@ -107,23 +124,39 @@ const LookPage = () => {
 
   // Fetch outfit data directly from Supabase (more efficient)
   useEffect(() => {
-    // Only fetch data if user is authenticated
-    if (!isAuthenticated || isCheckingAuth) return;
+    console.log('📊 Data fetch effect triggered. Auth status:', { isAuthenticated, isCheckingAuth });
+    
+    // Only fetch data if user is authenticated and not checking auth
+    if (!isAuthenticated || isCheckingAuth) {
+      console.log('⏸️ Skipping data fetch - not authenticated or still checking');
+      // Reset loading state when not authenticated
+      if (!isCheckingAuth && !isAuthenticated) {
+        setIsLoadingOutfit(false);
+      }
+      return;
+    }
     
     const fetchOutfitData = async () => {
       try {
+        console.log('🚀 Starting outfit data fetch for ID:', id);
         setIsLoadingOutfit(true);
         setError(null);
         
-        if (!id) return;
+        if (!id) {
+          console.log('❌ No ID provided');
+          setIsLoadingOutfit(false);
+          return;
+        }
         
         // Prevent duplicate calls for the same ID
-        if (hasFetched.current && currentId.current === String(id)) {
+        if (hasFetchedOutfit.current && currentId.current === String(id)) {
+          console.log('⚡ Duplicate call prevented for ID:', id);
           setIsLoadingOutfit(false);
           return;
         }
 
-        hasFetched.current = true;
+        console.log('📦 Fetching outfit data from Supabase...');
+        hasFetchedOutfit.current = true;
         currentId.current = String(id);
 
         // Fetch outfit data directly from Supabase instead of API + separate call
@@ -146,8 +179,12 @@ const LookPage = () => {
           .eq('main_outfit_id', id)
           .single();
 
+        console.log('📋 Outfit query result:', { outfitData, outfitError });
+
         if (outfitError) throw outfitError;
         if (!outfitData) throw new Error('Outfit not found');
+
+        console.log('✅ Outfit data fetched successfully');
 
         // Transform the data to match the expected format
         const transformedOutfit = {
@@ -173,15 +210,14 @@ const LookPage = () => {
 
         // Fetch product details in the same effect
         const productIds = [outfitData.top_id, outfitData.bottom_id];
+        console.log('🛒 Fetching products for IDs:', productIds);
         
         const { data: productsData, error: productsError } = await supabase
           .from('products')
           .select(`
             *,
-            tagged_products(
-              customer_short_description,
-              customer_long_recommendation,
-              product_key_attributes
+            tagged_products (
+              customer_short_description
             )
           `)
           .in('id', productIds) as { 
@@ -189,33 +225,35 @@ const LookPage = () => {
             error: Error | null 
           };
 
+        console.log('📋 Products query result:', { productsCount: productsData?.length, productsError });
+
         if (productsError) throw productsError;
         if (!productsData) throw new Error('No products found');
 
         // Sort products so top comes first, then bottom
         const sortedProducts = productsData.sort((a, b) => {
-          // Convert IDs to strings for comparison since outfit data has string IDs
           const topId = String(outfitData.top_id);
           const bottomId = String(outfitData.bottom_id);
           const aId = String(a.id);
           const bId = String(b.id);
-          
-          if (aId === topId) return -1; // Top product comes first
-          if (bId === topId) return 1;  // If b is top, a should come after
-          if (aId === bottomId) return 1; // Bottom product comes second
-          if (bId === bottomId) return -1; // If b is bottom, a should come before
-          return 0; // Keep original order for any other products
+          if (aId === topId) return -1;
+          if (bId === topId) return 1;
+          if (aId === bottomId) return 1;
+          if (bId === bottomId) return -1;
+          return 0;
         });
 
         setProducts(sortedProducts);
         setTotalPrice(sortedProducts.reduce((sum, product) => sum + product.price, 0));
+        console.log('✅ All data loaded successfully');
 
       } catch (err) {
-        console.error('Error fetching outfit data:', err);
+        console.error('💥 Error fetching outfit data:', err);
         setError(err instanceof Error ? err.message : 'Failed to load outfit');
-        hasFetched.current = false; // Reset on error to allow retry
+        hasFetchedOutfit.current = false; // Reset on error to allow retry
         notFound();
       } finally {
+        console.log('🏁 Setting isLoadingOutfit to false');
         setIsLoadingOutfit(false);
       }
     };
@@ -225,28 +263,50 @@ const LookPage = () => {
     // Cleanup function to reset refs when component unmounts or id changes
     return () => {
       if (currentId.current !== String(id)) {
-        hasFetched.current = false;
+        hasFetchedOutfit.current = false;
       }
     };
-  }, [id, isAuthenticated, isCheckingAuth]);
+  }, [id, isAuthenticated, isCheckingAuth]); // Include auth states in dependencies
 
   useEffect(() => {
+    console.log('🔄 Loader effect triggered:', { isLoadingOutfit, isCheckingAuth });
+    
     let timer: NodeJS.Timeout | null = null;
     if (isLoadingOutfit || isCheckingAuth) {
+      console.log('📱 Setting showLoader to true');
       setShowLoader(true);
       timer = setTimeout(() => {
-        if (!isLoadingOutfit && !isCheckingAuth) setShowLoader(false);
+        if (!isLoadingOutfit && !isCheckingAuth) {
+          console.log('⏰ Timer: Setting showLoader to false');
+          setShowLoader(false);
+        }
       }, 5000);
     } else {
-      timer = setTimeout(() => setShowLoader(false), 5000);
+      console.log('📱 Setting showLoader to false immediately');
+      setShowLoader(false);
     }
     return () => {
-      if (timer) clearTimeout(timer);
+      if (timer) {
+        console.log('🧹 Clearing timer');
+        clearTimeout(timer);
+      }
     };
   }, [isLoadingOutfit, isCheckingAuth]);
 
+  console.log('🎯 Render state:', { 
+    showLoader, 
+    isAuthenticated, 
+    isCheckingAuth, 
+    isLoadingOutfit, 
+    hasError: !!error,
+    hasOutfitData: !!outfitData 
+  });
+
   // Show loading while checking authentication
-  if (showLoader) return <SmartLoader />;
+  if (showLoader) {
+    console.log('🔄 Showing loader');
+    return <SmartLoader />;
+  }
 
   // Show authentication required message
   if (!isAuthenticated) {
@@ -421,7 +481,7 @@ const LookPage = () => {
     <>
       {/* Header */}
       <div className="flex items-center justify-center mb-2">
-        <span className="text-[26px] font-thin">{outfitData?.outfit_name}</span>
+        <span className="text-[26px]">{outfitData?.outfit_name}</span>
       </div>
       <hr className="border-t-1 border-black w-[90%] mx-auto" />
 
@@ -442,10 +502,18 @@ const LookPage = () => {
         }
         
         const validImageUrl = getValidImageUrl(imageUrl);
-        const taggedProduct = product.tagged_products;
-        const keyAttributes = taggedProduct?.product_key_attributes 
-          ? parseKeyAttributes(taggedProduct.product_key_attributes)
-          : {};
+        console.log(product)
+
+        let description = '';
+        const taggedProductsArray = Array.isArray(product.tagged_products)
+          ? product.tagged_products
+          : product.tagged_products
+            ? [product.tagged_products]
+            : [];
+        
+        if (taggedProductsArray.length > 0) {
+          description = taggedProductsArray[0].customer_short_description || '';
+        }
         
         return (
           <div key={product.id} className={`flex w-full mt-8 mb-2 gap-2 ${product.id == outfitData?.top.id ? 'flex-row-reverse' : ''}`}>            
@@ -458,72 +526,52 @@ const LookPage = () => {
               />
             </div>
             <div className="relative flex flex-col flex-1 max-w-[400px] h-[280.5px] pl-2 pr-2">
-              <h1 className="text-lg text-left mx-2 font-thin mb-1 mt-0 text-[14px]">{product.name}</h1>
+              <h1 className="text-lg text-left mb-1 mt-0 text-[14px] font-bold">{product.name}</h1>
+              {description ? (
+                <p className="text-xs text-gray-700 mb-2">{description}</p>
+              ) : (
+                <p className="text-xs text-gray-400 mb-2 italic">No description available.</p>
+              )}
               
-              <div className="font-[Boston] text-[12px] font-medium leading-normal mb-1 pr-4 mx-2 tracking-wide text-gray-600">
-                {Object.keys(keyAttributes).length > 0 ? (
-                  <>
-                    {keyAttributes.color && (
-                      <p className="mb-0.5">Color - {keyAttributes.color}</p>
-                    )}
-                    {keyAttributes.fit && (
-                      <p className="mb-0.5">Fit - {keyAttributes.fit}</p>
-                    )}
-                    {keyAttributes.fabric && (
-                      <p className="mb-0.5">Fabric - {keyAttributes.fabric}</p>
-                    )}
-                    {keyAttributes.occasion && (
-                      <p className="mb-0.5">Occasion - {keyAttributes.occasion}</p>
-                    )}
-                    {Object.entries(keyAttributes)
-                      .filter(([key]) => !['color', 'fit', 'fabric', 'occasion'].includes(key))
-                      .map(([key, value]) => (
-                        <p key={key} className="mb-0.5">
-                          {key.charAt(0).toUpperCase() + key.slice(1)} - {value}
-                        </p>
-                      ))}
-                  </>
-                ) : (
-                  <p className="mb-0.5 text-gray-500 italic">Product details loading...</p>
-                )}
+              {/* Flexible spacer to push sizes and price to bottom */}
+              <div className="flex-1"></div>
+              
+              <div className="flex flex-wrap gap-1 mb-2">
+                {parseSizes(product.sizesAvailable).map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSizes(prev => ({ ...prev, [product.id]: size }))}
+                    className={`w-8 h-8 flex items-center justify-center border text-xs rounded transition-colors ${
+                      selectedSizes[product.id] === size
+                        ? 'bg-[#007e90] text-white border-[#007e90]'
+                        : 'bg-white text-black border-gray-300 hover:border-[#007e90]'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
               </div>
 
-              <div className="absolute bottom-8 left-2 right-2">
-                <h4 className="flex text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-1">
+              <div className="mb-4">
+                <h4 className="flex text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-2">
                   <FaIndianRupeeSign className="h-4 mt-2" /> {product.price}
                 </h4>
 
-                <div className="flex flex-col gap-1">
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {sizes.map((size) => (
-                      <button
-                        key={size}
-                        onClick={() => setSelectedSizes(prev => ({ ...prev, [product.id]: size }))}
-                        className={`px-2 py-1 border text-xs rounded transition-colors ${
-                          selectedSizes[product.id] === size
-                            ? 'bg-[#007e90] text-white border-[#007e90]'
-                            : 'bg-white text-black border-gray-300 hover:border-[#007e90]'
-                        }`}
-                      >
-                        {size}
-                      </button>
-                    ))}
-                  </div>
-
+                <div className="flex flex-row gap-2 items-center">
                   <button
                     onClick={() => handleAddProduct(product.id)}
                     disabled={loading[product.id] || !selectedSizes[product.id]}
-                    className="flex items-center justify-center gap-1 w-full py-1.5 bg-[#007e90] text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#006d7d] transition-colors"
+                    className="flex items-center justify-center h-9 w-9 bg-[#007e90] text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#006d7d] transition-colors rounded"
                   >
-                    {loading[product.id] ? (
-                      'Adding...'
-                    ) : (
-                      <>
-                        <FaCartArrowDown className="h-3 w-3" />
-                        ADD TO CART
-                      </>
-                    )}
+                    <FaCartArrowDown className="h-4 w-4" />
                   </button>
+                  <Link href={`/products/${product.id}`} className="flex-1">
+                    <button
+                      className="w-full h-9 bg-white text-[#007e90] border border-[#007e90] text-xs font-medium rounded hover:bg-[#e6f7fa] transition-colors"
+                    >
+                      VIEW MORE
+                    </button>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -545,11 +593,11 @@ const LookPage = () => {
       )}
 
       {/* Add All Button */}
-      <div className="px-6 py-4">
+      <div className="px-6 py-4 mt-8">
         <button
           onClick={handleAddAll}
           disabled={loading.all || products.some((_, i) => !selectedSizes[i])}
-          className="w-full py-3 bg-[#007e90] text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#006d7d] transition-colors"
+          className="w-full py-3 bg-[#007e90] text-white font-semibold rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#006d7d]"
         >
           {loading.all ? 'Adding All...' : `ADD ALL TO CART - ₹${totalPrice}`}
         </button>
@@ -561,11 +609,17 @@ const LookPage = () => {
           <StarRating productId={String(id)} productType="look" />
         )}
         <div className='mt-6 flex items-center justify-center px-[8rem]'>
-          <LooksFeedback 
-            onClose={() => { }} 
-            userId={''}
-            lookId={Number(id)}
-          />
+          {id && currentUser ? (
+            <LooksFeedback 
+              onClose={() => { }} 
+              userId={currentUser.id || ''}
+              lookId={id}
+            />
+          ) : (
+            <div className="text-sm text-gray-500">
+              {!id ? 'No outfit ID available' : !currentUser ? 'Please log in to give feedback' : ''}
+            </div>
+          )}
         </div>
       </div>
 
@@ -603,8 +657,8 @@ const LookPage = () => {
 
       {/* Similar Outfits Section */}
       <div className="px-6 py-8 mt-[-2rem]">
-        <h1 className="font-thin text-[22px] font-[Boston] mb-[-2rem]">YOU MAY ALSO LIKE</h1>
-        <SimilarOutfitsCarousel />
+        <h1 className="text-[22px] font-[Boston] font-medium mb-[-2rem]">YOU MAY ALSO LIKE</h1>
+        <SimilarOutfitsCarousel onActiveOutfitChange={setActiveCarouselOutfitId} />
       </div>
     </>
   );

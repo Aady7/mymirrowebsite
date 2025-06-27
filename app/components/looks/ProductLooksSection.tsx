@@ -69,7 +69,7 @@ const LooksSection = ({ currentProductId, user }: LooksSectionProps) => {
         </div>
       )}
 
-      {displayProducts.length >= 2 && (
+      {displayProducts.length == 2 && (
         <div className="flex gap-2 m-2 text-black">
           <div className="mt-6 mx-3 mb-10 text-xs justify-center items-center tracking-wider font-light leading-4 flex flex-col">
             <Button className="bg-[#007e90] hover:bg-[#006d7d] text-white h-6 mt-10 rounded-none self-start text-xs transition-colors">

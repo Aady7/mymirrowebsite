@@ -4,7 +4,7 @@ import { useAuth } from '@/lib/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FaIndianRupeeSign } from "react-icons/fa6"
+import { FaIndianRupeeSign, FaTrash } from "react-icons/fa6"
 import { Button } from "@/components/ui/button"
 import SmartLoader from '@/app/components/loader/SmartLoader'
 
@@ -166,7 +166,7 @@ const CartPage = () => {
           <h1 className="text-[35px] font-light [font-variant:all-small-caps]">My Cart</h1>
           <p className="text-gray-500 mb-6 font-light">Your cart is empty</p>
           <Link href="/recommendations">
-            <button className="bg-black text-white text-[14px] font-medium uppercase py-3 px-6 tracking-wide">
+            <button className="bg-[#007e90] hover:bg-[#006d7d] text-white text-[14px] font-medium uppercase py-3 px-6 tracking-wide">
               Browse Products
             </button>
           </Link>
@@ -178,7 +178,7 @@ const CartPage = () => {
   return (
     <>
       {/* header section */}
-      <div className="text-black font-[Boston] text-[35px] px-[24px] not-italic font-light leading-normal [font-variant:all-small-caps]">
+      <div className="text-black font-[Boston] text-[35px] px-[24px] not-italic leading-normal [font-variant:all-small-caps]">
         <h1>MY CART</h1>
       </div>
 
@@ -202,7 +202,7 @@ const CartPage = () => {
               }
             }}
           />
-          <div className="w-6 h-6 border-1 border-black rounded peer-checked:bg-black peer-checked:text-white flex items-center justify-center text-[24px] font-normal">
+          <div className="w-6 h-6 border-1 border-[#007e90] rounded peer-checked:bg-[#007e90] peer-checked:text-white flex items-center justify-center text-[24px] font-normal">
             -
           </div>
         </label>
@@ -210,7 +210,7 @@ const CartPage = () => {
         <h2 className="flex flex-row items-center text-[20px] font-normal leading-normal m-0 p-0">
           {selectedItems.size}/{cartItems.length} ITEMS SELECTED&nbsp;
           <span className="flex flex-row items-center">
-            ( <FaIndianRupeeSign className="mr-[4px]" /> {calculateSelectedTotal()} )
+            ( <FaIndianRupeeSign className="mr-[4px] text-[16px] align-middle leading-none" /> {calculateSelectedTotal()} )
           </span>
         </h2>
       </div>
@@ -229,8 +229,8 @@ const CartPage = () => {
                 type="checkbox"
                 checked={selectedItems.has(itemKey)}
                 onChange={() => toggleItemSelection(item.productId, item.size)}
-                className="absolute top-2 left-2 w-6 h-6 border-2 border-black rounded appearance-none
-                  checked:bg-black
+                className="absolute top-2 left-2 w-6 h-6 border-2 border-[#007e90] rounded appearance-none
+                  checked:bg-[#007e90]
                   checked:after:content-['✔'] checked:after:text-white checked:after:text-[14px] checked:after:flex checked:after:items-center checked:after:justify-center"
               />
               <Image
@@ -244,27 +244,27 @@ const CartPage = () => {
 
             {/* Middle: product details */}
             <div className="flex flex-col flex-grow items-start gap-1 text-black font-[Boston] text-[14px] not-italic font-normal leading-normal [font-variant:all-small-caps]">
-              <h1 className="text-[20px]  mt-[-0.5rem] font-medium">{product?.title}</h1>
-              <h1 className="text-[18px] mt-[-1rem] text-gray-400 font-normal">{product?.name}</h1>
+              <h1 className="text-[20px] font-medium leading-tight mb-1 mt-[-0.5rem]">{product?.title}</h1>
+              <h1 className="text-[18px] mt-[4px] text-gray-400 font-normal">{product?.name}</h1>
               
               {/* Size */}
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-[14px] font-light">SIZE:</span>
+                <span className="text-[14px] font-normal">SIZE:</span>
                 <span className="text-[14px] font-normal ">{item.size}</span>
               </div>
 
               {/* Quantity selector */}
-              <div className="flex flex-row items-center mt-1 h-8 gap-2 border bg-black border-black rounded-none px-2 py-1">
+              <div className="flex flex-row items-center mt-1 h-7 gap-2 bg-[#007e90] rounded px-1 py-0.5">
                 <button
                   onClick={() => handleQuantityChange(item.productId, item.quantity - 1, item.size)}
-                  className="text-[20px] font-normal px-2 text-white"
+                  className="text-[16px] font-normal px-1 text-white bg-[#007e90] rounded h-6 w-6 flex items-center justify-center"
                 >
                   -
                 </button>
-                <span className="text-[18px] font-normal text-white">{item.quantity}</span>
+                <span className="text-[15px] font-normal text-[#007e90] bg-white px-2 py-0.5 rounded h-6 flex items-center justify-center">{item.quantity}</span>
                 <button
                   onClick={() => handleQuantityChange(item.productId, item.quantity + 1, item.size)}
-                  className="text-[20px] font-normal px-2 text-white"
+                  className="text-[16px] font-normal px-1 text-white bg-[#007e90] rounded h-6 w-6 flex items-center justify-center"
                 >
                   +
                 </button>
@@ -272,7 +272,7 @@ const CartPage = () => {
 
               {/* Price */}
               <span className="flex flex-row items-center text-[18px] font-normal mt-2">
-                <FaIndianRupeeSign className="mr-[4px]" /> {product?.price}
+                <FaIndianRupeeSign className="mr-[4px] text-[18px] align-middle leading-none" /> {product?.price}
               </span>
             </div>
 
@@ -283,12 +283,7 @@ const CartPage = () => {
                 onClick={() => handleRemoveItem(item.productId, item.size)}
                 className="flex items-center justify-center p-2 w-8 h-8 bg-transparent hover:bg-gray-100 rounded"
               >
-                <Image
-                  src="/assets/delete.svg"
-                  alt="delete"
-                  width={15}
-                  height={12}
-                />
+                <FaTrash className="text-red-500 w-4 h-4" />
               </Button>
             </div>
           </div>
@@ -312,7 +307,7 @@ const CartPage = () => {
           <div className="flex justify-between items-center mb-3">
             <span className="font-normal">Total MRP</span>
             <span className="text-[18px] font-normal flex items-center">
-              <FaIndianRupeeSign className="mr-[4px]" /> {calculateSelectedTotal()}
+              <FaIndianRupeeSign className="mr-[4px] text-[18px] align-middle leading-none" /> {calculateSelectedTotal()}
             </span>
           </div>
 
@@ -335,7 +330,7 @@ const CartPage = () => {
           <div className="flex justify-between items-center mt-3">
             <span className="text-[18px] font-medium">Total Amount</span>
             <span className="text-[18px] font-medium flex items-center">
-              <FaIndianRupeeSign className="mr-[4px]" /> {calculateSelectedTotal()}
+              <FaIndianRupeeSign className="mr-[4px] text-[18px] align-middle leading-none" /> {calculateSelectedTotal()}
             </span>
           </div>
         </div>
@@ -344,13 +339,13 @@ const CartPage = () => {
       {/* place order */}
       <div className="w-full mt-9 px-4 py-6 flex flex-col items-center justify-center gap-3 border-t border-gray-200">
         {/* Text */}
-        <p className="text-[14px] text-gray-500 font-[Boston] not-italic font-light leading-normal">
+        <p className="text-[14px] text-gray-500 not-italic leading-normal">
           {selectedItems.size} {selectedItems.size === 1 ? 'Item' : 'Items'} selected for order
         </p>
 
         {/* Place Order button */}
         <button 
-          className="w-full max-w-xs bg-black text-white text-[14px] font-[Boston] font-medium uppercase py-3 px-6 tracking-wide"
+          className="w-full max-w-xs bg-[#007e90] hover:bg-[#006d7d] text-white text-[14px] font-[Boston] font-medium uppercase py-3 px-6 tracking-wide rounded"
           disabled={selectedItems.size === 0}
         >
           Place Order

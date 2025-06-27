@@ -12,6 +12,7 @@ interface LookCardProps {
 const LookCard = ({ look, lookId }: LookCardProps) => {
   // Get first two products or all if only one product
   const displayProducts = look.products.slice(0, 2);
+  console.log('LookCard - displayProducts:', displayProducts);
 
   return (
     <div className="bg-white mt-6 px-6 py-2">

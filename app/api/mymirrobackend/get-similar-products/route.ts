@@ -13,8 +13,46 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing product ID' }, { status: 400 });
   }
 
-  const backendUrl = `${process.env.API_BASE_URL}/products/${productId}/similar?count=${count ?? 10}&diverse=${diverse}&personalized=${personalized}`;
+  const backendUrl = `https://backend.mymirro.in/api/v1/products/${productId}/similar?count=${count || 10}&diverse=${diverse}&personalized=${personalized}`;
   console.log('➡️ Calling MyMirro API:', backendUrl);
+
+  // Prepare the payload exactly as shown in Swagger example
+  const payload = {
+    count: parseInt(count || '10'),
+    user_preferences: {
+      preferred_styles: [
+        "Business Formal",
+        "Casual"
+      ],
+      preferred_colors: [
+        "Black",
+        "Navy", 
+        "White"
+      ],
+      price_range: [
+        800,
+        2500
+      ]
+    },
+    filters: {
+      price_range: [
+        500,
+        3000
+      ],
+      styles: [
+        "Business",
+        "Formal"
+      ],
+      colors: [
+        "Black",
+        "Navy"
+      ]
+    },
+    diverse: diverse === 'true',
+    personalized: personalized === 'true'
+  };
+
+  console.log('📦 API Payload:', JSON.stringify(payload, null, 2));
 
   try {
     const response = await fetch(backendUrl, {
@@ -23,7 +61,7 @@ export async function GET(req: NextRequest) {
         accept: 'application/json',
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({}),
+      body: JSON.stringify(payload),
     });
 
     const data = await response.json();

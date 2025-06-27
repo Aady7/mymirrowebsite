@@ -22,6 +22,7 @@ const Feedback: React.FC<FeedbackProps> = ({ onClose, productId }) => {
         comment: ""
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [successMessage, setSuccessMessage] = useState<string>('');
 
     useEffect(() => {
         const getUser = async () => {
@@ -30,21 +31,22 @@ const Feedback: React.FC<FeedbackProps> = ({ onClose, productId }) => {
                 if (user) {
                     setUserId(user.id);
                     setIsAuthenticated(true);
-                    //fetch exiting feedaback
-                    const {data:feedbackData,error}=await supabase
-                    .from('product-feedback')
-                    .select('*')
-                    .eq('user_id',user.id)
-                    .eq('product_id',productId)
-                    .single();
+                    
+                    // Fetch existing feedback from product_rating table
+                    const { data: feedbackData, error } = await supabase
+                        .from('product_rating')
+                        .select('*')
+                        .eq('user_id', user.id)
+                        .eq('product_id', productId)
+                        .single();
 
-                    if(feedbackData){
+                    if (feedbackData) {
                         setFormData({
                             overallRating: feedbackData.overall_rating || 0,
                             designRating: feedbackData.design_rating || 0,
                             colorRating: feedbackData.color_rating || 0,
                             comment: feedbackData.comment || ""
-                        })
+                        });
                     }
                 } else {
                     setIsAuthenticated(false);
@@ -61,7 +63,8 @@ const Feedback: React.FC<FeedbackProps> = ({ onClose, productId }) => {
 
     const handleRatingChange = (type: 'overall' | 'design' | 'color', value: number) => {
         if (!isAuthenticated) {
-            alert("Please log in to provide feedback");
+            setSuccessMessage("Please log in to provide feedback");
+            setTimeout(() => setSuccessMessage(''), 3000);
             return;
         }
         setFormData(prev => ({
@@ -73,14 +76,15 @@ const Feedback: React.FC<FeedbackProps> = ({ onClose, productId }) => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!isAuthenticated) {
-            alert("Please log in to submit feedback");
+            setSuccessMessage("Please log in to submit feedback");
+            setTimeout(() => setSuccessMessage(''), 3000);
             return;
         }
         setIsSubmitting(true);
         try {
-            // First check if feedback already exists
+            // First check if feedback already exists in product_rating table
             const { data: existingFeedback, error: checkError } = await supabase
-                .from('product-feedback')
+                .from('product_rating')
                 .select('*')
                 .eq('user_id', userId)
                 .eq('product_id', productId)
@@ -94,19 +98,20 @@ const Feedback: React.FC<FeedbackProps> = ({ onClose, productId }) => {
             if (existingFeedback) {
                 // Update existing feedback
                 result = await supabase
-                    .from('product-feedback')
+                    .from('product_rating')
                     .update({
                         overall_rating: formData.overallRating,
                         design_rating: formData.designRating,
                         color_rating: formData.colorRating,
-                        comment: formData.comment
+                        comment: formData.comment,
+                        updated_at: new Date().toISOString()
                     })
                     .eq('user_id', userId)
                     .eq('product_id', productId);
             } else {
                 // Insert new feedback
                 result = await supabase
-                    .from('product-feedback')
+                    .from('product_rating')
                     .insert([
                         {
                             user_id: userId,
@@ -120,11 +125,15 @@ const Feedback: React.FC<FeedbackProps> = ({ onClose, productId }) => {
             }
 
             if (result.error) throw result.error;
-            alert("Thanks for your feedback!");
-            onClose(); // Close the feedback form after successful submission
+            setSuccessMessage("Thanks for your feedback!");
+            setTimeout(() => {
+                setSuccessMessage('');
+                onClose(); // Close the feedback form after successful submission
+            }, 2000);
         } catch (error) {
             console.error("Error submitting feedback:", error);
-            alert("Failed to submit feedback. Please try again.");
+            setSuccessMessage("Failed to submit feedback. Please try again.");
+            setTimeout(() => setSuccessMessage(''), 3000);
         } finally {
             setIsSubmitting(false);
         }
@@ -229,7 +238,16 @@ const Feedback: React.FC<FeedbackProps> = ({ onClose, productId }) => {
                     </div>
                 </div>
 
-                <div className="mt-[35px] flex justify-center pb-1">
+                <div className="mt-[35px] flex flex-col items-center pb-1">
+                    {successMessage && (
+                        <div className={`mb-4 p-3 rounded text-center text-sm ${
+                            successMessage.includes('Failed') || successMessage.includes('Error') || successMessage.includes('Please log in')
+                                ? 'bg-red-100 text-red-700 border border-red-300' 
+                                : 'bg-green-100 text-green-700 border border-green-300'
+                        }`}>
+                            {successMessage}
+                        </div>
+                    )}
                     <Button
                         type="submit"
                         disabled={isSubmitting}

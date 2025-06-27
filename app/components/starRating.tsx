@@ -52,9 +52,9 @@ const StarRating = ({ productId, productType = 'product' }: { productId: string,
         data = result.data;
         error = result.error;
       } else {
-        // Use product-rating table for products
+        // Use product_rating table for products
         const result = await supabase
-          .from("product-rating")
+          .from("product_rating")
           .select("rating")
           .eq("user_id", currentUserId)
           .eq("product_id", productIdentifier)
@@ -91,66 +91,118 @@ const StarRating = ({ productId, productType = 'product' }: { productId: string,
 
     try {
       if (productType === 'look') {
-        // Handle outfit rating
-        console.log("Deleting any existing outfit rating...");
-        const { error: deleteError } = await supabase
+        // Handle outfit rating - check if exists, then update or insert
+        console.log("Checking for existing outfit rating...");
+        
+        const { data: existingRating, error: checkError } = await supabase
           .from("outfit_rating")
-          .delete()
+          .select("*")
           .eq("user_id", currentUserId)
-          .eq("outfit_id", productId);
+          .eq("outfit_id", productId)
+          .single();
 
-        if (deleteError) {
-          console.error("Error deleting existing outfit rating:", deleteError);
-          // Continue anyway, might be no existing rating
-        }
-
-        // Insert new outfit rating
-        console.log("Inserting new outfit rating...");
-        const { error: insertError } = await supabase
-          .from("outfit_rating")
-          .insert({
-            user_id: currentUserId,
-            outfit_id: productId,
-            rating: star,
-          });
-
-        if (insertError) {
-          console.error("Error inserting outfit rating:", insertError);
-          setMessage(`Failed to save rating: ${insertError.message}`);
+        if (checkError && checkError.code !== 'PGRST116') {
+          console.error("Error checking existing rating:", checkError);
+          setMessage(`Failed to save rating: ${checkError.message}`);
           setShowMessage(true);
           setTimeout(() => setShowMessage(false), 5000);
           return;
+        }
+
+        if (existingRating) {
+          // Update existing rating while preserving other fields
+          console.log("Updating existing outfit rating...");
+          const { error: updateError } = await supabase
+            .from("outfit_rating")
+            .update({
+              rating: star,
+              updated_at: new Date().toISOString()
+            })
+            .eq("user_id", currentUserId)
+            .eq("outfit_id", productId);
+
+          if (updateError) {
+            console.error("Error updating outfit rating:", updateError);
+            setMessage(`Failed to save rating: ${updateError.message}`);
+            setShowMessage(true);
+            setTimeout(() => setShowMessage(false), 5000);
+            return;
+          }
+        } else {
+          // Insert new rating
+          console.log("Inserting new outfit rating...");
+          const { error: insertError } = await supabase
+            .from("outfit_rating")
+            .insert({
+              user_id: currentUserId,
+              outfit_id: productId,
+              rating: star,
+            });
+
+          if (insertError) {
+            console.error("Error inserting outfit rating:", insertError);
+            setMessage(`Failed to save rating: ${insertError.message}`);
+            setShowMessage(true);
+            setTimeout(() => setShowMessage(false), 5000);
+            return;
+          }
         }
       } else {
-        // Handle product rating
-        console.log("Deleting any existing product rating...");
-        const { error: deleteError } = await supabase
-          .from("product-rating")
-          .delete()
+        // Handle product rating - check if exists, then update or insert
+        console.log("Checking for existing product rating...");
+        
+        const { data: existingRating, error: checkError } = await supabase
+          .from("product_rating")
+          .select("*")
           .eq("user_id", currentUserId)
-          .eq("product_id", productIdentifier);
+          .eq("product_id", productIdentifier)
+          .single();
 
-        if (deleteError) {
-          console.error("Error deleting existing product rating:", deleteError);
-          // Continue anyway, might be no existing rating
-        }
-
-        // Insert new product rating
-        console.log("Inserting new product rating...");
-        const { error: insertError } = await supabase
-          .from("product-rating")
-          .insert({
-            user_id: currentUserId,
-            product_id: productIdentifier,
-            rating: star,
-          });
-
-        if (insertError) {
-          console.error("Error inserting product rating:", insertError);
-          setMessage(`Failed to save rating: ${insertError.message}`);
+        if (checkError && checkError.code !== 'PGRST116') {
+          console.error("Error checking existing product rating:", checkError);
+          setMessage(`Failed to save rating: ${checkError.message}`);
           setShowMessage(true);
           setTimeout(() => setShowMessage(false), 5000);
           return;
+        }
+
+        if (existingRating) {
+          // Update existing rating while preserving other fields
+          console.log("Updating existing product rating...");
+          const { error: updateError } = await supabase
+            .from("product_rating")
+            .update({
+              rating: star,
+              updated_at: new Date().toISOString()
+            })
+            .eq("user_id", currentUserId)
+            .eq("product_id", productIdentifier);
+
+          if (updateError) {
+            console.error("Error updating product rating:", updateError);
+            setMessage(`Failed to save rating: ${updateError.message}`);
+            setShowMessage(true);
+            setTimeout(() => setShowMessage(false), 5000);
+            return;
+          }
+        } else {
+          // Insert new rating
+          console.log("Inserting new product rating...");
+          const { error: insertError } = await supabase
+            .from("product_rating")
+            .insert({
+              user_id: currentUserId,
+              product_id: productIdentifier,
+              rating: star,
+            });
+
+          if (insertError) {
+            console.error("Error inserting product rating:", insertError);
+            setMessage(`Failed to save rating: ${insertError.message}`);
+            setShowMessage(true);
+            setTimeout(() => setShowMessage(false), 5000);
+            return;
+          }
         }
       }
 

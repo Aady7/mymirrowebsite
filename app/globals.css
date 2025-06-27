@@ -126,16 +126,107 @@
   padding: 0;
    width: 100%;
   overflow-x: hidden;
-   font-family: 'BostonWanted', sans-serif;
+   font-family: 'Boston', system-ui, sans-serif;
 }
 * {
   box-sizing: border-box;
+  font-family: 'Boston', system-ui, sans-serif;
 }
 @font-face {
   font-family: 'Boston';
-  src: url('/fonts/Boston.woff2') format('woff2');
+  src: url('/fonts/boston/BostonThin.otf') format('opentype');
+  font-weight: 100;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonThinIt.otf') format('opentype');
+  font-weight: 100;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonExtraLight.otf') format('opentype');
+  font-weight: 200;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonExtraLightIt.otf') format('opentype');
+  font-weight: 200;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonLight.otf') format('opentype');
   font-weight: 300;
   font-style: normal;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonLightIt.otf') format('opentype');
+  font-weight: 300;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonRegular.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonRegularIt.otf') format('opentype');
+  font-weight: 400;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonSemiBold.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonSemiBoldIt.otf') format('opentype');
+  font-weight: 600;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonBold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonBoldIt.otf') format('opentype');
+  font-weight: 700;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonBlack.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonBlackIt.otf') format('opentype');
+  font-weight: 900;
+  font-style: italic;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonHeavy.otf') format('opentype');
+  font-weight: 950;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Boston';
+  src: url('/fonts/boston/BostonHeavyIt.otf') format('opentype');
+  font-weight: 950;
+  font-style: italic;
 }
 
 /*Tarot section css*/

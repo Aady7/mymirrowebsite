@@ -16,14 +16,23 @@ export const getSimilarProducts = async ({
       personalized: String(personalized),
     });
   
-    const res = await fetch(`/api/mymirrobackend/get-similar-products?${query.toString()}`, {
+    const apiUrl = `/api/mymirrobackend/get-similar-products?${query.toString()}`;
+    console.log('🌐 [CLIENT] Calling similar products API:', apiUrl);
+    console.log('📝 [CLIENT] Parameters:', { productId, count, diverse, personalized });
+  
+    const res = await fetch(apiUrl, {
       method: 'GET',
     });
   
+    console.log('📊 [CLIENT] API Response Status:', res.status);
+  
     if (!res.ok) {
+      console.error('❌ [CLIENT] API call failed:', res.status, res.statusText);
       throw new Error('Failed to fetch similar products');
     }
   
-    return await res.json();
+    const data = await res.json();
+    console.log('✅ [CLIENT] API Response Data:', data);
+    return data;
   };
   

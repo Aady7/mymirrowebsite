@@ -89,14 +89,15 @@ interface SimilarOutfit {
 }
 
 interface SimilarOutfitsCarouselProps {
-  // Remove the similarOutfits prop since we'll fetch it internally
+  onActiveOutfitChange?: (outfitId: string | null) => void;
 }
 
-const SimilarOutfitsCarousel = ({}: SimilarOutfitsCarouselProps) => {
+const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarouselProps) => {
   const { id } = useParams();
   const [similarOutfits, setSimilarOutfits] = useState<SimilarOutfit[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   
   // Add ref to prevent duplicate API calls
   const hasFetched = useRef(false);
@@ -170,9 +171,11 @@ const SimilarOutfitsCarousel = ({}: SimilarOutfitsCarouselProps) => {
         if (result && result.similar_outfits) {
           console.log('Setting similar outfits:', result.similar_outfits.length, 'items');
           setSimilarOutfits(result.similar_outfits);
+          setActiveSlideIndex(0); // Reset to first slide
         } else {
           console.log('No similar_outfits in result, setting empty array');
           setSimilarOutfits([]);
+          setActiveSlideIndex(0);
         }
       } catch (err) {
         console.error('Error fetching similar outfits:', err);
@@ -196,6 +199,17 @@ const SimilarOutfitsCarousel = ({}: SimilarOutfitsCarouselProps) => {
       }
     };
   }, [id]); // Only depend on id
+
+  // Notify parent about active outfit changes
+  useEffect(() => {
+    const filteredOutfits = similarOutfits.filter(outfit => outfit.outfit_data.main_outfit_id !== id);
+    if (filteredOutfits.length > 0 && activeSlideIndex < filteredOutfits.length) {
+      const activeOutfit = filteredOutfits[activeSlideIndex];
+      onActiveOutfitChange?.(activeOutfit.outfit_data.main_outfit_id);
+    } else {
+      onActiveOutfitChange?.(null);
+    }
+  }, [activeSlideIndex, similarOutfits, id, onActiveOutfitChange]);
 
   if (error) {
     console.log('SimilarOutfitsCarousel: Showing error');
@@ -299,6 +313,9 @@ const SimilarOutfitsCarousel = ({}: SimilarOutfitsCarouselProps) => {
       pagination={{ clickable: true }}
       navigation={true}
       loop={true}
+      onSlideChange={(swiper) => {
+        setActiveSlideIndex(swiper.realIndex);
+      }}
       className="w-full max-w-none relative group mt-8"
     >
       <style jsx global>{`
@@ -335,28 +352,26 @@ const SimilarOutfitsCarousel = ({}: SimilarOutfitsCarouselProps) => {
 
       {filteredOutfits.map((outfit) => (
         <SwiperSlide key={outfit.outfit_data.main_outfit_id}>
-          <Link href={`/looks/${outfit.outfit_data.main_outfit_id}`}>
-            <div className="flex gap-2 h-[300px] ml-4 mr-4 mt-6">
-              {/* Top garment */}
-              <div className="flex-1 relative">
-                <Image
-                  src={outfit.outfit_data.top.image}
-                  alt={outfit.outfit_data.top.title}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              {/* Bottom garment */}
-              <div className="flex-1 relative">
-                <Image
-                  src={outfit.outfit_data.bottom.image}
-                  alt={outfit.outfit_data.bottom.title}
-                  fill
-                  className="object-cover"
-                />
-              </div>
+          <div className="flex gap-2 h-[300px] ml-4 mr-4 mt-6">
+            {/* Top garment */}
+            <div className="flex-1 relative">
+              <Image
+                src={outfit.outfit_data.top.image}
+                alt={outfit.outfit_data.top.title}
+                fill
+                className="object-cover"
+              />
             </div>
-          </Link>
+            {/* Bottom garment */}
+            <div className="flex-1 relative">
+              <Image
+                src={outfit.outfit_data.bottom.image}
+                alt={outfit.outfit_data.bottom.title}
+                fill
+                className="object-cover"
+              />
+            </div>
+          </div>
         </SwiperSlide>
       ))}
     </Swiper>

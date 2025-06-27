@@ -3,7 +3,8 @@ import { useAuth } from '@/lib/hooks/useAuth'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useContext } from 'react'
+import { CartContext } from './provider'
 
 export default function Navigation() {
   const { signOut } = useAuth()
@@ -12,6 +13,7 @@ export default function Navigation() {
   //state change to desktop to mobile or mobile to desktop
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const { cartCount } = useContext(CartContext)
 
   const handleSignOut = async () => {
     try {
@@ -64,12 +66,6 @@ export default function Navigation() {
               Recommendations
             </Link>
             <Link
-              href="/cart"
-              className="text-gray-700 hover:text-indigo-600 transition font-medium"
-            >
-              Cart
-            </Link>
-            <Link
               href="/aboutpage"
               className="text-gray-700 hover:text-indigo-600 transition font-medium"
             >
@@ -78,7 +74,21 @@ export default function Navigation() {
           </div>
 
           {/* Desktop Sign Out Button */}
-          <div className="hidden sm:flex items-center">
+          <div className="hidden sm:flex items-center space-x-4">
+            <Link href="/cart" className="relative focus:outline-none" tabIndex={0} aria-label="Cart">
+              <Image 
+                src="/assets/cartIcon.png" 
+                alt="Cart" 
+                width={24} 
+                height={24}
+                className="w-6 h-6"
+              />
+              {cartCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#007e90] text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 border-2 border-white z-10">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
             <button
               onClick={handleSignOut}
               disabled={isLoading}
@@ -91,7 +101,7 @@ export default function Navigation() {
           {/*Mobile Menu Button */}
           <div className='sm:hidden flex items-center space-x-4'>
             {/* Cart Icon for Mobile */}
-            <Link href="/cart" onClick={handleLinkClick}>
+            <Link href="/cart" onClick={handleLinkClick} className="relative">
               <button className='text-gray-700 focus:outline-none p-1'>
                 <Image 
                   src="/assets/cartIcon.png" 
@@ -100,6 +110,11 @@ export default function Navigation() {
                   height={24}
                   className="w-6 h-6"
                 />
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-[#007e90] text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 border-2 border-white z-10">
+                    {cartCount}
+                  </span>
+                )}
               </button>
             </Link>
             
