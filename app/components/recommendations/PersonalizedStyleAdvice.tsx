@@ -65,7 +65,7 @@ const Stylist: React.FC<StylistProps> = ({ quizData, colorAnalysis }) => {
               <span className="font-semibold"> quiz</span> answers, layered
               <br className="hidden md:block"/> with <span className="font-semibold">AI </span>
               insights and<span className="font-semibold"> stylist </span>
-              expertise — all working together to{" "}
+              expertise, all working together to{" "}
               <span className="flex items-center justify-center">
                 tailor every look just for you.
               </span>
@@ -121,7 +121,7 @@ const Stylist: React.FC<StylistProps> = ({ quizData, colorAnalysis }) => {
           <hr className="w-full border-t border-gray-400 mt-4 md:mt-6 lg:mt-8" />
 
           {/* Heading and Paragraph */}
-          <div className="flex flex-row justify-between items-start mt-4 gap-12 md:gap-4 md:mt-6 lg:mt-8 md:max-w-[90%] lg:max-w-[80%] mx-auto">
+          <div className="flex flex-row justify-between items-start mt-4 gap-6 md:gap-4 md:mt-6 lg:mt-8 md:max-w-[90%] lg:max-w-[80%] mx-auto">
             {/* Left Section: Heading + Paragraph */}
             <div className="w-2/3 md:w-3/5">
               <h1 className="text-[11px] md:text-[13px] lg:text-[15px] tracking-normal font-semibold mt-2">

@@ -114,10 +114,10 @@ const StylistSays = () => {
               >
                 {/* Look header section */}
                 <div className="flex justify-between mb-2">
-                  <h3 className="text-sm font-semibold md:text-lg">
+                  <h3 className="text-xs font-semibold md:text-lg">
                     LOOK {index + 1}
                   </h3>
-                  <h3 className="text-sm font-semibold md:hidden">
+                  <h3 className="text-xs font-semibold md:hidden  ">
                     {outfit.outfit_name}
                   </h3>
                 </div>
@@ -171,7 +171,7 @@ const StylistSays = () => {
               <button
                 onClick={handleViewMore}
                 disabled={allOutfitsMode}
-                className="flex-1 max-w-[200px] h-12 px-8 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded-lg transition-colors disabled:opacity-50"
+                className="flex-1 max-w-[200px] h-12 px-4 md:px-8 bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 rounded-lg transition-colors disabled:opacity-50 text-sm md:text-sm whitespace-nowrap"
               >
                 More Outfits
               </button>
@@ -179,7 +179,7 @@ const StylistSays = () => {
             <Button 
               onClick={handleRegenerate}
               disabled={isRegenerating}
-              className="flex-1 max-w-[200px] h-12 px-8 bg-[#007e90] hover:bg-[#006d7d] text-white rounded-lg transition-colors disabled:opacity-50"
+              className="flex-1 max-w-[200px] h-12 px-4 bg-[#007e90] hover:bg-[#006d7d] text-white rounded-lg transition-colors disabled:opacity-50"
             >
               {isRegenerating ? 'Regenerating...' : 'Regenerate Outfits'}
             </Button>
