@@ -1,6 +1,6 @@
 "use client"
 import { useParams, notFound } from 'next/navigation';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaCartArrowDown } from 'react-icons/fa';
@@ -13,6 +13,8 @@ import SmartLoader from '@/app/components/loader/SmartLoader';
 import StarRating from '@/app/components/starRating';
 import LooksFeedback from '@/app/components/looks/LooksFeedback';
 import { supabase } from '@/lib/supabase';
+import { CartContext } from '@/app/components/provider';
+import { useNotification } from '@/app/components/common/NotificationContext';
 
 interface Product {
   id: number;
@@ -75,6 +77,8 @@ const LookPage = () => {
     isValidNumber: id ? !isNaN(Number(id)) : false 
   });
   const { getSession } = useAuth();
+  const { refreshCart } = useContext(CartContext);
+  const { showNotification } = useNotification();
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState<LoadingState>({});
@@ -399,6 +403,13 @@ const LookPage = () => {
       
       if (!success) {
         setError(cartError || 'Failed to add to cart');
+      } else {
+        console.log('✅ Item added to cart from looks page, refreshing cart count');
+        // Refresh cart count in header
+        await refreshCart();
+        // Show notification
+        const productName = prod?.name || 'Item';
+        showNotification(`${productName} added to cart!`, 'success');
       } 
     } catch (err) {
       setError('An error occurred while adding to cart');
@@ -408,7 +419,7 @@ const LookPage = () => {
   };
 
   const handleAddAll = async () => {
-    const allSelected = products.every((_, i) => selectedSizes[i]);
+    const allSelected = products.every((product) => selectedSizes[product.id]);
     if (!allSelected) { 
       setError('Please select sizes for all items'); 
       return; 
@@ -425,12 +436,21 @@ const LookPage = () => {
         return;
       }
 
-      const results = await Promise.all(
-        products.map((p, i) => addToCart(session.user.id, p.id, selectedSizes[i]))
-      );
+      // Add items sequentially to avoid race conditions
+      const results = [];
+      for (const product of products) {
+        const result = await addToCart(session.user.id, product.id, selectedSizes[product.id]);
+        results.push(result);
+      }
 
       if (!results.every(r => r.success)) {
         setError('Some items failed to add to cart');
+      } else {
+        // Refresh cart count in header
+        await refreshCart();
+        // Show notification for all items
+        const successCount = results.filter(r => r.success).length;
+        showNotification(`${successCount} items added to cart!`, 'success');
       }
     } catch (err) {
       setError('An error occurred while adding items to cart');
@@ -442,11 +462,23 @@ const LookPage = () => {
   const parseSizes = (sizesStr: string): string[] => {
     try {
       const parsedSizes = JSON.parse(sizesStr);
-      return Array.isArray(parsedSizes) ? parsedSizes : [];
+      if (Array.isArray(parsedSizes)) {
+        // Extract only the size part (before "Rs." or any price info)
+        return parsedSizes.map(size => {
+          // Handle cases like "S Rs. 719" or "M Rs. 699"
+          const sizeOnly = size.split(' Rs.')[0].split(' ₹')[0].trim();
+          return sizeOnly;
+        }).filter(s => s !== '');
+      }
+      return [];
     } catch {
       return sizesStr
         .split(',')
-        .map(s => s.trim())
+        .map(s => {
+          // Extract only the size part for comma-separated format too
+          const sizeOnly = s.split(' Rs.')[0].split(' ₹')[0].trim();
+          return sizeOnly;
+        })
         .filter(s => s !== '');
     }
   };
@@ -516,8 +548,8 @@ const LookPage = () => {
         }
         
         return (
-          <div key={product.id} className={`flex w-full mt-8 mb-2 gap-2 ${product.id == outfitData?.top.id ? 'flex-row-reverse' : ''}`}>            
-            <div className="relative w-[221px] h-[260.5px] overflow-hidden">
+          <div key={product.id} className={`flex w-full mt-8 mb-6 gap-2 ${product.id == outfitData?.top.id ? 'flex-row-reverse' : ''}`}>            
+            <div className="relative w-[221px] h-[260.5px] overflow-hidden flex-shrink-0">
               <Image 
                 src={validImageUrl}
                 alt={product.name || 'Product Image'} 
@@ -525,18 +557,16 @@ const LookPage = () => {
                 className="object-cover"
               />
             </div>
-            <div className="relative flex flex-col flex-1 max-w-[400px] h-[280.5px] pl-2 pr-2">
+            <div className="relative flex flex-col flex-1 max-w-[400px] min-h-[260.5px] pl-2 pr-2">
               <h1 className="text-lg text-left mb-1 mt-0 text-[14px] font-bold">{product.name}</h1>
               {description ? (
-                <p className="text-xs text-gray-700 mb-2">{description}</p>
+                <p className="text-xs text-gray-700 mb-3 line-clamp-3">{description}</p>
               ) : (
-                <p className="text-xs text-gray-400 mb-2 italic">No description available.</p>
+                <p className="text-xs text-gray-400 mb-3 italic">No description available.</p>
               )}
               
-              {/* Flexible spacer to push sizes and price to bottom */}
-              <div className="flex-1"></div>
-              
-              <div className="flex flex-wrap gap-1 mb-2">
+              {/* Sizes section */}
+              <div className="flex flex-wrap gap-1 mb-3">
                 {parseSizes(product.sizesAvailable).map((size) => (
                   <button
                     key={size}
@@ -552,7 +582,8 @@ const LookPage = () => {
                 ))}
               </div>
 
-              <div className="mb-4">
+              {/* Price and buttons section - now at the bottom */}
+              <div className="mt-auto">
                 <h4 className="flex text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-2">
                   <FaIndianRupeeSign className="h-4 mt-2" /> {product.price}
                 </h4>
@@ -569,7 +600,7 @@ const LookPage = () => {
                     <button
                       className="w-full h-9 bg-white text-[#007e90] border border-[#007e90] text-xs font-medium rounded hover:bg-[#e6f7fa] transition-colors"
                     >
-                      VIEW MORE
+                      VIEW
                     </button>
                   </Link>
                 </div>
@@ -596,7 +627,7 @@ const LookPage = () => {
       <div className="px-6 py-4 mt-8">
         <button
           onClick={handleAddAll}
-          disabled={loading.all || products.some((_, i) => !selectedSizes[i])}
+          disabled={loading.all || products.some((product) => !selectedSizes[product.id])}
           className="w-full py-3 bg-[#007e90] text-white font-semibold rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#006d7d]"
         >
           {loading.all ? 'Adding All...' : `ADD ALL TO CART - ₹${totalPrice}`}

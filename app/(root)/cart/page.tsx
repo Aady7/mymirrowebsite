@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
@@ -7,6 +7,7 @@ import Image from 'next/image'
 import { FaIndianRupeeSign, FaTrash } from "react-icons/fa6"
 import { Button } from "@/components/ui/button"
 import SmartLoader from '@/app/components/loader/SmartLoader'
+import { CartContext } from '@/app/components/provider'
 
 interface CartItem {
   productId: number
@@ -31,6 +32,7 @@ const CartPage = () => {
   const [error, setError] = useState<string | null>(null)
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const { getSession } = useAuth()
+  const { refreshCart } = useContext(CartContext)
 
   useEffect(() => {
     const fetchCartItems = async () => {
@@ -102,6 +104,9 @@ const CartPage = () => {
       if (updateError) throw updateError
 
       setCartItems(updatedItems)
+      console.log('✅ Cart updated, refreshing cart count. New items:', updatedItems.length);
+      // Refresh cart count in header
+      await refreshCart()
     } catch (error) {
       console.error('Error updating cart:', error)
       setError('Failed to update cart. Please try again.')

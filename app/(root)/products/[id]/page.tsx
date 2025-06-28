@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import {  useParams} from "next/navigation";
 import { FaIndianRupeeSign } from "react-icons/fa6";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useContext } from "react";
 import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { addToCart } from "@/lib/utils/cart";
+import { CartContext } from "@/app/components/provider";
+import { useNotification } from "@/app/components/common/NotificationContext";
 
 import SmartLoader from "@/app/components/loader/SmartLoader";
 import StarRating from "@/app/components/starRating";
@@ -51,6 +53,8 @@ export default function ProductPage() {
   const searchParams = useSearchParams();
   const outfitId = searchParams.get('outfitId');
   const { getSession } = useAuth();
+  const { refreshCart } = useContext(CartContext);
+  const { showNotification } = useNotification();
 
   // State
   const [user, setUser] = useState<User | null>(null);
@@ -350,7 +354,12 @@ export default function ProductPage() {
       );
 
       if (success) {
+        console.log('✅ Item added to cart successfully, refreshing cart count');
         setAddToCartSuccess(true);
+        // Refresh cart count in header
+        await refreshCart();
+        // Show notification
+        showNotification(`${product?.name || 'Item'} added to cart!`, 'success');
         setTimeout(() => setAddToCartSuccess(false), 3000);
       } else {
         setAddToCartError(error || "Failed to add item to cart");
@@ -400,11 +409,23 @@ export default function ProductPage() {
     if (!product) return [];
     try {
       const parsedSizes = JSON.parse(product.sizesAvailable);
-      return Array.isArray(parsedSizes) ? parsedSizes : [];
+      if (Array.isArray(parsedSizes)) {
+        // Extract only the size part (before "Rs." or any price info)
+        return parsedSizes.map(size => {
+          // Handle cases like "S Rs. 719" or "M Rs. 699"
+          const sizeOnly = size.split(' Rs.')[0].split(' ₹')[0].trim();
+          return sizeOnly;
+        }).filter(s => s !== '');
+      }
+      return [];
     } catch {
       return product.sizesAvailable
         .split(',')
-        .map(s => s.trim())
+        .map(s => {
+          // Extract only the size part for comma-separated format too
+          const sizeOnly = s.split(' Rs.')[0].split(' ₹')[0].trim();
+          return sizeOnly;
+        })
         .filter(s => s !== '');
     }
   })();
