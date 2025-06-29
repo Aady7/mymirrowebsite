@@ -6,7 +6,7 @@ import PersonalityBasedTarotCards from "@/app/components/recommendations/Persona
 import CuratedOutfitsSection from "@/app/components/recommendations/CuratedOutfitsSection";
 import { useStyleQuizData } from "@/lib/hooks/useStyleQuizData";
 import SectionLoader from "@/app/components/common/SectionLoader";
-import { cache } from "@/lib/utils/cache";
+
 import SmartLoader from "@/app/components/loader/SmartLoader";
 
 const Recommendations = () => {
@@ -78,10 +78,7 @@ const Recommendations = () => {
     );
   }
 
-  const handleClearCache = () => {
-    cache.clear();
-    refetch(true); // Force refresh after clearing cache
-  };
+
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -92,17 +89,7 @@ const Recommendations = () => {
         </h1>
       </div>
 
-      {/* Cache management section - only show when not loading */}
-      {!isLoading && !error && (
-        <div className="flex justify-center mt-4 mb-6">
-          <button
-            onClick={handleClearCache}
-            className="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Refresh All Data
-          </button>
-        </div>
-      )}
+
 
       {/* AI-Powered Style Advice section with individual error handling */}
       <ErrorBoundary fallback={SectionErrorFallback}>

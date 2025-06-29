@@ -68,11 +68,7 @@ interface OutfitData {
 
 const LookPage = () => {
   // Safe debug logging function that only runs on client
-  const debugLog = React.useCallback((message: string, data?: any) => {
-    if (typeof window !== 'undefined') {
-      console.log(`🛒 [Cart Debug] ${message}`, data || '');
-    }
-  }, []);
+
 
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
@@ -428,19 +424,7 @@ const LookPage = () => {
   };
 
   const handleAddAll = async () => {
-    debugLog('Starting handleAddAll');
-    debugLog('Current products:', products);
-    debugLog('Selected sizes:', selectedSizes);
-
-    // Verify all products have sizes selected
-    const allSelected = products.every(product => {
-      const hasSize = Boolean(selectedSizes[product.id]);
-      if (!hasSize) {
-        debugLog(`Missing size for product ${product.id}`);
-      }
-      return hasSize;
-    });
-
+    const allSelected = products.every((product) => selectedSizes[product.id]);
     if (!allSelected) { 
       setError('Please select sizes for all items'); 
       return; 
@@ -451,41 +435,29 @@ const LookPage = () => {
 
     try {
       const { session, error: sessionError } = await getSession();
-      debugLog('Session check result:', { userId: session?.user?.id, hasError: !!sessionError });
       
       if (sessionError || !session?.user?.id) {
         setError('Please sign in first');
         return;
       }
 
-      // Add products one by one instead of using Promise.all
+      // Add items sequentially to avoid race conditions
       const results = [];
       for (const product of products) {
-        const selectedSize = selectedSizes[product.id];
-        debugLog(`Adding to cart:`, { productId: product.id, size: selectedSize });
-        
-        try {
-          const result = await addToCart(session.user.id, product.id, selectedSize);
-          debugLog(`Add to cart result for product ${product.id}:`, result);
-          results.push(result);
-        } catch (error) {
-                     debugLog(`Error adding product ${product.id}:`, error);
-           results.push({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
-        }
+        const result = await addToCart(session.user.id, product.id, selectedSizes[product.id]);
+        results.push(result);
       }
 
-      debugLog('All addition results:', results);
-
-      // Check if any additions failed
-      const failedAdditions = results.filter(r => !r.success);
-      if (failedAdditions.length > 0) {
-        debugLog('Failed additions:', failedAdditions);
-        setError(`${failedAdditions.length} items failed to add to cart`);
+      if (!results.every(r => r.success)) {
+        setError('Some items failed to add to cart');
       } else {
-        debugLog('All items added successfully');
+        // Refresh cart count in header
+        await refreshCart();
+        // Show notification for all items
+        const successCount = results.filter(r => r.success).length;
+        showNotification(`${successCount} items added to cart!`, 'success');
       }
     } catch (err) {
-      debugLog('Error in handleAddAll:', err);
       setError('An error occurred while adding items to cart');
     } finally {
       setLoading(prev => ({ ...prev, all: false }));

@@ -41,7 +41,7 @@ export default function Navigation() {
         <div className="flex justify-between h-16 items-center">
           {/* Logo / Brand */}
           <div className="flex-shrink-0">
-            <Link href="/style-quiz-new" onClick={handleLinkClick} className="text-2xl font-bold text-indigo-600">
+            <Link href="/" onClick={handleLinkClick} className="text-2xl font-bold text-indigo-600">
               <Image src="/assets/logo.png" alt='logo' width={100} height={30} />
             </Link>
           </div>
@@ -77,7 +77,7 @@ export default function Navigation() {
           <div className="hidden sm:flex items-center space-x-4">
             <Link href="/cart" className="relative focus:outline-none" tabIndex={0} aria-label="Cart">
               <Image 
-                src="/assets/cartIcon.png" 
+                src="/assets/cartIcon.svg" 
                 alt="Cart" 
                 width={24} 
                 height={24}
@@ -104,7 +104,7 @@ export default function Navigation() {
             <Link href="/cart" onClick={handleLinkClick} className="relative">
               <button className='text-gray-700 focus:outline-none p-1'>
                 <Image 
-                  src="/assets/cartIcon.png" 
+                  src="/assets/cartIcon.svg" 
                   alt="Cart" 
                   width={24} 
                   height={24}
