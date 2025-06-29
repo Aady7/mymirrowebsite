@@ -1,0 +1,32 @@
+User-agent: *
+Allow: /
+
+# Allow the main landing page
+Allow: /page.tsx
+
+# Block authentication pages and private routes
+Disallow: /(auth)/
+Disallow: /(root)/
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /test/
+Disallow: /test-error-states/
+
+# Allow static assets for proper rendering
+Allow: /*.css
+Allow: /*.js
+Allow: /*.png
+Allow: /*.jpg
+Allow: /*.jpeg
+Allow: /*.gif
+Allow: /*.svg
+Allow: /*.webp
+Allow: /assets/
+Allow: /fonts/
+
+# Sitemap location (optional)
+# Sitemap: https://mymirro.com/sitemap.xml
+
+# Crawl delay to be respectful
+Crawl-delay: 1 
