@@ -252,10 +252,28 @@ const ScrollArrow = ({ contentRef }: { contentRef: React.RefObject<HTMLDivElemen
     }
   };
 
-  // Show button when there's scrollable content
-  const shouldShow = showArrow;
+  // Determine if we should show the arrow based on the current step
+  const shouldShowForCurrentStep = () => {
+    // Get the current step from parent component's state using a ref
+    const currentStep = contentRef.current?.getAttribute('data-current-step');
+    
+    // Steps that should show scroll arrow (personality questions and style preferences)
+    const firstDynamicStep = 8;
+    const dynamicStepsCount = Number(contentRef.current?.getAttribute('data-dynamic-steps-count') || '0');
+    const minimalismStep = firstDynamicStep + dynamicStepsCount;
+    
+    // Create array of steps that should show scroll arrow
+    const stepsWithScroll = [
+      2, 3, 4, 7, // Weekend, Shopping, Workspace, GoToStyle steps
+      ...Array.from({ length: minimalismStep - firstDynamicStep }, (_, i) => firstDynamicStep + i) // Dynamic style steps
+    ];
+    
+    return stepsWithScroll.includes(Number(currentStep)) && showArrow;
+  };
 
-  if (!shouldShow) return null; // Hide completely when no scrollable content
+  const shouldShow = shouldShowForCurrentStep();
+
+  if (!shouldShow) return null; // Hide completely when no scrollable content or not in scrollable step
 
   return (
     <div className="fixed bottom-36 right-4 z-50">
@@ -1307,6 +1325,8 @@ export default function StyleQuizNew() {
           ref={contentRef}
           className="absolute inset-0 overflow-y-auto"
           style={{ paddingBottom: '5rem' }} // Space for navigation
+          data-current-step={currentStep}
+          data-dynamic-steps-count={dynamicSteps.length}
         >
           <div className="max-w-4xl mx-auto p-4 md:p-6">
             {error && (

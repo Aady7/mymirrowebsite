@@ -67,6 +67,13 @@ interface OutfitData {
 }
 
 const LookPage = () => {
+  // Safe debug logging function that only runs on client
+  const debugLog = React.useCallback((message: string, data?: any) => {
+    if (typeof window !== 'undefined') {
+      console.log(`🛒 [Cart Debug] ${message}`, data || '');
+    }
+  }, []);
+
   const params = useParams();
   const id = Array.isArray(params.id) ? params.id[0] : params.id;
   console.log('🆔 LookPage ID from params:', { 
@@ -221,7 +228,9 @@ const LookPage = () => {
           .select(`
             *,
             tagged_products (
-              customer_short_description
+              customer_short_description,
+              product_key_attributes,
+              customer_long_recommendation
             )
           `)
           .in('id', productIds) as { 
@@ -419,7 +428,19 @@ const LookPage = () => {
   };
 
   const handleAddAll = async () => {
-    const allSelected = products.every((product) => selectedSizes[product.id]);
+    debugLog('Starting handleAddAll');
+    debugLog('Current products:', products);
+    debugLog('Selected sizes:', selectedSizes);
+
+    // Verify all products have sizes selected
+    const allSelected = products.every(product => {
+      const hasSize = Boolean(selectedSizes[product.id]);
+      if (!hasSize) {
+        debugLog(`Missing size for product ${product.id}`);
+      }
+      return hasSize;
+    });
+
     if (!allSelected) { 
       setError('Please select sizes for all items'); 
       return; 
@@ -430,57 +451,99 @@ const LookPage = () => {
 
     try {
       const { session, error: sessionError } = await getSession();
+      debugLog('Session check result:', { userId: session?.user?.id, hasError: !!sessionError });
       
       if (sessionError || !session?.user?.id) {
         setError('Please sign in first');
         return;
       }
 
-      // Add items sequentially to avoid race conditions
+      // Add products one by one instead of using Promise.all
       const results = [];
       for (const product of products) {
-        const result = await addToCart(session.user.id, product.id, selectedSizes[product.id]);
-        results.push(result);
+        const selectedSize = selectedSizes[product.id];
+        debugLog(`Adding to cart:`, { productId: product.id, size: selectedSize });
+        
+        try {
+          const result = await addToCart(session.user.id, product.id, selectedSize);
+          debugLog(`Add to cart result for product ${product.id}:`, result);
+          results.push(result);
+        } catch (error) {
+                     debugLog(`Error adding product ${product.id}:`, error);
+           results.push({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+        }
       }
 
-      if (!results.every(r => r.success)) {
-        setError('Some items failed to add to cart');
+      debugLog('All addition results:', results);
+
+      // Check if any additions failed
+      const failedAdditions = results.filter(r => !r.success);
+      if (failedAdditions.length > 0) {
+        debugLog('Failed additions:', failedAdditions);
+        setError(`${failedAdditions.length} items failed to add to cart`);
       } else {
-        // Refresh cart count in header
-        await refreshCart();
-        // Show notification for all items
-        const successCount = results.filter(r => r.success).length;
-        showNotification(`${successCount} items added to cart!`, 'success');
+        debugLog('All items added successfully');
       }
     } catch (err) {
+      debugLog('Error in handleAddAll:', err);
       setError('An error occurred while adding items to cart');
     } finally {
       setLoading(prev => ({ ...prev, all: false }));
     }
   };
 
-  const parseSizes = (sizesStr: string): string[] => {
+  const parseSizes = (sizesStr: string): { size: string; price: number }[] => {
     try {
       const parsedSizes = JSON.parse(sizesStr);
-      if (Array.isArray(parsedSizes)) {
-        // Extract only the size part (before "Rs." or any price info)
-        return parsedSizes.map(size => {
-          // Handle cases like "S Rs. 719" or "M Rs. 699"
-          const sizeOnly = size.split(' Rs.')[0].split(' ₹')[0].trim();
-          return sizeOnly;
-        }).filter(s => s !== '');
+      if (!Array.isArray(parsedSizes)) {
+        return [];
       }
-      return [];
+      
+      return parsedSizes.map(sizeStr => {
+        // Check if the size string contains price information
+        if (typeof sizeStr === 'string' && sizeStr.includes('Rs.')) {
+          const [size, priceStr] = sizeStr.split('Rs.');
+          const price = parseInt(priceStr.trim(), 10);
+          return {
+            size: size.trim(),
+            price: isNaN(price) ? 0 : price
+          };
+        }
+        // Handle regular size strings without price
+        return {
+          size: sizeStr,
+          price: 0
+        };
+      });
     } catch {
       return sizesStr
         .split(',')
-        .map(s => {
-          // Extract only the size part for comma-separated format too
-          const sizeOnly = s.split(' Rs.')[0].split(' ₹')[0].trim();
-          return sizeOnly;
-        })
-        .filter(s => s !== '');
+        .map(s => ({ size: s.trim(), price: 0 }))
+        .filter(s => s.size !== '');
     }
+  };
+
+  const handleSizeSelect = (productId: number, selectedSize: string, price: number) => {
+    setSelectedSizes(prev => ({ ...prev, [productId]: selectedSize }));
+    
+    // Update product price when size is selected
+    setProducts(prevProducts => 
+      prevProducts.map(p => 
+        p.id === productId 
+          ? { ...p, price: price || p.price } // Use provided price or keep original if no price
+          : p
+      )
+    );
+
+    // Recalculate total price
+    setTotalPrice(prevProducts => 
+      products.reduce((sum, product) => {
+        if (product.id === productId) {
+          return sum + (price || product.price);
+        }
+        return sum + product.price;
+      }, 0)
+    );
   };
 
   const parseKeyAttributes = (attributes: string): KeyAttributes => {
@@ -536,7 +599,9 @@ const LookPage = () => {
         const validImageUrl = getValidImageUrl(imageUrl);
         console.log(product)
 
-        let description = '';
+      
+        let KeyAttributes: KeyAttributes = {};
+        let longRecommendation = '';
         const taggedProductsArray = Array.isArray(product.tagged_products)
           ? product.tagged_products
           : product.tagged_products
@@ -544,8 +609,11 @@ const LookPage = () => {
             : [];
         
         if (taggedProductsArray.length > 0) {
-          description = taggedProductsArray[0].customer_short_description || '';
+        
+          KeyAttributes = parseKeyAttributes(taggedProductsArray[0].product_key_attributes);
+          longRecommendation = taggedProductsArray[0].customer_long_recommendation;
         }
+       
         
         return (
           <div key={product.id} className={`flex w-full mt-8 mb-6 gap-2 ${product.id == outfitData?.top.id ? 'flex-row-reverse' : ''}`}>            
@@ -559,18 +627,40 @@ const LookPage = () => {
             </div>
             <div className="relative flex flex-col flex-1 max-w-[400px] min-h-[260.5px] pl-2 pr-2">
               <h1 className="text-lg text-left mb-1 mt-0 text-[14px] font-bold">{product.name}</h1>
-              {description ? (
-                <p className="text-xs text-gray-700 mb-3 line-clamp-3">{description}</p>
+              {KeyAttributes.color || KeyAttributes.fit || KeyAttributes.fabric || KeyAttributes.occasion ? (
+                <div className="text-xs text-gray-700 mb-2">
+                  {KeyAttributes.color && (
+                    <p className="mb-0.5">Color: {KeyAttributes.color}</p>
+                  )}
+                  {KeyAttributes.fit && (
+                    <p className="mb-0.5">Fit: {KeyAttributes.fit}</p>
+                  )}
+                  {KeyAttributes.fabric && (
+                    <p className="mb-0.5">Fabric: {KeyAttributes.fabric}</p>
+                  )}
+                  {KeyAttributes.occasion && (
+                    <p className="mb-0.5">Occasion: {KeyAttributes.occasion}</p>
+                  )}
+                  {Object.entries(KeyAttributes)
+                    .filter(([key]) => !['color', 'fit', 'fabric', 'occasion'].includes(key))
+                    .map(([key, value]) => (
+                      <p key={key} className="mb-0.5">
+                        {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
+                      </p>
+                    ))}
+                </div>
               ) : (
                 <p className="text-xs text-gray-400 mb-3 italic">No description available.</p>
               )}
               
-              {/* Sizes section */}
-              <div className="flex flex-wrap gap-1 mb-3">
-                {parseSizes(product.sizesAvailable).map((size) => (
+              {/* Flexible spacer to push sizes and price to bottom */}
+              <div className="flex-1"></div>
+              
+              <div className="flex flex-wrap gap-1 mb-2">
+                {parseSizes(product.sizesAvailable).map(({ size, price }) => (
                   <button
                     key={size}
-                    onClick={() => setSelectedSizes(prev => ({ ...prev, [product.id]: size }))}
+                    onClick={() => handleSizeSelect(product.id, size, price)}
                     className={`w-8 h-8 flex items-center justify-center border text-xs rounded transition-colors ${
                       selectedSizes[product.id] === size
                         ? 'bg-[#007e90] text-white border-[#007e90]'
@@ -627,7 +717,7 @@ const LookPage = () => {
       <div className="px-6 py-4 mt-8">
         <button
           onClick={handleAddAll}
-          disabled={loading.all || products.some((product) => !selectedSizes[product.id])}
+          disabled={loading.all || products.some(product => !selectedSizes[product.id])}
           className="w-full py-3 bg-[#007e90] text-white font-semibold rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#006d7d]"
         >
           {loading.all ? 'Adding All...' : `ADD ALL TO CART - ₹${totalPrice}`}
