@@ -134,17 +134,17 @@ const FashionTarot: React.FC<FashionTarotProps> = ({ quizData }) => {
 
             >
               <div
-                className={`relative w-full h-full duration-700 transform-style preserve-3d ${
+                className={`relative w-full h-full duration-800 transform-style preserve-3d ${
                   flippedStates[index] ? "rotate-y-180" : ""
                 }`}
               >
                 {/* Front */}
-                <div className="absolute inset-0 backface-hidden">
+                <div className="absolute inset-0 backface-hidden ">
                   <Image
                     src={card.image}
                     alt={`Tarot Card for ${card.tag}`}
                     fill
-                    className="object-cover rounded-2xl"
+                    className="object-cover rounded-xl  "
                   />
                 </div>
 
@@ -155,13 +155,13 @@ const FashionTarot: React.FC<FashionTarotProps> = ({ quizData }) => {
                       src="/assets/tarrotback.svg"
                       alt="Tarot Card Back"
                       fill
-                      className="object-cover rounded-2xl"
+                      className="object-cover rounded-xl "
                     />
                     <div className="absolute inset-0 flex flex-col items-center justify-center pl-8 pr-8 text-center">
-                      <h3 className="font-['Lora'] text-[16px] md:text-[20px] lg:text-[24px] text-[#D4AF7F] mb-4">
+                      <h3 className="font-['Lora'] text-[14px] md:text-[20px] lg:text-[24px] text-[#D4AF7F] mb-2">
                         {card.title}
                       </h3>
-                      <p className="font-['Boston'] italic text-[10px] md:text-[11px] lg:text-[14px] text-[#F3E9DC] leading-tight md:px-6 px-2 pb-2 overflow-hidden max-h-[120px] md:max-h-[140px] lg:max-h-[180px]" >
+                      <p className="font-['Boston'] italic text-[9px] md:text-[11px] lg:text-[14px] text-[#F3E9DC] leading-tight md:px-6 px-2 pb-2 overflow-hidden max-h-[120px]  md:max-h-[140px] lg:max-h-[180px]" >
                         {card.elaborate}
                       </p>
                     </div>

@@ -11,16 +11,23 @@ async function checkUserExists(userId:number):Promise<boolean>{
 }
 
 export async function POST(req:NextRequest){
-    const {user_id}= await req.json();
+    const {user_id, regenerate} = await req.json();
     if(!user_id){
         return NextResponse.json({error:"user_id missing"}, {status:400});
     }
-    const userExists=checkUserExists(user_id);
+    
+    // Use the regenerate parameter from frontend if provided, otherwise check if user exists
+    let shouldRegenerate = regenerate;
+    if (regenerate === undefined) {
+        const userExists = await checkUserExists(user_id);
+        shouldRegenerate = userExists;
+    }
+    
     const payload={
         user_id:user_id,
-        regenerate:userExists,
-
+        regenerate: shouldRegenerate,
     }
+    
     try{
         const response= await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/outfits/generate`, {
             method:'POST',
