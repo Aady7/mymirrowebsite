@@ -947,10 +947,17 @@ export default function StyleQuizNew() {
     const feedbackStep = phoneStep + 1;
     const otpStep = feedbackStep + 1;
 
+    // For authenticated users, skip phone and OTP validation
+    if (isAuthenticated) {
+      if (currentStep === phoneStep || currentStep === otpStep) {
+        return true;
+      }
+    }
+
     if (currentStep === 1) return !!formData.name && !!formData.gender;
-    if (currentStep === 2) return formData.weekendPreference.length > 0;
-    if (currentStep === 3) return formData.shoppingStyle.length > 0;
-    if (currentStep === 4) return formData.workspaceStyle.length > 0;
+    if (currentStep === 2) return formData.weekendPreference.length > 0 && formData.friendCompliments.length > 0;
+    if (currentStep === 3) return formData.shoppingStyle.length > 0 && formData.wardrobeContent.length > 0;
+    if (currentStep === 4) return formData.workspaceStyle.length > 0 && formData.workOutfit.length > 0;
     if (currentStep === 5) return !!formData.bodyType;
     if (currentStep === 6) return !!formData.upperWear && !!formData.waistSize;
     if (currentStep === 7) return formData.goToStyle.length > 0;
@@ -969,12 +976,12 @@ export default function StyleQuizNew() {
     
     // Minimalistic step
     if (currentStep === minimalismStep) {
-      return !!formData.minimalistic;
+      return !!formData.minimalistic && formData.outfitAdventurous.length > 0;
     }
     
-    // Style preferences step
+    // Skip stylePrefsStep validation since it's combined
     if (currentStep === stylePrefsStep) {
-      return formData.outfitAdventurous.length > 0;
+      return true;
     }
     
     // Color analysis step
@@ -987,19 +994,19 @@ export default function StyleQuizNew() {
       }
     }
     
-    // Phone step
+    // Phone step - only validate for non-authenticated users
     if (currentStep === phoneStep) {
-      return !!formData.phone || isAuthenticated;
+      return isAuthenticated || !!formData.phone;
     }
     
     // Feedback step (optional)
     if (currentStep === feedbackStep) {
-      return true;
+      return true; // Feedback is optional for all users
     }
     
-    // OTP step
+    // OTP step - only validate for non-authenticated users
     if (currentStep === otpStep) {
-      return !!formData.otp || isAuthenticated;
+      return isAuthenticated || !!formData.otp;
     }
     
     return true;
@@ -1096,10 +1103,12 @@ export default function StyleQuizNew() {
         // Minimalistic preference
         if (currentStep === minimalismStep) {
           return (
-            <div className="space-y-6">
-              <h2 className="text-2xl font-semibold text-gray-900">Style Preference</h2>
-              <div>
-                <label className="block text-lg text-gray-700 mb-4">
+            <div className="space-y-8">
+              
+              
+              {/* Minimalistic preference section */}
+              <div className="space-y-6 pb-8">
+                <label className="block text-lg text-gray-700 mb-4 text-[24px]">
                   Do you prefer a minimalistic look?
                 </label>
                 <div className="grid grid-cols-2 gap-4">
@@ -1124,18 +1133,22 @@ export default function StyleQuizNew() {
                   ))}
                 </div>
               </div>
+
+              {/* Style preferences section */}
+              <div className="space-y-6 pt-4">
+                <StylePreferencesStep 
+                  formValues={formData} 
+                  handleChange={handleChange} 
+                />
+              </div>
             </div>
           );
         }
         
-        // Style preferences (outfit adventurous)
+        // Skip rendering style preferences step since it's now shown in minimalism step
         if (currentStep === stylePrefsStep) {
-          return (
-            <StylePreferencesStep 
-              formValues={formData} 
-              handleChange={handleChange} 
-            />
-          );
+          setCurrentStep(prev => prev + 1);
+          return null;
         }
         
         // Color analysis
@@ -1284,12 +1297,11 @@ export default function StyleQuizNew() {
               {(() => {
                 const firstDynamicStep = 8;
                 const minimalismStep = firstDynamicStep + dynamicSteps.length;
-                const stylePrefsStep = minimalismStep + 1;
                 
                 return ((currentStep >= 2 && currentStep <= 4) || 
                         currentStep === 7 || 
                         (currentStep >= firstDynamicStep && currentStep < minimalismStep) ||
-                        currentStep === stylePrefsStep);
+                        currentStep === minimalismStep);
               })() && (
                 <p className="text-xs text-white/70 mt-1 italic">
                   *You can select more than one option.
@@ -1384,6 +1396,14 @@ export default function StyleQuizNew() {
                     setMaxCompletedStep(prev => Math.max(prev, currentStep));
                   } else if (currentStep === phoneStep && !isAuthenticated) {
                     await sendOtp();
+                  } else if (currentStep === feedbackStep && isAuthenticated) {
+                    // For authenticated users, submit directly after feedback
+                    await submitFormData();
+                    router.push('/recommendations');
+                  } else if (currentStep === feedbackStep && !isAuthenticated) {
+                    // For unauthenticated users, move to OTP step after feedback
+                    setCurrentStep(prev => prev + 1);
+                    setMaxCompletedStep(prev => Math.max(prev, currentStep));
                   } else if (currentStep === otpStep) {
                     await verifyOtpAndSubmit();
                   } else {
@@ -1410,6 +1430,7 @@ export default function StyleQuizNew() {
                 
                 if (isSubmitting) return 'Saving...';
                 if (currentStep === phoneStep && !isAuthenticated) return 'Send OTP';
+                if (currentStep === feedbackStep && isAuthenticated) return 'Complete Quiz';
                 if (currentStep === otpStep) return 'Complete Quiz';
                 return 'Next';
               })()}
