@@ -699,7 +699,12 @@ const LookPage = () => {
       {/* Rating and Feedback */}
       <div className="px-6 py-4">
         {id && (
-          <StarRating productId={String(id)} productType="look" />
+          <>
+            <h1 className="font-[Boston] font-black text-[12px] text-left mb-2" style={{fontVariant:'small-caps'}}>
+              RATING
+            </h1>
+            <StarRating productId={String(id)} productType="look" />
+          </>
         )}
         <div className='mt-6 flex items-center justify-center px-[8rem]'>
           {id && currentUser ? (
@@ -735,7 +740,7 @@ const LookPage = () => {
             <div className="space-y-4">
               {parseWhyPickedExplanation(outfitData.why_picked_explanation).map((item, index) => (
                 <div key={index}>
-                  <h3 className="font-medium text-gray-900 mb-1">
+                  <h3 className="font-semibold text-gray-900 mb-1">
                     {item.title}
                   </h3>
                   <p className="text-gray-700 leading-relaxed">

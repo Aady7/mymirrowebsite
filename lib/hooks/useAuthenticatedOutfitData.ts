@@ -101,7 +101,7 @@ export const useAuthenticatedOutfitData = () => {
       // Fetch user outfits using the same ID
       const userOutfitsResponse = await fetchUserOutfits({
         userId: userId,
-        limit: 5
+        limit: 5,
       });
 
       const outfitData: AuthenticatedOutfitData = {

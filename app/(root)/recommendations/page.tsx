@@ -15,19 +15,18 @@ const Recommendations = () => {
 
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
-    if (isLoading) {
-      setShowInitialLoader(true);
-      timer = setTimeout(() => {
-        if (!isLoading) setShowInitialLoader(false);
-      }, 5000);
-    } else {
-      timer = setTimeout(() => setShowInitialLoader(false), 5000);
-    }
+    
+    // Show initial loader for minimum time, but API calls start immediately in background
+    timer = setTimeout(() => {
+      setShowInitialLoader(false);
+    }, 2000); // Reduced from 5 seconds to 2 seconds for better UX
+    
     return () => {
       if (timer) clearTimeout(timer);
     };
-  }, [isLoading]);
+  }, []);
 
+  // Show initial loader for minimum time to provide smooth UX while API calls run in background
   if (showInitialLoader) {
     return (
       <div className="min-h-screen flex items-center justify-center">

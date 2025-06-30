@@ -352,26 +352,31 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
 
       {filteredOutfits.map((outfit) => (
         <SwiperSlide key={outfit.outfit_data.main_outfit_id}>
-          <div className="flex gap-2 h-[300px] ml-4 mr-4 mt-6">
-            {/* Top garment */}
-            <div className="flex-1 relative">
-              <Image
-                src={outfit.outfit_data.top.image}
-                alt={outfit.outfit_data.top.title}
-                fill
-                className="object-cover"
-              />
+          <Link href={`/looks/${outfit.outfit_data.main_outfit_id}`} className="block group h-full w-full">
+            <div className="flex gap-2 h-[300px] ml-4 mr-4 mt-6 group-hover:scale-105 group-hover:shadow-lg transition-transform duration-200">
+              {/* Top garment */}
+              <div className="flex-1 relative">
+                <Image
+                  src={outfit.outfit_data.top.image}
+                  alt={outfit.outfit_data.top.title}
+                  fill
+                  className="object-cover rounded-tl-lg rounded-bl-lg"
+                />
+              </div>
+              {/* Bottom garment */}
+              <div className="flex-1 relative">
+                <Image
+                  src={outfit.outfit_data.bottom.image}
+                  alt={outfit.outfit_data.bottom.title}
+                  fill
+                  className="object-cover rounded-tr-lg rounded-br-lg"
+                />
+              </div>
             </div>
-            {/* Bottom garment */}
-            <div className="flex-1 relative">
-              <Image
-                src={outfit.outfit_data.bottom.image}
-                alt={outfit.outfit_data.bottom.title}
-                fill
-                className="object-cover"
-              />
+            <div className="text-center mt-2 text-sm font-medium text-[#007e90] opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              View Look
             </div>
-          </div>
+          </Link>
         </SwiperSlide>
       ))}
     </Swiper>

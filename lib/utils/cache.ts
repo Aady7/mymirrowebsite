@@ -133,7 +133,11 @@ export const CACHE_KEYS = {
   STYLE_QUIZ_DATA: 'style_quiz_data',
   USER_OUTFITS: 'user_outfits',
   GENERATED_OUTFITS: 'generated_outfits',
-  USER_ID: 'user_id'
+  USER_ID: 'user_id',
+  SIMILAR_OUTFITS: 'similar_outfits',
+  SIMILAR_PRODUCTS: 'similar_products',
+  PRODUCT_DETAILS: 'product_details',
+  OUTFIT_DETAILS: 'outfit_details'
 } as const;
 
 // Cache TTL constants (in milliseconds)
@@ -141,5 +145,9 @@ export const CACHE_TTL = {
   SHORT: 2 * 60 * 1000,    // 2 minutes
   MEDIUM: 5 * 60 * 1000,   // 5 minutes
   LONG: 15 * 60 * 1000,    // 15 minutes
-  VERY_LONG: 30 * 60 * 1000 // 30 minutes
+  VERY_LONG: 30 * 60 * 1000, // 30 minutes
+  // API specific TTLs
+  API_SIMILAR: 10 * 60 * 1000,  // 10 minutes for similar items
+  API_PRODUCTS: 20 * 60 * 1000, // 20 minutes for product details
+  API_OUTFITS: 15 * 60 * 1000   // 15 minutes for outfit data
 } as const; 

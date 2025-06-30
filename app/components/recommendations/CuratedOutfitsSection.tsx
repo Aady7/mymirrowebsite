@@ -8,7 +8,7 @@ import SectionLoader from "@/app/components/common/SectionLoader";
 import SectionError from "@/app/components/common/SectionError";
 import { useAuthenticatedOutfitData } from "@/lib/hooks/useAuthenticatedOutfitData";
 import { generateOutfit, fetchUserOutfits } from "@/app/utils/outfitsapi";
-import { cache } from "@/lib/utils/cache";
+import { cache, CACHE_KEYS } from "@/lib/utils/cache";
 
 const StylistSays = () => {
   const { outfitData, isLoading, error, refetch } = useAuthenticatedOutfitData();
@@ -26,8 +26,9 @@ const StylistSays = () => {
     
     setIsRegenerating(true);
     try {
-      // Clear all cache before regenerating
-      cache.clear();
+      // Clear related cache before regenerating
+      cache.remove(`${CACHE_KEYS.USER_OUTFITS}_${outfitData.userId}`);
+      cache.remove(`${CACHE_KEYS.GENERATED_OUTFITS}_${outfitData.userId}`);
       
       // Call generate outfit API with regenerate: true
       const response = await fetch('/api/mymirrobackend/create-outfit', {
@@ -43,7 +44,8 @@ const StylistSays = () => {
         throw new Error('Failed to regenerate outfits');
       }
 
-      // Force refresh the outfit data after regeneration
+      // Wait a moment for backend to process, then force refresh the outfit data
+      await new Promise(resolve => setTimeout(resolve, 1000));
       await refetch(true);
     } catch (error) {
       console.error('Error regenerating outfits:', error);
@@ -68,8 +70,9 @@ const StylistSays = () => {
     }
   };
 
-  if (isLoading || isLoadingAll) {
-    return <SectionLoader text="Loading your curated looks..." />;
+  if (isLoading || isLoadingAll || isRegenerating) {
+    const loadingText = isRegenerating ? "Regenerating your outfits..." : isLoadingAll ? "Loading all outfits..." : "Loading your curated looks...";
+    return <SectionLoader text={loadingText} />;
   }
 
   if (error) {
