@@ -162,61 +162,115 @@ const LookPage = () => {
           return;
         }
 
-        console.log('📦 Fetching outfit data from Supabase...');
+        console.log('📦 Fetching outfit data...');
         hasFetchedOutfit.current = true;
         currentId.current = String(id);
 
-        // Fetch outfit data directly from Supabase instead of API + separate call
-        const { data: outfitData, error: outfitError } = await supabase
-          .from('user_outfits')
-          .select(`
-            main_outfit_id,
-            outfit_name,
-            outfit_description,
-            why_picked_explanation,
-            top_id,
-            bottom_id,
-            top_image,
-            bottom_image,
-            top_style,
-            bottom_style,
-            top_title,
-            bottom_title
-          `)
-          .eq('main_outfit_id', id)
-          .single();
+        let outfitData;
+        let outfitError;
 
-        console.log('📋 Outfit query result:', { outfitData, outfitError });
+        // Check if this is a similar outfit ID
+        if (id.startsWith('similar_main_')) {
+          console.log('🔍 Detected similar outfit ID pattern');
+          const similarId = id.replace('similar_main_', 'similar_');
+          console.log('🎯 Transformed ID for similar outfits query:', similarId);
+
+          // Fetch from similaroutfit table
+          const { data: similarData, error: similarError } = await supabase
+            .from('similar_outfits')
+            .select('*')
+            .eq('similar_outfit_id', similarId)
+            .single();
+
+          console.log('📋 Similar outfit query result:', { similarData, similarError });
+          outfitData = similarData;
+          outfitError = similarError;
+        } else {
+          // Fetch from user_outfits table as before
+          const { data: userData, error: userError } = await supabase
+            .from('user_outfits')
+            .select(`
+              main_outfit_id,
+              outfit_name,
+              outfit_description,
+              why_picked_explanation,
+              top_id,
+              bottom_id,
+              top_image,
+              bottom_image,
+              top_style,
+              bottom_style,
+              top_title,
+              bottom_title
+            `)
+            .eq('main_outfit_id', id)
+            .single();
+
+          console.log('📋 User outfit query result:', { userData, userError });
+          outfitData = userData;
+          outfitError = userError;
+        }
 
         if (outfitError) throw outfitError;
         if (!outfitData) throw new Error('Outfit not found');
 
-        console.log('✅ Outfit data fetched successfully');
+        console.log('✅ Outfit data fetched successfully:', outfitData);
 
         // Transform the data to match the expected format
-        const transformedOutfit = {
-          main_outfit_id: outfitData.main_outfit_id,
-          outfit_name: outfitData.outfit_name,
-          outfit_description: outfitData.outfit_description,
-          why_picked_explanation: outfitData.why_picked_explanation,
-          top: {
-            id: outfitData.top_id,
-            title: outfitData.top_title,
-            image: outfitData.top_image,
-            style: outfitData.top_style,
-          },
-          bottom: {
-            id: outfitData.bottom_id,
-            title: outfitData.bottom_title,
-            image: outfitData.bottom_image,
-            style: outfitData.bottom_style,
+        if (outfitData.similar_outfit_id) {
+          const transformedOutfit = {
+            main_outfit_id: outfitData.similar_outfit_id,
+            outfit_name: outfitData.outfit_name,
+            outfit_description: outfitData.outfit_description,
+            why_picked_explanation: outfitData.why_picked_explanation, 
+            top: {
+              id: outfitData.similar_top_id,
+              title: outfitData?.top_title||'No title',
+              image: outfitData.similar_top_image||'No image',
+              style: outfitData?.top_style||'No style',
+            },
+            bottom: {
+              id: outfitData.similar_bottom_id,
+              title: outfitData?.bottom_title||'No title',
+              image: outfitData.similar_bottom_image||'No image',
+              style: outfitData?.bottom_style||'No style',
+            }
           }
-        };
+          setOutfitData(transformedOutfit);
+        } else{
+          const transformedOutfit = {
+            main_outfit_id: outfitData.main_outfit_id,
+            outfit_name: outfitData.outfit_name,
+            outfit_description: outfitData.outfit_description,
+            why_picked_explanation: outfitData.why_picked_explanation,
+            top: {
+              id: outfitData.top_id,
+              title: outfitData.top_title,
+              image: outfitData.top_image,
+              style: outfitData.top_style,
+            },
+            bottom: {
+              id: outfitData.bottom_id,
+              title: outfitData.bottom_title,
+              image: outfitData.bottom_image,
+              style: outfitData.bottom_style,
+            }
+          };
+  
+          setOutfitData(transformedOutfit);
 
-        setOutfitData(transformedOutfit);
+        }
+
+       
 
         // Fetch product details in the same effect
-        const productIds = [outfitData.top_id, outfitData.bottom_id];
+        let productIds: number[] = [];
+        if (outfitData.similar_outfit_id) {
+          productIds = [outfitData.similar_top_id, outfitData.similar_bottom_id];
+        } else {
+           productIds = [outfitData.top_id, outfitData.bottom_id];
+        }
+        
         console.log('🛒 Fetching products for IDs:', productIds);
         
         const { data: productsData, error: productsError } = await supabase
