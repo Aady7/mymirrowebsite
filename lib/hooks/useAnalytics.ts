@@ -7,6 +7,9 @@ export const useAnalytics = () => {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Only track in browser environment
+    if (typeof window === 'undefined') return;
+    
     if (pathname) {
       const url = pathname + (searchParams?.toString() ? `?${searchParams.toString()}` : '');
       pageview(url);

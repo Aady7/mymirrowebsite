@@ -14,19 +14,27 @@ declare global {
 
 // Track page views
 export const pageview = (url: string) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('config', GA_MEASUREMENT_ID, {
-      page_location: url,
-    });
+  try {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('config', GA_MEASUREMENT_ID, {
+        page_location: url,
+      });
+    }
+  } catch (error) {
+    console.warn('Analytics pageview error:', error);
   }
 };
 
 // Track custom events
 export const event = (action: string, parameters?: Record<string, any>) => {
-  if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', action, {
-      ...parameters,
-    });
+  try {
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', action, {
+        ...parameters,
+      });
+    }
+  } catch (error) {
+    console.warn('Analytics event error:', error);
   }
 };
 
