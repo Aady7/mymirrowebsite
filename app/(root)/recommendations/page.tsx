@@ -6,6 +6,7 @@ import PersonalityBasedTarotCards from "@/app/components/recommendations/Persona
 import CuratedOutfitsSection from "@/app/components/recommendations/CuratedOutfitsSection";
 import { useStyleQuizData } from "@/lib/hooks/useStyleQuizData";
 import SectionLoader from "@/app/components/common/SectionLoader";
+import { trackEvent } from "@/lib/utils/analytics";
 
 import SmartLoader from "@/app/components/loader/SmartLoader";
 
@@ -25,6 +26,13 @@ const Recommendations = () => {
       if (timer) clearTimeout(timer);
     };
   }, []);
+
+  // Track recommendations page view when data is loaded
+  useEffect(() => {
+    if (!isLoading && !error && quizData) {
+      trackEvent.viewRecommendations();
+    }
+  }, [isLoading, error, quizData]);
 
   // Show initial loader for minimum time to provide smooth UX while API calls run in background
   if (showInitialLoader) {

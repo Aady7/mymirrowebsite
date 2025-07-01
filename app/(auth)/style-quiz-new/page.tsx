@@ -20,6 +20,7 @@ import ColorAnalyzer from '@/app/components/style-quiz/ColorAnalysis';
 
 // Import utilities
 import { PERSONALITY_QUESTIONS, handleSendOtp, handleVerifyOtp } from '@/app/utils/styleQuizUtils';
+import { trackEvent } from '@/lib/utils/analytics';
 
 // Types
 interface FormData {
@@ -379,6 +380,9 @@ export default function StyleQuizNew() {
   // Initialize and load from localStorage
   useEffect(() => {
     const initializeQuiz = async () => {
+      // Track style quiz start
+      trackEvent.startStyleQuiz();
+      
       // Check if user is authenticated and has completed quiz before
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -926,6 +930,9 @@ export default function StyleQuizNew() {
       }
 
       console.log('Successfully saved style quiz data to database');
+      
+      // Track style quiz completion
+      trackEvent.completeStyleQuiz();
 
     } catch (error) {
       console.error('Submission error:', error);
@@ -994,9 +1001,13 @@ export default function StyleQuizNew() {
       }
     }
     
-    // Phone step - only validate for non-authenticated users
+    // Phone step - validate phone number for non-authenticated users
     if (currentStep === phoneStep) {
-      return isAuthenticated || !!formData.phone;
+      if (isAuthenticated) {
+        return true; // Skip validation for authenticated users
+      } else {
+        return !!formData.phone && formData.phone.trim().length >= 10; // Require valid phone number
+      }
     }
     
     // Feedback step (optional)
@@ -1362,8 +1373,11 @@ export default function StyleQuizNew() {
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center">
             <button
-              onClick={() => setCurrentStep(prev => Math.max(1, prev - 1))}
-              disabled={currentStep === 1}
+              onClick={() => {
+                setError(null); // Clear any existing errors when going back
+                setCurrentStep(prev => Math.max(1, prev - 1));
+              }}
+              disabled={currentStep === 1 || isSubmitting}
               className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-200 transition-colors font-medium"
             >
               Previous

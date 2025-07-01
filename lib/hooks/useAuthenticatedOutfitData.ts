@@ -91,7 +91,7 @@ export const useAuthenticatedOutfitData = () => {
       // Generate outfit using the fetched user ID
       let generatedOutfit = null;
       try {
-        generatedOutfit = await generateOutfit(userId);
+        generatedOutfit = await generateOutfit(userId, forceRefresh);
         console.log('Generated outfit:', generatedOutfit);
       } catch (outfitError) {
         console.error('Error generating outfit:', outfitError);
@@ -102,6 +102,7 @@ export const useAuthenticatedOutfitData = () => {
       const userOutfitsResponse = await fetchUserOutfits({
         userId: userId,
         limit: 5,
+        forceRefresh,
       });
 
       const outfitData: AuthenticatedOutfitData = {

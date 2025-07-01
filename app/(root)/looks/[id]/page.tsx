@@ -807,11 +807,13 @@ const LookPage = () => {
         )}
       </div>
 
-      {/* Similar Outfits Section */}
-      <div className="px-6 py-8 mt-[-2rem]">
-        <h1 className="text-[22px] font-[Boston] font-medium mb-[-2rem]">YOU MAY ALSO LIKE</h1>
-        <SimilarOutfitsCarousel onActiveOutfitChange={setActiveCarouselOutfitId} />
-      </div>
+      {/* Similar Outfits Section - Only show for normal outfits, not similar outfits */}
+      {!id?.startsWith('similar_main_') && (
+        <div className="px-6 py-8 mt-[-2rem]">
+          <h1 className="text-[22px] font-[Boston] font-medium mb-[-2rem]">YOU MAY ALSO LIKE</h1>
+          <SimilarOutfitsCarousel onActiveOutfitChange={setActiveCarouselOutfitId} />
+        </div>
+      )}
     </>
   );
 };

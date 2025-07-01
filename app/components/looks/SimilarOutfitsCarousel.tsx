@@ -11,66 +11,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { getSimilarOutfits } from "@/app/utils/outfitsapi";
 
-// Global cache to prevent duplicate API calls across component instances
-const globalApiCache = new Map<string, {
-  promise: Promise<any> | null;
-  data: any;
-  timestamp: number;
-}>();
-
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-// Function to get similar outfits with global caching
-const getCachedSimilarOutfits = async (outfitId: string, count: number = 10) => {
-  const cacheKey = `${outfitId}_${count}`;
-  const now = Date.now();
-  
-  // Check if we have cached data that's still valid
-  const cached = globalApiCache.get(cacheKey);
-  if (cached) {
-    // If we have a valid cached result, return it
-    if (cached.data && (now - cached.timestamp) < CACHE_DURATION) {
-      console.log('getCachedSimilarOutfits: Returning cached data for', cacheKey);
-      return cached.data;
-    }
-    
-    // If there's an ongoing promise, wait for it
-    if (cached.promise) {
-      console.log('getCachedSimilarOutfits: Waiting for ongoing API call for', cacheKey);
-      return await cached.promise;
-    }
-  }
-  
-  // Create new API call promise
-  console.log('getCachedSimilarOutfits: Making new API call for', cacheKey);
-  const apiPromise = getSimilarOutfits(outfitId, count);
-  
-  // Store the promise immediately to prevent duplicate calls
-  globalApiCache.set(cacheKey, {
-    promise: apiPromise,
-    data: null,
-    timestamp: now
-  });
-  
-  try {
-    const result = await apiPromise;
-    
-    // Cache the result
-    globalApiCache.set(cacheKey, {
-      promise: null,
-      data: result,
-      timestamp: now
-    });
-    
-    console.log('getCachedSimilarOutfits: API call completed and cached for', cacheKey);
-    return result;
-  } catch (error) {
-    // Remove failed promise from cache
-    globalApiCache.delete(cacheKey);
-    throw error;
-  }
-};
-
 interface SimilarOutfit {
   outfit_data: {
     main_outfit_id: string;
@@ -158,11 +98,11 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
         setSimilarOutfits([]); // Clear previous data
         isApiCallInProgress.current = true;
         
-        console.log('Calling getCachedSimilarOutfits with ID:', outfitId);
+        console.log('Calling getSimilarOutfits with ID:', outfitId);
         console.log('API call started, isLoading set to true');
         
-        const result = await getCachedSimilarOutfits(outfitId, 10);
-        console.log('getCachedSimilarOutfits API call completed, result:', result);
+        const result = await getSimilarOutfits(outfitId, 10, false); // Use cache
+        console.log('getSimilarOutfits API call completed, result:', result);
         
         // Mark as fetched only after successful API call
         hasFetched.current = true;
@@ -227,20 +167,15 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
               currentId.current = null;
               isApiCallInProgress.current = false;
               
-              // Clear cache for this outfit to force fresh API call
-              const cacheKey = `${outfitId}_10`;
-              globalApiCache.delete(cacheKey);
-              console.log('Retry: Cleared cache for', cacheKey);
-              
-              // Retry the API call
+              // Retry the API call with force refresh to clear cache
               try {
                 setIsLoading(true);
                 setSimilarOutfits([]);
                 isApiCallInProgress.current = true;
                 
-                console.log('Retry: Calling getCachedSimilarOutfits with ID:', outfitId);
-                const result = await getCachedSimilarOutfits(outfitId, 10);
-                console.log('Retry: getCachedSimilarOutfits API call completed, result:', result);
+                console.log('Retry: Calling getSimilarOutfits with ID:', outfitId);
+                const result = await getSimilarOutfits(outfitId, 10, true); // Force refresh to clear cache
+                console.log('Retry: getSimilarOutfits API call completed, result:', result);
                 
                 hasFetched.current = true;
                 currentId.current = outfitId;

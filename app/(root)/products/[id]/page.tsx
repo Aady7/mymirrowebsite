@@ -19,6 +19,7 @@ import StarRating from "@/app/components/starRating";
 import FeedbackButton from "@/app/components/feedbackButton";
 import { getSimilarProducts } from "@/app/utils/productsapi";
 import { useSearchParams } from "next/navigation";
+import { trackEvent } from "@/lib/utils/analytics";
 
 interface Product {
   id: number;
@@ -164,6 +165,9 @@ export default function ProductPage() {
 
         setProduct(data as Product);
         console.log('✅ Product details fetched successfully for:', id);
+        
+        // Track product view
+        trackEvent.viewProduct(String(id), data.title || data.name, 'product');
       } catch (err) {
         console.error('❌ Error fetching product:', err);
         setError(err instanceof Error ? err.message : "Failed to fetch product");
@@ -389,6 +393,15 @@ export default function ProductPage() {
       if (success) {
         console.log('✅ Item added to cart successfully, refreshing cart count');
         setAddToCartSuccess(true);
+        
+        // Track add to cart event
+        trackEvent.addToCart({
+          item_id: String(product?.id),
+          item_name: product?.name || 'Unknown Product',
+          price: product?.price || 0,
+          category: 'product'
+        });
+        
         // Refresh cart count in header
         await refreshCart();
         // Show notification
@@ -884,14 +897,14 @@ export default function ProductPage() {
           <div className="grid grid-cols-2 gap-6 mt-6 mb-[30px]">
             {similarProducts.map((similarProduct) => (
               <div key={similarProduct.id} className="flex flex-col w-full">
-                <div className="relative w-full h-48 mb-3">
+                <Link href={`/products/${similarProduct.id}`} className="relative w-full h-48 mb-3 cursor-pointer">
                   <Image
                     src={similarProduct.productImages || "/fallback.jpg"}
                     alt={similarProduct.name}
                     fill
-                    className="object-cover rounded-md"
+                    className="object-cover rounded-md hover:opacity-90 transition-opacity"
                   />
-                </div>
+                </Link>
                 <div className="flex flex-col flex-1 w-full">
                   <p className="text-sm font-medium text-left mb-2 line-clamp-2 leading-tight w-full">{similarProduct.name}</p>
                   <div className="flex items-center gap-1 mb-3 w-full">

@@ -9,6 +9,7 @@ import SectionError from "@/app/components/common/SectionError";
 import { useAuthenticatedOutfitData } from "@/lib/hooks/useAuthenticatedOutfitData";
 import { generateOutfit, fetchUserOutfits } from "@/app/utils/outfitsapi";
 import { cache, CACHE_KEYS } from "@/lib/utils/cache";
+import { trackEvent } from "@/lib/utils/analytics";
 
 const StylistSays = () => {
   const { outfitData, isLoading, error, refetch } = useAuthenticatedOutfitData();
@@ -44,6 +45,9 @@ const StylistSays = () => {
         throw new Error('Failed to regenerate outfits');
       }
 
+      // Track outfit generation
+      trackEvent.generateOutfit(String(outfitData.userId));
+      
       // Wait a moment for backend to process, then force refresh the outfit data
       await new Promise(resolve => setTimeout(resolve, 1000));
       await refetch(true);
@@ -60,7 +64,10 @@ const StylistSays = () => {
     setAllOutfitsMode(true);
     try {
       // Fetch all outfits for the user (no limit)
-      const result = await fetchUserOutfits({ userId: outfitData.userId });
+      const result = await fetchUserOutfits({ 
+        userId: outfitData.userId,
+        forceRefresh: false // Use cache for "View More" to improve performance
+      });
       setAllOutfits(result?.outfits || []);
     } catch (err) {
       // fallback: show error or fallback to current outfits
