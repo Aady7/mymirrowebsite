@@ -3,11 +3,11 @@ import React, { useEffect, useState, useContext } from 'react'
 import { useAuth } from '@/lib/hooks/useAuth'
 import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
-import Image from 'next/image'
 import { FaIndianRupeeSign, FaTrash } from "react-icons/fa6"
 import { Button } from "@/components/ui/button"
 import SmartLoader from '@/app/components/loader/SmartLoader'
 import { CartContext } from '@/app/components/provider'
+import RobustImage from '@/app/components/common/RobustImage'
 
 interface CartItem {
   productId: number
@@ -238,7 +238,7 @@ const CartPage = () => {
                   checked:bg-[#007e90]
                   checked:after:content-['✔'] checked:after:text-white checked:after:text-[14px] checked:after:flex checked:after:items-center checked:after:justify-center"
               />
-              <Image
+              <RobustImage
                 src={images[0] || "/fallback.jpg"}
                 alt={product?.name || "Product image"}
                 width={150}
