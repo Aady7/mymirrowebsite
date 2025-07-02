@@ -66,6 +66,59 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
   const [imageSource, setImageSource] = useState<'camera' | 'gallery' | null>(null);
   const [isReadyForAnalysis, setIsReadyForAnalysis] = useState(false);
 
+  // Initialize component state from existing formValues data
+  useEffect(() => {
+    if (formValues.colorAnalysis) {
+      try {
+        const existingData = JSON.parse(formValues.colorAnalysis);
+        console.log('Restoring color analysis data:', existingData);
+        
+        // Restore analysis completion state
+        if (existingData.isComplete) {
+          setIsAnalysisComplete(true);
+          setIsReadyForAnalysis(true);
+        } else if (existingData.isReadyForAnalysis) {
+          setIsReadyForAnalysis(true);
+        }
+        
+        // Restore method and related data
+        if (existingData.method === 'manual') {
+          setMode('manual');
+          if (existingData.selectedHex) {
+            setSelectedTone(existingData.selectedHex);
+          }
+        } else if (existingData.method === 'upload') {
+          setMode('upload');
+          if (existingData.imageData) {
+            setCapturedImage(existingData.imageData);
+            setImageSource(existingData.imageSource || 'gallery');
+          }
+        }
+        
+        // Restore analysis results if available
+        if (existingData.recommended_colours && existingData.analysis_metadata) {
+          const mockResult = {
+            success: true,
+            undertone: existingData.undertone,
+            fitzpatrick_scale: existingData.fitzpatrick_scale,
+            recommended_colours: existingData.recommended_colours,
+            analysis_metadata: existingData.analysis_metadata,
+            average_skin_tone: existingData.analysis_metadata?.lab_values || [],
+            lightness: 0,
+            a_value: 0,
+            b_value: 0,
+            dominant_colors: [],
+            skin_regions_detected: true
+          };
+          setResult(mockResult);
+        }
+        
+      } catch (error) {
+        console.error('Error restoring color analysis data:', error);
+      }
+    }
+  }, []); // Only run once on mount
+
   // Cleanup effect to ensure camera is stopped when component unmounts
   useEffect(() => {
     return () => {
@@ -256,7 +309,12 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
         const syntheticEvent = {
           target: {
             name: 'colorAnalysis',
-            value: JSON.stringify({ isReadyForAnalysis: true, imageData, method: 'upload' })
+            value: JSON.stringify({ 
+              isReadyForAnalysis: true, 
+              imageData, 
+              method: 'upload',
+              imageSource: 'camera'
+            })
           }
         } as React.ChangeEvent<HTMLInputElement>;
         handleChange(syntheticEvent);
@@ -295,7 +353,9 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
       // Create a more detailed analysis object
       const analysisData = {
         method: 'upload',
+        imageData: imageData, // Keep the full image data for restoration
         imageBase64: base64,
+        imageSource: imageSource, // Preserve the image source
         undertone: data.undertone,
         fitzpatrick_scale: data.fitzpatrick_scale,
         recommended_colours: data.recommended_colours,
@@ -347,7 +407,12 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
       const syntheticEvent = {
         target: {
           name: 'colorAnalysis',
-          value: JSON.stringify({ isReadyForAnalysis: true, imageData, method: 'upload' })
+          value: JSON.stringify({ 
+            isReadyForAnalysis: true, 
+            imageData, 
+            method: 'upload',
+            imageSource: 'gallery'
+          })
         }
       } as React.ChangeEvent<HTMLInputElement>;
       handleChange(syntheticEvent);
@@ -415,13 +480,24 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
     setMode(newMode);
     setIsAnalysisComplete(false);
     setResult(null);
-    setSelectedTone('');
+    setIsReadyForAnalysis(false);
+    
+    // Clear data from the other method
+    if (newMode === 'upload') {
+      // Switching to upload - clear manual selection data
+      setSelectedTone('');
+    } else {
+      // Switching to manual - clear upload data
+      setCapturedImage(null);
+      setImageSource(null);
+    }
     
     const syntheticEvent = {
       target: {
         name: 'colorAnalysis',
         value: JSON.stringify({
-          isComplete: false
+          isComplete: false,
+          isReadyForAnalysis: false
         })
       }
     } as React.ChangeEvent<HTMLInputElement>;
@@ -571,21 +647,39 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
                     </div>
                   </div>
                 )}
-                {imageSource === 'camera' ? (
-                  <button
-                    onClick={handleRetake}
-                    className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                  >
-                    Retake Photo
-                  </button>
-                ) : imageSource === 'gallery' ? (
-                  <button
-                    onClick={handleReupload}
-                    className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
-                  >
-                    Reupload Photo
-                  </button>
-                ) : null}
+                <div className="flex gap-3">
+                  {imageSource === 'camera' ? (
+                    <button
+                      onClick={handleRetake}
+                      className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                    >
+                      Retake Photo
+                    </button>
+                  ) : imageSource === 'gallery' ? (
+                    <button
+                      onClick={handleReupload}
+                      className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                    >
+                      Reupload Photo
+                    </button>
+                  ) : (
+                    // Show upload options when no image is captured but ready for analysis (switching from manual)
+                    <>
+                      <button
+                        onClick={startCamera}
+                        className="px-6 py-2 bg-[#007e90] text-white rounded-lg hover:bg-[#006d7d] transition-colors font-medium"
+                      >
+                        Take Photo
+                      </button>
+                      <button
+                        onClick={triggerFileUpload}
+                        className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                      >
+                        Upload Photo
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             ) : showCamera ? (
               <div className="relative">
@@ -596,7 +690,7 @@ export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyze
                     autoPlay
                     playsInline
                     muted
-                    className="absolute inset-0 w-full h-full object-cover"
+                    className="absolute inset-0 w-full h-full object-cover transform scale-x-[-1]"
                   />
                   
                   {/* Overlay error message if camera fails */}

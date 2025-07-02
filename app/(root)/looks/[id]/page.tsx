@@ -1,6 +1,6 @@
 "use client"
 import { useParams, notFound } from 'next/navigation';
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaCartArrowDown } from 'react-icons/fa';
@@ -99,6 +99,12 @@ const LookPage = () => {
   
   // Add ref to prevent duplicate API calls
   const hasFetchedOutfit = useRef(false);
+
+  // Memoize the carousel callback to prevent unnecessary re-renders
+  const handleActiveOutfitChange = useCallback((outfitId: string | null) => {
+    console.log('🎯 Active outfit change from carousel:', outfitId);
+    setActiveCarouselOutfitId(outfitId);
+  }, []);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -268,10 +274,16 @@ const LookPage = () => {
         if (outfitData.similar_outfit_id) {
           productIds = [outfitData.similar_top_id, outfitData.similar_bottom_id];
         } else {
-           productIds = [outfitData.top_id, outfitData.bottom_id];
+          // For dresses (bottom_id = 0000), only fetch the top product
+          if (String(outfitData.bottom_id) === "0000" || outfitData.bottom_id === 0) {
+            productIds = [outfitData.top_id];
+          } else {
+            productIds = [outfitData.top_id, outfitData.bottom_id];
+          }
         }
         
         console.log('🛒 Fetching products for IDs:', productIds);
+        console.log('🔍 Outfit data check - bottom_id:', outfitData.bottom_id, 'is dress:', (String(outfitData.bottom_id) === "0000" || outfitData.bottom_id === 0));
         
         const { data: productsData, error: productsError } = await supabase
           .from('products')
@@ -746,7 +758,13 @@ const LookPage = () => {
           disabled={loading.all || products.some(product => !selectedSizes[product.id])}
           className="w-full py-3 bg-[#007e90] text-white font-semibold rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#006d7d]"
         >
-          {loading.all ? 'Adding All...' : `ADD ALL TO CART - ₹${totalPrice}`}
+          {loading.all 
+            ? (products.length === 1 ? 'Adding to Cart...' : 'Adding All...') 
+            : (products.length === 1 
+                ? `ADD TO CART - ₹${totalPrice}` 
+                : `ADD ALL TO CART - ₹${totalPrice}`
+              )
+          }
         </button>
       </div>
 
@@ -757,7 +775,12 @@ const LookPage = () => {
             <h1 className="font-[Boston] font-black text-[12px] text-left mb-2" style={{fontVariant:'small-caps'}}>
               RATING
             </h1>
-            <StarRating productId={String(id)} productType="look" />
+            <StarRating 
+              productId={String(id)} 
+              productType="look" 
+              topId={outfitData?.top.id.toString()}
+              bottomId={outfitData?.bottom.id.toString()}
+            />
           </>
         )}
         <div className='mt-6 flex items-center justify-center px-[8rem]'>
@@ -766,6 +789,8 @@ const LookPage = () => {
               onClose={() => { }} 
               userId={currentUser.id || ''}
               lookId={id}
+              topId={outfitData?.top.id.toString()}
+              bottomId={outfitData?.bottom.id.toString()}
             />
           ) : (
             <div className="text-sm text-gray-500">
@@ -780,7 +805,7 @@ const LookPage = () => {
         {/* Description */}
         {outfitData?.outfit_description && (
           <div className="mb-6">
-            <h2 className="text-lg font-semibold mb-3">DESCRIPTION</h2>
+            <h2 className="text-lg font-semibold mb-3">LOOK DESCRIPTION</h2>
             <p className="text-gray-700 leading-relaxed">
               {outfitData.outfit_description}
             </p>
@@ -811,7 +836,7 @@ const LookPage = () => {
       {!id?.startsWith('similar_main_') && (
         <div className="px-6 py-8 mt-[-2rem]">
           <h1 className="text-[22px] font-[Boston] font-medium mb-[-2rem]">YOU MAY ALSO LIKE</h1>
-          <SimilarOutfitsCarousel onActiveOutfitChange={setActiveCarouselOutfitId} />
+          <SimilarOutfitsCarousel onActiveOutfitChange={handleActiveOutfitChange} />
         </div>
       )}
     </>

@@ -146,15 +146,15 @@ const ScrollArrow = ({ contentRef }: { contentRef: React.RefObject<HTMLDivElemen
     const handleScroll = () => {
       if (contentRef.current) {
         const { scrollTop, scrollHeight, clientHeight } = contentRef.current;
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 30; // More sensitive
         setAtBottom(isNearBottom);
         
         // Calculate scroll progress (0 to 1)
         const progress = scrollHeight > clientHeight ? scrollTop / (scrollHeight - clientHeight) : 0;
         setScrollProgress(progress);
         
-        // Show arrow if there's scrollable content (more lenient condition)
-        const hasScrollableContent = scrollHeight > clientHeight + 20; // Reduced threshold
+        // Show arrow if there's scrollable content (more aggressive detection for mobile)
+        const hasScrollableContent = scrollHeight > clientHeight + 50; // Better threshold for mobile
         setShowArrow(hasScrollableContent);
         
         // Debug info
@@ -179,97 +179,85 @@ const ScrollArrow = ({ contentRef }: { contentRef: React.RefObject<HTMLDivElemen
     const checkContent = () => {
       if (contentRef.current) {
         const { scrollTop, scrollHeight, clientHeight } = contentRef.current;
-        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 50;
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 30;
         setAtBottom(isNearBottom);
         
         const progress = scrollHeight > clientHeight ? scrollTop / (scrollHeight - clientHeight) : 0;
         setScrollProgress(progress);
         
-        const hasScrollableContent = scrollHeight > clientHeight + 20;
+        const hasScrollableContent = scrollHeight > clientHeight + 50;
         setShowArrow(hasScrollableContent);
         
         setDebugInfo({ scrollHeight, clientHeight, scrollTop });
       }
     };
 
-    // Multiple check intervals to catch content changes
-    const timer1 = setTimeout(checkContent, 100);
-    const timer2 = setTimeout(checkContent, 500);
-    const timer3 = setTimeout(checkContent, 1000);
+    // More frequent checks for better responsiveness on mobile
+    const timer1 = setTimeout(checkContent, 50);
+    const timer2 = setTimeout(checkContent, 200);
+    const timer3 = setTimeout(checkContent, 500);
+    const timer4 = setTimeout(checkContent, 1000);
     
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
+      clearTimeout(timer4);
     };
   }, [contentRef, showArrow]); // Add showArrow as dependency
 
   const scrollToBottom = () => {
     if (contentRef.current) {
       const element = contentRef.current;
-      const scrollAmount = window.innerHeight * 0.8; // Increased scroll amount
       
-      // Use smooth scrolling with proper CSS scroll-behavior
-      element.style.scrollBehavior = 'smooth';
-      
-      // Try scrollBy first (most compatible)
-      element.scrollBy({
-        top: scrollAmount,
-        behavior: 'smooth'
-      });
-      
-      // Fallback with manual smooth scroll animation
-      const startTime = performance.now();
-      const startScroll = element.scrollTop;
-      const targetScroll = startScroll + scrollAmount;
+      // For mobile Safari compatibility and smooth scrolling
+      const currentScroll = element.scrollTop;
       const maxScroll = element.scrollHeight - element.clientHeight;
-      const finalScroll = Math.min(targetScroll, maxScroll);
+      
+      // Calculate target scroll position
+      // Try to scroll to second question area or bottom, whichever is closer
+      const viewportHeight = element.clientHeight;
+      const scrollAmount = Math.min(viewportHeight * 0.9, maxScroll - currentScroll);
+      const targetScroll = Math.min(currentScroll + scrollAmount, maxScroll);
+      
+      // Simple, reliable smooth scroll using requestAnimationFrame
+      const startTime = performance.now();
+      const duration = 600; // Faster, more responsive animation
       
       const animateScroll = (currentTime: number) => {
         const elapsed = currentTime - startTime;
-        const duration = 800; // 800ms smooth scroll
+        const progress = Math.min(elapsed / duration, 1);
         
-        if (elapsed < duration) {
-          // Easing function for smooth animation
-          const progress = elapsed / duration;
-          const easeInOutQuad = progress < 0.5 
-            ? 2 * progress * progress 
-            : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-          
-          element.scrollTop = startScroll + (finalScroll - startScroll) * easeInOutQuad;
+        // Ease-out function for natural deceleration
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        
+        element.scrollTop = currentScroll + (targetScroll - currentScroll) * easeOut;
+        
+        if (progress < 1) {
           requestAnimationFrame(animateScroll);
-        } else {
-          element.scrollTop = finalScroll;
         }
       };
       
-      // Start the animation after a brief delay to allow scrollBy to potentially work
-      setTimeout(() => {
-        if (Math.abs(element.scrollTop - startScroll) < 10) {
-          // scrollBy didn't work well, use our custom animation
-          requestAnimationFrame(animateScroll);
-        }
-      }, 50);
+      requestAnimationFrame(animateScroll);
     }
   };
 
   // Determine if we should show the arrow based on the current step
   const shouldShowForCurrentStep = () => {
     // Get the current step from parent component's state using a ref
-    const currentStep = contentRef.current?.getAttribute('data-current-step');
+    const currentStep = Number(contentRef.current?.getAttribute('data-current-step'));
     
-    // Steps that should show scroll arrow (personality questions and style preferences)
-    const firstDynamicStep = 8;
-    const dynamicStepsCount = Number(contentRef.current?.getAttribute('data-dynamic-steps-count') || '0');
-    const minimalismStep = firstDynamicStep + dynamicStepsCount;
-    
-    // Create array of steps that should show scroll arrow
-    const stepsWithScroll = [
-      2, 3, 4, 7, // Weekend, Shopping, Workspace, GoToStyle steps
-      ...Array.from({ length: minimalismStep - firstDynamicStep }, (_, i) => firstDynamicStep + i) // Dynamic style steps
+    // Only show scroll arrow on personality questions (2, 3, 4) and image-based steps (5, 7)
+    // These are the steps where users might have trouble seeing all content
+    const stepsWithScrollNeeds = [
+      2,  // Weekend preferences (personality question)
+      3,  // Shopping style (personality question)  
+      4,  // Workspace style (personality question)
+      5,  // Body type (has images)
+      7   // Go-to style (has images)
     ];
     
-    return stepsWithScroll.includes(Number(currentStep)) && showArrow;
+    return stepsWithScrollNeeds.includes(currentStep) && showArrow;
   };
 
   const shouldShow = shouldShowForCurrentStep();
@@ -332,6 +320,9 @@ export default function StyleQuizNew() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isReturningUser, setIsReturningUser] = useState(false);
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [resendSuccess, setResendSuccess] = useState(false);
 
   // Form data - single state object
   const [formData, setFormData] = useState<FormData>({
@@ -383,89 +374,129 @@ export default function StyleQuizNew() {
       // Track style quiz start
       trackEvent.startStyleQuiz();
       
-      // Check if user is authenticated and has completed quiz before
+      // Try to load existing quiz data from localStorage first
+      let existingData: FormData | null = null;
+      let existingStep: number = 1;
+      let existingUserId: string = '';
+      let existingStyleQuizId: string = '';
+      
+      try {
+        const savedData = localStorage.getItem('styleQuizNewData');
+        const savedStep = localStorage.getItem('styleQuizNewStep');
+        const savedUserId = localStorage.getItem('userId');
+        const savedStyleQuizId = localStorage.getItem('styleQuizNewId');
+        
+        if (savedData) {
+          existingData = JSON.parse(savedData);
+          console.log('Found existing quiz data in localStorage:', existingData);
+        }
+        
+        if (savedStep) {
+          existingStep = parseInt(savedStep, 10);
+          console.log('Found existing step in localStorage:', existingStep);
+        }
+        
+        if (savedUserId) {
+          existingUserId = savedUserId;
+          console.log('Found existing userId in localStorage:', existingUserId);
+        }
+        
+        if (savedStyleQuizId) {
+          existingStyleQuizId = savedStyleQuizId;
+          console.log('Found existing styleQuizId in localStorage:', existingStyleQuizId);
+        }
+      } catch (error) {
+        console.warn('Error loading existing quiz data:', error);
+      }
+      
+      // Generate new IDs only if they don't exist
+      const userId = existingUserId || crypto.randomUUID();
+      const styleQuizId = existingStyleQuizId || crypto.randomUUID();
+      
+      // Save IDs to localStorage if they're new
+      if (!existingUserId) {
+        localStorage.setItem('userId', userId);
+      }
+      if (!existingStyleQuizId) {
+        localStorage.setItem('styleQuizNewId', styleQuizId);
+      }
+      
+      // Check if user is authenticated
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session?.user) {
         setIsAuthenticated(true);
         
-        // Check if user has previously completed the style quiz
-        const { data: userData, error: userError } = await supabase
+        // Check if user has previously completed the quiz
+        const { data: userData } = await supabase
           .from('users_updated')
           .select('style_quiz_id')
           .eq('user_id', session.user.id)
           .maybeSingle();
         
-        if (!userError && userData?.style_quiz_id) {
-          // User has previously completed the quiz - this is a return visit
-          console.log('User returning to edit style quiz - clearing cache and localStorage');
+        if (userData?.style_quiz_id) {
+          setIsReturningUser(true);
+        }
+        
+        // Initialize form data - preserve existing data if available, otherwise use defaults
+        if (existingData) {
+          // Merge existing data with session phone number
+          setFormData({
+            ...existingData,
+            userId,
+            styleQuizId,
+            phone: session.user.phone || existingData.phone || ''
+          });
           
-          // Import and clear cache
-          try {
-            const { cache } = await import('@/lib/utils/cache');
-            cache.clear();
-          } catch (cacheError) {
-            console.warn('Failed to clear cache:', cacheError);
+          // Restore dynamic steps if goToStyle exists
+          if (existingData.goToStyle && existingData.goToStyle.length > 0) {
+            const restoredDynamicSteps = existingData.goToStyle.map(style => ({
+              style: style,
+              options: [] // Will be populated by the DynamicStylePreferenceStep component
+            }));
+            setDynamicSteps(restoredDynamicSteps);
           }
           
-          // Clear style quiz related localStorage items
-          localStorage.removeItem('styleQuizNewData');
-          localStorage.removeItem('styleQuizNewStep');
-          localStorage.removeItem('styleQuizNewId');
-          
-          // Create new IDs for the fresh quiz
-          const newUserId = crypto.randomUUID();
-          const newStyleQuizId = crypto.randomUUID();
-          
-          localStorage.setItem('userId', newUserId);
-          localStorage.setItem('styleQuizNewId', newStyleQuizId);
-          
+          // Restore current step
+          setCurrentStep(existingStep);
+          setMaxCompletedStep(Math.max(existingStep - 1, 0));
+        } else {
           // Initialize with fresh data
           setFormData(prev => ({ 
             ...prev, 
-            userId: newUserId, 
-            styleQuizId: newStyleQuizId,
+            userId, 
+            styleQuizId,
             phone: session.user.phone || ''
           }));
-          
-          // Mark that this user will need regeneration
-          setIsReturningUser(true);
-          
-          return;
-        }
-        
-        // Pre-fill phone if available for new users
-        if (session.user.phone) {
-          setFormData(prev => ({ ...prev, phone: session.user.phone || '' }));
-        }
-      }
-      
-      // Get or create IDs (for new users or non-authenticated users)
-      let userId = localStorage.getItem('userId') || crypto.randomUUID();
-      let styleQuizId = localStorage.getItem('styleQuizNewId') || crypto.randomUUID();
-      
-      localStorage.setItem('userId', userId);
-      localStorage.setItem('styleQuizNewId', styleQuizId);
-
-      // Load saved data (only for non-returning users)
-      const savedData = localStorage.getItem('styleQuizNewData');
-      const savedStep = localStorage.getItem('styleQuizNewStep');
-
-      if (savedData) {
-        try {
-          setFormData(prev => ({ ...prev, ...JSON.parse(savedData), userId, styleQuizId }));
-        } catch (e) {
-          console.warn('Failed to parse saved data');
         }
       } else {
-        setFormData(prev => ({ ...prev, userId, styleQuizId }));
-      }
-
-      if (savedStep) {
-        const step = parseInt(savedStep);
-        if (step > 0) {
-          setCurrentStep(step);
-          setMaxCompletedStep(step - 1);
+        // For non-authenticated users, restore existing data if available
+        if (existingData) {
+          setFormData({
+            ...existingData,
+            userId,
+            styleQuizId
+          });
+          
+          // Restore dynamic steps if goToStyle exists
+          if (existingData.goToStyle && existingData.goToStyle.length > 0) {
+            const restoredDynamicSteps = existingData.goToStyle.map(style => ({
+              style: style,
+              options: [] // Will be populated by the DynamicStylePreferenceStep component
+            }));
+            setDynamicSteps(restoredDynamicSteps);
+          }
+          
+          // Restore current step
+          setCurrentStep(existingStep);
+          setMaxCompletedStep(Math.max(existingStep - 1, 0));
+        } else {
+          // Initialize with fresh data
+          setFormData(prev => ({ 
+            ...prev, 
+            userId, 
+            styleQuizId
+          }));
         }
       }
     };
@@ -549,6 +580,8 @@ export default function StyleQuizNew() {
         // OTP sent successfully, move to next step
         setCurrentStep(prev => prev + 1);
         setMaxCompletedStep(prev => Math.max(prev, currentStep));
+        // Start cooldown for resend (60 seconds)
+        setResendCooldown(60);
       }
     } catch (err) {
       setError('An error occurred while sending OTP');
@@ -557,140 +590,164 @@ export default function StyleQuizNew() {
     }
   };
 
-  // Handle OTP verification and final submission
-  const verifyOtpAndSubmit = async () => {
-    if (!formData.otp && !isAuthenticated) return;
+  // Handle OTP resending
+  const resendOtp = async () => {
+    if (!formData.phone || resendCooldown > 0) return;
     
-    setIsSubmitting(true);
+    setIsResendingOtp(true);
     setError(null);
     
     try {
-      if (!isAuthenticated) {
-        const { error } = await handleVerifyOtp(formData.phone, formData.otp);
-        if (error) {
-          setError(error.message);
-          return;
-        }
-        
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-        if (session && !sessionError) {
-          try {
-            // First, submit the style quiz data to Supabase
-            await submitFormData();
-            
-            // Then, get the styleQuizId from localStorage and update user record
-            const styleQuizId = localStorage.getItem('styleQuizNewId');
-
-            // Add user data to users table with styleQuizId (after quiz data is saved)
-            const { error: userError } = await supabase
-              .from('users_updated')
-              .upsert([{
-                user_id: session?.user.id,
-                phone_number: session?.user.phone,
-                created_at: new Date().toISOString(),
-                style_quiz_id: styleQuizId // Add the styleQuizId to users table
-              }], {
-                onConflict: 'user_id',
-              });
-
-            if (userError) {
-              console.error('Error saving user data:', userError);
-              setError('Failed to save user data. Please try again.');
-              return;
-            }
-            
-            // Redirect to recommendations
-            router.push('/recommendations');
-          } catch (submitError) {
-            console.error('Error during submission:', submitError);
-            setError('Failed to submit quiz data. Please try again.');
-            return;
-          }
-
-        } else {
-          setError('Session not available. Please try again.');
-        }
+      const { error } = await handleSendOtp(formData.phone);
+      if (error) {
+        setError(error.message);
       } else {
-        try {
-          // User is already authenticated - submit quiz data first
-          await submitFormData();
-          
-          // Then update user record with styleQuizId
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.user?.id) {
-            const styleQuizId = localStorage.getItem('styleQuizNewId');
-            
-            const { error: userError } = await supabase
-              .from('users_updated')
-              .upsert([{
-                user_id: session.user.id,
-                phone_number: session.user.phone,
-                created_at: new Date().toISOString(),
-                style_quiz_id: styleQuizId
-              }], {
-                onConflict: 'user_id',
-              });
+        // Start cooldown for next resend (60 seconds)
+        setResendCooldown(60);
+        // Show success message
+        setError(null);
+        setResendSuccess(true);
+        // Hide success message after 3 seconds
+        setTimeout(() => setResendSuccess(false), 3000);
+      }
+    } catch (err) {
+      setError('An error occurred while resending OTP');
+    } finally {
+      setIsResendingOtp(false);
+    }
+  };
 
-            if (userError) {
-              console.error('Error saving user data:', userError);
-              setError('Failed to save user data. Please try again.');
-              return;
-            }
-          }
-          
-          // If this is a returning user, trigger outfit regeneration with regenerate: true
-          if (isReturningUser && session?.user?.id) {
-            try {
-              // Get the user ID from users_updated table
-              const { data: userData, error: userDataError } = await supabase
-                .from('users_updated')
-                .select('id')
-                .eq('user_id', session.user.id)
-                .maybeSingle();
-              
-              if (!userDataError && userData?.id) {
-                // Call the outfit generation API with regenerate: true
-                const response = await fetch('/api/mymirrobackend/create-outfit', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ 
-                    user_id: userData.id,
-                    regenerate: true 
-                  }),
-                });
-                
-                if (response.ok) {
-                  console.log('Outfits regenerated successfully for returning user');
-                } else {
-                  console.warn('Failed to regenerate outfits, but continuing...');
-                }
-              }
-            } catch (regenerateError) {
-              console.error('Error regenerating outfits:', regenerateError);
-              // Don't block the flow, just log the error
-            }
-          }
-          
-          router.push('/recommendations');
-        } catch (submitError) {
-          console.error('Error during submission:', submitError);
-          setError('Failed to submit quiz data. Please try again.');
-          return;
-        }
+  // Cooldown timer effect
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => {
+        setResendCooldown(prev => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+
+  // Handle OTP verification and final submission
+  const verifyOtpAndSubmit = async () => {
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const { error } = await handleVerifyOtp(formData.phone, formData.otp);
+      if (error) {
+        setError(error.message);
+        setIsSubmitting(false);
+        return;
       }
       
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (!session || sessionError) {
+        setError('Session not available. Please try again.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      try {
+        // First, submit the style quiz data to Supabase
+        await submitFormData(true); // Skip state management since verifyOtpAndSubmit handles it
+        
+        // Get the styleQuizId from localStorage
+        const styleQuizId = localStorage.getItem('styleQuizNewId');
+
+        // Add user data to users table with styleQuizId
+        const { error: userError } = await supabase
+          .from('users_updated')
+          .upsert([{
+            user_id: session.user.id,
+            phone_number: session.user.phone,
+            created_at: new Date().toISOString(),
+            style_quiz_id: styleQuizId,
+            updated_at: new Date().toISOString() // Add updated_at to track changes
+          }], {
+            onConflict: 'user_id',
+          });
+
+        if (userError) {
+          console.error('Error saving user data:', userError);
+          setError('Failed to save user data. Please try again.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        // Always trigger outfit regeneration with regenerate: true
+        try {
+          // Get the user ID from users_updated table
+          const { data: userData, error: userDataError } = await supabase
+            .from('users_updated')
+            .select('id')
+            .eq('user_id', session.user.id)
+            .maybeSingle();
+          
+          if (!userDataError && userData?.id) {
+            // Call the outfit generation API with regenerate: true
+            const response = await fetch('/api/mymirrobackend/create-outfit', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ 
+                user_id: userData.id,
+                regenerate: true 
+              }),
+            });
+            
+            if (!response.ok) {
+              console.warn('Failed to regenerate outfits, but continuing...');
+            }
+          }
+        } catch (regenerateError) {
+          console.error('Error regenerating outfits:', regenerateError);
+          // Don't block the flow, just log the error
+        }
+        
+        // Clear quiz data from localStorage only after successful completion
+        try {
+          localStorage.removeItem('styleQuizNewData');
+          localStorage.removeItem('styleQuizNewStep');
+          localStorage.removeItem('styleQuizNewId');
+          localStorage.removeItem('userId');
+          console.log('✅ Quiz data cleared from localStorage after successful completion');
+        } catch (clearError) {
+          console.warn('Failed to clear quiz data from localStorage:', clearError);
+        }
+
+        // Clear all caches after successful completion
+        try {
+          const { cache } = await import('@/lib/utils/cache');
+          cache.clear();
+          console.log('✅ Cache cleared after successful completion');
+        } catch (cacheError) {
+          console.warn('Failed to clear cache:', cacheError);
+        }
+        
+        // Clear the submitting state before navigation
+        setIsSubmitting(false);
+        console.log('✅ Quiz completed successfully, navigating to recommendations...');
+        router.push('/recommendations');
+        
+      } catch (submitError) {
+        console.error('Error during submission:', submitError);
+        setError('Failed to submit quiz data. Please try again.');
+        setIsSubmitting(false);
+        return;
+      }
     } catch (err) {
-      setError('An error occurred during submission');
-    } finally {
+      console.error('Error in verifyOtpAndSubmit:', err);
+      setError('An error occurred during submission. Please try again.');
       setIsSubmitting(false);
     }
   };
 
   // Submit form data to Supabase (comprehensive version)
-  const submitFormData = async () => {
+  const submitFormData = async (skipStateManagement = false) => {
     try {
-      setIsSubmitting(true);
+      if (!skipStateManagement) {
+        setIsSubmitting(true);
+      }
       setError(null);
 
       if (!formData.name || !formData.gender) {
@@ -939,7 +996,9 @@ export default function StyleQuizNew() {
       setError(error instanceof Error ? error.message : 'An error occurred while saving your data');
       throw error; // Re-throw to handle in calling function
     } finally {
-      setIsSubmitting(false);
+      if (!skipStateManagement) {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -1156,9 +1215,10 @@ export default function StyleQuizNew() {
           );
         }
         
-        // Skip rendering style preferences step since it's now shown in minimalism step
+        // Skip style preferences step entirely (since it's combined with minimalism)
         if (currentStep === stylePrefsStep) {
-          setCurrentStep(prev => prev + 1);
+          // Auto-advance to color analysis step
+          setCurrentStep(colorAnalysisStep);
           return null;
         }
         
@@ -1237,7 +1297,7 @@ export default function StyleQuizNew() {
               <h2 className="text-2xl font-semibold text-gray-900">Enter Verification Code</h2>
               <div className="space-y-4">
                 <p className="text-gray-600">
-                  We've sent a verification code to your phone. Please enter it below.
+                  We've sent a verification code to {formData.phone}. Please enter it below.
                 </p>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1254,6 +1314,38 @@ export default function StyleQuizNew() {
                     disabled={isAuthenticated}
                   />
                 </div>
+                
+                {/* Resend OTP Section */}
+                <div className="flex items-center justify-between pt-2">
+                  <span className="text-sm text-gray-600">
+                    Didn't receive the code?
+                  </span>
+                  <button
+                    onClick={resendOtp}
+                    disabled={resendCooldown > 0 || isResendingOtp || isAuthenticated}
+                    className={`text-sm font-medium transition-colors ${
+                      resendCooldown > 0 || isResendingOtp || isAuthenticated
+                        ? 'text-gray-400 cursor-not-allowed'
+                        : 'text-[#007e90] hover:text-[#006d7d] cursor-pointer'
+                    }`}
+                  >
+                    {isResendingOtp 
+                      ? 'Sending...'
+                      : resendCooldown > 0 
+                        ? `Resend in ${resendCooldown}s`
+                        : 'Resend OTP'
+                    }
+                  </button>
+                </div>
+                
+                {/* Success message for resend */}
+                {resendSuccess && (
+                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-700">
+                      ✓ Verification code sent successfully!
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -1346,8 +1438,12 @@ export default function StyleQuizNew() {
       <div className="flex-1 pb-20 md:pb-24 relative overflow-hidden">
         <div 
           ref={contentRef}
-          className="absolute inset-0 overflow-y-auto"
-          style={{ paddingBottom: '5rem' }} // Space for navigation
+          className="absolute inset-0 overflow-y-auto overflow-x-hidden"
+          style={{ 
+            paddingBottom: '5rem',
+            WebkitOverflowScrolling: 'touch', // Smooth scrolling for iOS Safari
+            scrollBehavior: 'auto' // Prevent conflicts with our custom animation
+          }}
           data-current-step={currentStep}
           data-dynamic-steps-count={dynamicSteps.length}
         >
@@ -1358,7 +1454,7 @@ export default function StyleQuizNew() {
               </div>
             )}
 
-            <div className="min-h-[100vh]">
+            <div className="min-h-[100vh] pb-8">
               {renderStepContent()}
             </div>
           </div>
@@ -1369,15 +1465,48 @@ export default function StyleQuizNew() {
       </div>
 
       {/* Fixed Navigation */}
-      <div className="bg-white border-t border-gray-200 p-4 md:p-6 fixed bottom-0 left-0 right-0 z-50 shadow-lg">
+      <div className="bg-white border-t border-gray-200 p-4 md:p-6 fixed bottom-0 left-0 right-0 z-[100] shadow-lg">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center">
             <button
               onClick={() => {
+                console.log('Previous button clicked, current step:', currentStep);
                 setError(null); // Clear any existing errors when going back
-                setCurrentStep(prev => Math.max(1, prev - 1));
+                setIsSubmitting(false); // Ensure submitting state is reset when going back
+                
+                // Clean up any analysis state
+                if ((window as any).triggerColorAnalysis) {
+                  delete (window as any).triggerColorAnalysis;
+                }
+                
+                // Clear any analysis data when going back from color analysis
+                const firstDynamicStep = 8;
+                const minimalismStep = firstDynamicStep + dynamicSteps.length;
+                const stylePrefsStep = minimalismStep + 1;
+                const colorAnalysisStep = stylePrefsStep + 1;
+                
+                if (currentStep === colorAnalysisStep) {
+                  console.log('Going back from color analysis step, clearing data');
+                  const syntheticEvent = {
+                    target: {
+                      name: 'colorAnalysis',
+                      value: JSON.stringify({ isComplete: false, isReadyForAnalysis: false })
+                    }
+                  } as React.ChangeEvent<HTMLInputElement>;
+                  handleChange(syntheticEvent);
+                }
+                
+                let newStep = Math.max(1, currentStep - 1);
+                
+                // Skip the style preferences step when going backward (since it's combined with minimalism)
+                if (newStep === stylePrefsStep) {
+                  newStep = Math.max(1, newStep - 1); // Go to minimalism step instead
+                }
+                
+                console.log('Setting new step:', newStep);
+                setCurrentStep(newStep);
               }}
-              disabled={currentStep === 1 || isSubmitting}
+              disabled={currentStep === 1}
               className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-200 transition-colors font-medium"
             >
               Previous
@@ -1412,8 +1541,14 @@ export default function StyleQuizNew() {
                     await sendOtp();
                   } else if (currentStep === feedbackStep && isAuthenticated) {
                     // For authenticated users, submit directly after feedback
-                    await submitFormData();
-                    router.push('/recommendations');
+                    setIsSubmitting(true); // Ensure button shows loading state
+                    try {
+                      await submitFormData();
+                      router.push('/recommendations');
+                    } catch (error) {
+                      setIsSubmitting(false); // Reset if navigation fails
+                      throw error;
+                    }
                   } else if (currentStep === feedbackStep && !isAuthenticated) {
                     // For unauthenticated users, move to OTP step after feedback
                     setCurrentStep(prev => prev + 1);
@@ -1431,8 +1566,11 @@ export default function StyleQuizNew() {
                 }
               }}
               disabled={isSubmitting || !isStepValid()}
-              className="px-6 py-2.5 bg-[#007e90] text-white rounded-lg hover:bg-[#006d7d] disabled:opacity-50 transition-colors font-medium"
+              className="px-6 py-2.5 bg-[#007e90] text-white rounded-lg hover:bg-[#006d7d] disabled:opacity-50 transition-colors font-medium flex items-center gap-2"
             >
+              {isSubmitting && (
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+              )}
               {(() => {
                 const firstDynamicStep = 8;
                 const minimalismStep = firstDynamicStep + dynamicSteps.length;
@@ -1442,7 +1580,12 @@ export default function StyleQuizNew() {
                 const feedbackStep = phoneStep + 1;
                 const otpStep = feedbackStep + 1;
                 
-                if (isSubmitting) return 'Saving...';
+                if (isSubmitting) {
+                  if (currentStep === feedbackStep || currentStep === otpStep) {
+                    return 'Completing Quiz...';
+                  }
+                  return 'Saving...';
+                }
                 if (currentStep === phoneStep && !isAuthenticated) return 'Send OTP';
                 if (currentStep === feedbackStep && isAuthenticated) return 'Complete Quiz';
                 if (currentStep === otpStep) return 'Complete Quiz';

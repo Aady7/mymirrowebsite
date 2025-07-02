@@ -11,6 +11,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { getSimilarOutfits } from "@/app/utils/outfitsapi";
 
+// Global tracker to prevent duplicate calls across all instances
+const globalCallTracker = new Map<string, { timestamp: number; inProgress: boolean }>();
+
 interface SimilarOutfit {
   outfit_data: {
     main_outfit_id: string;
@@ -43,6 +46,9 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
   const hasFetched = useRef(false);
   const currentId = useRef<string | null>(null);
   const isApiCallInProgress = useRef(false);
+  const lastCallTimestamp = useRef<number>(0);
+  const mountedRef = useRef(true);
+  const callsToday = useRef<Map<string, number>>(new Map());
   
   console.log('SimilarOutfitsCarousel render:', { 
     id, 
@@ -51,8 +57,23 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
     error,
     hasFetched: hasFetched.current,
     currentId: currentId.current,
-    isApiCallInProgress: isApiCallInProgress.current
+    isApiCallInProgress: isApiCallInProgress.current,
+    lastCallTimestamp: lastCallTimestamp.current,
+    callsToday: callsToday.current.get(String(id)) || 0
   });
+
+  // Cleanup on unmount
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      // Reset all refs when component unmounts
+      hasFetched.current = false;
+      isApiCallInProgress.current = false;
+      lastCallTimestamp.current = 0;
+      currentId.current = null;
+    };
+  }, []);
 
 
 
@@ -60,13 +81,14 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
     if (!id) return;
     
     const outfitId = String(id);
-    console.log('useEffect triggered for ID:', outfitId);
+    console.log('useEffect triggered for ID:', outfitId, 'hasFetched:', hasFetched.current, 'currentId:', currentId.current, 'isApiCallInProgress:', isApiCallInProgress.current);
     
     // Reset state when ID changes
     if (currentId.current !== outfitId) {
       console.log('ID changed, resetting state');
       hasFetched.current = false;
       isApiCallInProgress.current = false;
+      lastCallTimestamp.current = 0;
       setIsLoading(true);
       setSimilarOutfits([]);
       setError(null);
@@ -74,7 +96,7 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
 
     // Call the function directly to avoid dependency issues
     const callFetch = async () => {
-      if (!outfitId) {
+      if (!outfitId || !mountedRef.current) {
         setIsLoading(false);
         return;
       }
@@ -92,7 +114,45 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
         return;
       }
       
-      try {
+      // Enhanced duplicate call prevention with daily call tracking
+      const now = Date.now();
+      const dailyCallCount = callsToday.current.get(outfitId) || 0;
+      
+      // Check global call tracker
+      const globalTracker = globalCallTracker.get(outfitId);
+      if (globalTracker) {
+        if (globalTracker.inProgress) {
+          console.log('🌐 Global API call in progress for outfit:', outfitId, 'skipping duplicate call');
+          return;
+        }
+        if (now - globalTracker.timestamp < 500) { // 500ms global debounce
+          console.log('🌐 Global rapid duplicate call detected, skipping (time gap:', now - globalTracker.timestamp, 'ms)');
+          return;
+        }
+      }
+      
+      // Prevent rapid duplicate calls (React Strict Mode protection)
+      if (now - lastCallTimestamp.current < 200) { // Increased to 200ms debounce
+        console.log('Rapid duplicate call detected, skipping (time gap:', now - lastCallTimestamp.current, 'ms)');
+        return;
+      }
+      
+      // Prevent excessive calls per day per outfit (safety limit)
+      if (dailyCallCount > 10) {
+        console.log('Daily call limit reached for outfit:', outfitId, 'calls today:', dailyCallCount);
+        setError('Too many requests for this outfit today');
+        setIsLoading(false);
+        return;
+      }
+      
+      lastCallTimestamp.current = now;
+      callsToday.current.set(outfitId, dailyCallCount + 1);
+      
+      // Set global tracker
+      globalCallTracker.set(outfitId, { timestamp: now, inProgress: true });
+      
+              try {
+        console.log('🚀 Starting API call for outfit:', outfitId, 'Call #:', dailyCallCount + 1);
         setIsLoading(true);
         setError(null);
         setSimilarOutfits([]); // Clear previous data
@@ -101,8 +161,20 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
         console.log('Calling getSimilarOutfits with ID:', outfitId);
         console.log('API call started, isLoading set to true');
         
+        // Check if component is still mounted before making API call
+        if (!mountedRef.current) {
+          console.log('Component unmounted during API call setup, aborting');
+          return;
+        }
+        
         const result = await getSimilarOutfits(outfitId, 10, false); // Use cache
         console.log('getSimilarOutfits API call completed, result:', result);
+        
+        // Check if component is still mounted before setting state
+        if (!mountedRef.current) {
+          console.log('Component unmounted during API call, ignoring result');
+          return;
+        }
         
         // Mark as fetched only after successful API call
         hasFetched.current = true;
@@ -117,15 +189,35 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
           setSimilarOutfits([]);
           setActiveSlideIndex(0);
         }
-      } catch (err) {
+              } catch (err) {
         console.error('Error fetching similar outfits:', err);
-        setError('Failed to load similar looks');
+        
+        // Only update state if component is still mounted
+        if (mountedRef.current) {
+          setError('Failed to load similar looks');
+        }
+        
         hasFetched.current = false; // Reset on error to allow retry
         currentId.current = null;
+        
+        // Decrease call count on error to allow retry
+        const currentCount = callsToday.current.get(outfitId) || 1;
+        callsToday.current.set(outfitId, Math.max(0, currentCount - 1));
       } finally {
         console.log('Setting isLoading to false');
-        setIsLoading(false);
+        
+        // Only update state if component is still mounted
+        if (mountedRef.current) {
+          setIsLoading(false);
+        }
+        
         isApiCallInProgress.current = false;
+        
+        // Clear global tracker
+        const globalTracker = globalCallTracker.get(outfitId);
+        if (globalTracker) {
+          globalCallTracker.set(outfitId, { ...globalTracker, inProgress: false });
+        }
       }
     };
 
@@ -134,20 +226,25 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
     // Cleanup function to reset refs when component unmounts or id changes
     return () => {
       if (currentId.current !== outfitId) {
+        console.log('🧹 Cleaning up refs due to ID change from', currentId.current, 'to', outfitId);
         hasFetched.current = false;
         isApiCallInProgress.current = false;
+        lastCallTimestamp.current = 0;
+        currentId.current = null;
       }
     };
   }, [id]); // Only depend on id
 
   // Notify parent about active outfit changes
   useEffect(() => {
+    if (!onActiveOutfitChange) return; // Early return if no callback
+    
     const filteredOutfits = similarOutfits.filter(outfit => outfit.outfit_data.main_outfit_id !== id);
     if (filteredOutfits.length > 0 && activeSlideIndex < filteredOutfits.length) {
       const activeOutfit = filteredOutfits[activeSlideIndex];
-      onActiveOutfitChange?.(activeOutfit.outfit_data.main_outfit_id);
+      onActiveOutfitChange(activeOutfit.outfit_data.main_outfit_id);
     } else {
-      onActiveOutfitChange?.(null);
+      onActiveOutfitChange(null);
     }
   }, [activeSlideIndex, similarOutfits, id, onActiveOutfitChange]);
 
@@ -288,25 +385,41 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
       {filteredOutfits.map((outfit) => (
         <SwiperSlide key={outfit.outfit_data.main_outfit_id}>
           <Link href={`/looks/${outfit.outfit_data.main_outfit_id}`} className="block group h-full w-full">
-            <div className="flex gap-2 h-[300px] ml-4 mr-4 mt-6 group-hover:scale-105 group-hover:shadow-lg transition-transform duration-200">
-              {/* Top garment */}
-              <div className="flex-1 relative">
-                <Image
-                  src={outfit.outfit_data.top.image}
-                  alt={outfit.outfit_data.top.title}
-                  fill
-                  className="object-cover rounded-tl-lg rounded-bl-lg"
-                />
-              </div>
-              {/* Bottom garment */}
-              <div className="flex-1 relative">
-                <Image
-                  src={outfit.outfit_data.bottom.image}
-                  alt={outfit.outfit_data.bottom.title}
-                  fill
-                  className="object-cover rounded-tr-lg rounded-br-lg"
-                />
-              </div>
+            <div className="h-[300px] ml-4 mr-4 mt-6 group-hover:scale-105 group-hover:shadow-lg transition-transform duration-200">
+              {/* Check if bottom_id is "0000" to show single dress layout */}
+              {(outfit.outfit_data.bottom.id === "0000" || outfit.outfit_data.bottom.id === "0") ? (
+                /* Single dress layout */
+                <div className="h-full relative">
+                  <Image
+                    src={outfit.outfit_data.top.image}
+                    alt={outfit.outfit_data.top.title}
+                    fill
+                    className="object-cover rounded-lg"
+                  />
+                </div>
+              ) : (
+                /* Two-piece outfit layout */
+                <div className="flex gap-2 h-full">
+                  {/* Top garment */}
+                  <div className="flex-1 relative">
+                    <Image
+                      src={outfit.outfit_data.top.image}
+                      alt={outfit.outfit_data.top.title}
+                      fill
+                      className="object-cover rounded-tl-lg rounded-bl-lg"
+                    />
+                  </div>
+                  {/* Bottom garment */}
+                  <div className="flex-1 relative">
+                    <Image
+                      src={outfit.outfit_data.bottom.image}
+                      alt={outfit.outfit_data.bottom.title}
+                      fill
+                      className="object-cover rounded-tr-lg rounded-br-lg"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
             <div className="text-center mt-2 text-sm font-medium text-[#007e90] opacity-0 group-hover:opacity-100 transition-opacity duration-200">
               View Look

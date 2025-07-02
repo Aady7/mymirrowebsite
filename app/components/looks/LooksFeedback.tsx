@@ -11,9 +11,11 @@ interface LooksFeedbackProps {
     onClose: () => void;
     userId: string;
     lookId: string | number;
+    topId?: string;
+    bottomId?: string;
 }
 
-const LooksFeedback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId }) => {
+const LooksFeedback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId, topId, bottomId }) => {
     console.log('🔍 LooksFeedback props:', { userId, lookId, lookIdType: typeof lookId });
     
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -123,6 +125,8 @@ const LooksFeedback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId }
                         style_match_rating: formData.styleMatchRating,
                         variety_rating: formData.varietyRating,
                         comment: formData.comment,
+                        top_id: topId,
+                        bottom_id: bottomId,
                         updated_at: new Date().toISOString()
                     })
                     .eq('user_id', currentUserId)
@@ -137,7 +141,9 @@ const LooksFeedback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId }
                     freshness_rating: formData.freshnessRating,
                     style_match_rating: formData.styleMatchRating,
                     variety_rating: formData.varietyRating,
-                    comment: formData.comment
+                    comment: formData.comment,
+                    top_id: topId,
+                    bottom_id: bottomId
                 });
                 
                 const { error: insertError } = await supabase
@@ -149,7 +155,9 @@ const LooksFeedback: React.FC<LooksFeedbackProps> = ({ onClose, userId, lookId }
                             freshness_rating: formData.freshnessRating,
                             style_match_rating: formData.styleMatchRating,
                             variety_rating: formData.varietyRating,
-                            comment: formData.comment
+                            comment: formData.comment,
+                            top_id: topId,
+                            bottom_id: bottomId
                         }
                     ]);
 
