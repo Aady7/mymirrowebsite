@@ -301,7 +301,11 @@ const StylistSays = () => {
 
                 {/* View More Button */}
                 <div className="flex justify-end mt-2">
-                  <Link href={`/looks/${outfit.main_outfit_id}`}>
+                  <Link href={
+                    (outfit.bottom.id === "0000" || outfit.bottom.id === "0") 
+                      ? `/products/${outfit.top.id}` 
+                      : `/looks/${outfit.main_outfit_id}`
+                  }>
                     <Button className="bg-[#007e90] hover:bg-[#006d7d] rounded-none w-20 h-6 md:h-8 md:w-25 md:px-6 text-xs transition-colors">
                       EXPLORE
                     </Button>
