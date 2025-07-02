@@ -251,7 +251,14 @@ const StylistSays = () => {
             )}
             
             <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-8 md:mt-12 transition-all duration-300 ease-in-out">
-              {(allOutfitsMode ? allOutfits : outfitData?.userOutfits || []).map((outfit, index) => (
+              {(allOutfitsMode ? allOutfits : outfitData?.userOutfits || []).map((outfit, index) => {
+              // Debug logging for outfit data
+              console.log(`🖼️ Recommendations outfit ${index}:`, {
+                top: { id: outfit.top?.id, image: outfit.top?.image, title: outfit.top?.title },
+                bottom: { id: outfit.bottom?.id, image: outfit.bottom?.image, title: outfit.bottom?.title }
+              });
+              
+              return (
               <div 
                 key={outfit.main_outfit_id}
                 className={`${
@@ -275,7 +282,7 @@ const StylistSays = () => {
                   {(outfit.bottom.id === "0000" || outfit.bottom.id === "0") ? (
                     /* Single dress layout */
                     <div className="h-full relative">
-                      <SimpleRobustImage
+                      <RobustImage
                         src={outfit.top.image}
                         alt={outfit.top.title}
                         fill
@@ -287,7 +294,7 @@ const StylistSays = () => {
                     <div className="flex gap-2 h-full">
                       {/* Top garment */}
                       <div className="flex-1 h-full relative">
-                        <SimpleRobustImage
+                        <RobustImage
                           src={outfit.top.image}
                           alt={outfit.top.title}
                           fill
@@ -296,7 +303,7 @@ const StylistSays = () => {
                       </div>
                       {/* Bottom garment */}
                       <div className="flex-1 h-full relative">
-                        <SimpleRobustImage
+                        <RobustImage
                           src={outfit.bottom.image}
                           alt={outfit.bottom.title}
                           fill
@@ -320,7 +327,8 @@ const StylistSays = () => {
                   </Link>
                 </div>
               </div>
-            ))}
+              );
+            })}
             </div>
           </div>
 
