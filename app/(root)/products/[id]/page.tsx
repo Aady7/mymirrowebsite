@@ -20,6 +20,7 @@ import FeedbackButton from "@/app/components/feedbackButton";
 import { getSimilarProducts } from "@/app/utils/productsapi";
 import { useSearchParams } from "next/navigation";
 import { trackEvent } from "@/lib/utils/analytics";
+import RobustImage from "@/app/components/common/RobustImage";
 
 interface Product {
   id: number;
@@ -536,7 +537,7 @@ export default function ProductPage() {
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
         >
-          <Image
+          <RobustImage
             src={productImages[selectedImageIndex] || "/fallback.jpg"}
             alt={product.name}
             fill
@@ -716,7 +717,7 @@ export default function ProductPage() {
                   <div className="flex w-full gap-4">
                     {/* Product Image */}
                     <div className="relative w-[200px] h-[240px] flex-shrink-0">
-                      <Image
+                      <RobustImage
                         src={styleProduct.image || "/fallback.jpg"}
                         alt={styleProduct.name}
                         fill
@@ -778,7 +779,7 @@ export default function ProductPage() {
             <div className="relative group cursor-pointer w-full max-w-[300px]">
               {/* Image Container */}
               <div className="relative w-full h-[400px]">
-                <Image
+                <RobustImage
                   src={id === outfit?.top_id ? outfit?.bottom_image : outfit?.top_image}
                   alt="Style Product"
                   width={300}
@@ -898,7 +899,7 @@ export default function ProductPage() {
             {similarProducts.map((similarProduct) => (
               <div key={similarProduct.id} className="flex flex-col w-full">
                 <Link href={`/products/${similarProduct.id}`} className="relative w-full h-48 mb-3 cursor-pointer">
-                  <Image
+                  <RobustImage
                     src={similarProduct.productImages || "/fallback.jpg"}
                     alt={similarProduct.name}
                     fill

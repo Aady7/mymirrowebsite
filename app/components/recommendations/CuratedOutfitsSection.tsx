@@ -10,6 +10,8 @@ import { useAuthenticatedOutfitData } from "@/lib/hooks/useAuthenticatedOutfitDa
 import { generateOutfit, fetchUserOutfits } from "@/app/utils/outfitsapi";
 import { cache, CACHE_KEYS } from "@/lib/utils/cache";
 import { trackEvent } from "@/lib/utils/analytics";
+import RobustImage from "@/app/components/common/RobustImage";
+import SimpleRobustImage from "@/app/components/common/SimpleRobustImage";
 
 const StylistSays = () => {
   const { outfitData, isLoading, error, refetch } = useAuthenticatedOutfitData();
@@ -18,6 +20,12 @@ const StylistSays = () => {
   const [allOutfitsMode, setAllOutfitsMode] = useState(false);
   const [allOutfits, setAllOutfits] = useState<any[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [globalImageRefresh, setGlobalImageRefresh] = useState(0);
+
+  // Force refresh all images on component mount (useful for page refresh)
+  useEffect(() => {
+    setGlobalImageRefresh(Date.now());
+  }, []);
 
   // Persist state in sessionStorage to maintain view when navigating back
   useEffect(() => {
@@ -267,7 +275,7 @@ const StylistSays = () => {
                   {(outfit.bottom.id === "0000" || outfit.bottom.id === "0") ? (
                     /* Single dress layout */
                     <div className="h-full relative">
-                      <Image
+                      <SimpleRobustImage
                         src={outfit.top.image}
                         alt={outfit.top.title}
                         fill
@@ -279,7 +287,7 @@ const StylistSays = () => {
                     <div className="flex gap-2 h-full">
                       {/* Top garment */}
                       <div className="flex-1 h-full relative">
-                        <Image
+                        <SimpleRobustImage
                           src={outfit.top.image}
                           alt={outfit.top.title}
                           fill
@@ -288,7 +296,7 @@ const StylistSays = () => {
                       </div>
                       {/* Bottom garment */}
                       <div className="flex-1 h-full relative">
-                        <Image
+                        <SimpleRobustImage
                           src={outfit.bottom.image}
                           alt={outfit.bottom.title}
                           fill
@@ -342,6 +350,17 @@ const StylistSays = () => {
             >
               {isRegenerating ? 'Regenerating...' : 'Regenerate Outfits'}
             </Button>
+          </div>
+
+          {/* Hidden refresh images button - only show if there are image loading issues */}
+          <div className="flex justify-center mt-4">
+            <button
+              onClick={() => setGlobalImageRefresh(Date.now())}
+              className="text-xs text-gray-500 hover:text-gray-700 px-3 py-1 border border-gray-300 rounded hover:border-gray-400 transition-colors"
+              title="Refresh all images if they're not loading properly"
+            >
+              Refresh Images
+            </button>
           </div>
         </div>
       </div>

@@ -38,14 +38,14 @@ declare global {
 }
 
 const SKIN_TONES = [
-  { hex: '#F5E6E0', name: 'Fair' },
-  { hex: '#EDD6C7', name: 'Light' },
-  { hex: '#E5C6B3', name: 'Light Medium' },
-  { hex: '#DDB59E', name: 'Medium' },
-  { hex: '#C69076', name: 'Medium Tan' },
-  { hex: '#AC7254', name: 'Tan' },
-  { hex: '#8E4E2C', name: 'Deep' },
-  { hex: '#643118', name: 'Deep Rich' },
+  { hex: '#E8C3B6 ', name: 'Light' },
+  { hex: '#E5BBB4', name: 'Light Indian' },
+  { hex: '#DCBAB3', name: 'Light-Medium Indian' },
+  { hex: '#C68B6A', name: 'Medium Indian' },
+  { hex: '#BA8578', name: 'Medium Tan' },
+  { hex: '#B58578', name: 'Medium-Deep' },
+  { hex: '#955D3B', name: 'Deep Tan' },
+  { hex: '#8D5A4C', name: 'Deep Rich' },
 ];
 
 export default function ColorAnalyzer({ formValues, handleChange }: ColorAnalyzerProps) {

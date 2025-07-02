@@ -15,6 +15,7 @@ import LooksFeedback from '@/app/components/looks/LooksFeedback';
 import { supabase } from '@/lib/supabase';
 import { CartContext } from '@/app/components/provider';
 import { useNotification } from '@/app/components/common/NotificationContext';
+import RobustImage from '@/app/components/common/RobustImage';
 
 interface Product {
   id: number;
@@ -656,7 +657,7 @@ const LookPage = () => {
         return (
           <div key={product.id} className={`flex w-full mt-8 mb-6 gap-2 ${product.id == outfitData?.top.id ? 'flex-row-reverse' : ''}`}>            
             <div className="relative w-[221px] h-[260.5px] overflow-hidden flex-shrink-0">
-              <Image 
+              <RobustImage 
                 src={validImageUrl}
                 alt={product.name || 'Product Image'} 
                 fill 
