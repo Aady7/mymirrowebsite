@@ -119,6 +119,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="180x180" href="/assets/logo.png" />
         <link rel="mask-icon" href="/assets/logoAtFooter.svg" color="#007e90" />
         <meta name="theme-color" content="#007e90" />
+        <meta name="impact-site-verification" content="08469440-e186-45a0-b97d-027b3e55ee53" />
         
         {/* Google Analytics */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-VE0MRBMNF5"></script>
