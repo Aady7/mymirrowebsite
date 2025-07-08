@@ -108,7 +108,7 @@ export default function Navigation() {
                   alt="Cart" 
                   width={24} 
                   height={24}
-                  className="w-6 h-6"
+                  className="w-6 h-6" //controll the height and width
                 />
                 {cartCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-[#007e90] text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 border-2 border-white z-10">
@@ -121,13 +121,13 @@ export default function Navigation() {
             {/* Hamburger Menu Button */}
             <button 
               onClick={() => setIsOpen(!isOpen)}
-              className='text-gray-700 focus:outline-none'
+              className='text-gray-800 focus:outline-none'
               aria-label='Toggle Menu'
             >
               <svg
-                className="w-6 h-6"
+                className={`w-8 h-8 transition-transform duration-800 ${isOpen ? 'scale-125':'scale-100'}`}// increased the height and width of the icon and added animation to the icon
                 fill="none"
-                stroke="currentColor"
+                stroke="black"//colour change to pitch balck
                 viewBox="0 0 24 24"
               >
                 {isOpen ? (
