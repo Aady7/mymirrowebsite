@@ -1332,11 +1332,11 @@ export default function StyleQuizNew() {
       </div>
 
       {/* Main Content Area - Scrollable */}
-      <div className="flex-1 pb-20 md:pb-24 relative overflow-hidden">
+      <div className="flex-1 relative overflow-hidden [height:calc(100dvh-9rem)]">
         <div 
           ref={contentRef}
           className="absolute inset-0 overflow-y-auto"
-          style={{ paddingBottom: '5rem' }} // Space for navigation
+          style={{ paddingBottom: '7rem' }} // Increased padding to ensure content doesn't get cut off
           data-current-step={currentStep}
           data-dynamic-steps-count={dynamicSteps.length}
         >
@@ -1347,7 +1347,7 @@ export default function StyleQuizNew() {
               </div>
             )}
 
-            <div className="min-h-[100vh]">
+            <div className="min-h-[100dvh] ">
               {renderStepContent()}
             </div>
           </div>
