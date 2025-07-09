@@ -5,7 +5,17 @@ import { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 
-const StarRating = ({ productId, productType = 'product' }: { productId: string, productType?: 'product' | 'look' }) => {
+const StarRating = ({ 
+  productId, 
+  productType = 'product',
+  topId,
+  bottomId 
+}: { 
+  productId: string, 
+  productType?: 'product' | 'look',
+  topId?: string,
+  bottomId?: string
+}) => {
   const { getSession } = useAuth();
   const supabase = createClientComponentClient();
   const [rating, setRating] = useState<number>(0);
@@ -116,6 +126,8 @@ const StarRating = ({ productId, productType = 'product' }: { productId: string,
             .from("outfit_rating")
             .update({
               rating: star,
+              top_id: topId,
+              bottom_id: bottomId,
               updated_at: new Date().toISOString()
             })
             .eq("user_id", currentUserId)
@@ -137,6 +149,8 @@ const StarRating = ({ productId, productType = 'product' }: { productId: string,
               user_id: currentUserId,
               outfit_id: productId,
               rating: star,
+              top_id: topId,
+              bottom_id: bottomId
             });
 
           if (insertError) {

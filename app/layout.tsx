@@ -6,6 +6,7 @@ import Provider from './components/provider';
 import "./globals.css";
 import ConditionalNav from './components/ConditionalNav';
 import ScrollToTop from './components/ScrollToTop';
+import AnalyticsWrapper from './components/AnalyticsWrapper';
 
 const inter = Inter({
   subsets: ["latin"],
@@ -118,14 +119,33 @@ export default function RootLayout({
         <link rel="apple-touch-icon" sizes="180x180" href="/assets/logo.png" />
         <link rel="mask-icon" href="/assets/logoAtFooter.svg" color="#007e90" />
         <meta name="theme-color" content="#007e90" />
+        <meta name="impact-site-verification" content="08469440-e186-45a0-b97d-027b3e55ee53" />
+        
+        {/* Google Analytics */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-VE0MRBMNF5"></script>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.dataLayer = window.dataLayer || [];
+              function gtag(){dataLayer.push(arguments);}
+              gtag('js', new Date());
+              gtag('config', 'G-VE0MRBMNF5', {
+                page_title: document.title,
+                page_location: window.location.href,
+              });
+            `,
+          }}
+        />
       </head>
       <body
         className={`${inter.variable} font-sans antialiased`} 
       >
         <Provider>
-          <ScrollToTop />
-          <ConditionalNav />
-          {children}
+          <AnalyticsWrapper>
+            <ScrollToTop />
+            <ConditionalNav />
+            {children}
+          </AnalyticsWrapper>
         </Provider>
         
         {/*footer*/}

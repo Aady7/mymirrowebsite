@@ -15,7 +15,7 @@ const features = [
   },
   {
     title: "Not sure what's trending or what suits you?",
-    text: "Our fashion experts handpick styles tailored to you",
+    text: "Our fashion experts handpick stylesn,\n tailored to you",
     image: "/assets/home3.jpeg",
     imageAlt: "Feature 3",
     textAlign: "left",
