@@ -800,6 +800,8 @@ const LookPage = () => {
           )}
         </div>
       </div>
+      {/*horizontal line added between the rating and the description section*/}
+      <hr className="border-t-1 border-black w-[90%] mx-auto mt-6 mb-6" />
 
       {/* Description and Why Picked Section */}
       <div className="px-6 py-4">
@@ -832,6 +834,8 @@ const LookPage = () => {
           </div>
         )}
       </div>
+       {/*horizontal line added between the dexcription and the you may also like section*/}
+      <hr className="border-t-1 border-black w-[90%] mx-auto mb-6 mt-6" />
 
       {/* Similar Outfits Section - Only show for normal outfits, not similar outfits */}
       {!id?.startsWith('similar_main_') && (

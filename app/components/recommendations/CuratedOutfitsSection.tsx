@@ -72,7 +72,7 @@ const StylistSays = () => {
       if (containerRef.current) {
         containerRef.current.scrollIntoView({ 
           behavior: 'smooth', 
-          block: 'center' 
+          block: 'start'// change to start from the centre of the page 
         });
       }
     }, 100);
@@ -127,7 +127,7 @@ const StylistSays = () => {
       if (containerRef.current) {
         containerRef.current.scrollIntoView({ 
           behavior: 'smooth', 
-          block: 'center' 
+          block: 'nearest' //change fromthe centre to the nearest
         });
       }
     }, 100);
@@ -149,7 +149,7 @@ const StylistSays = () => {
           if (!isInView) {
             containerRef.current.scrollIntoView({ 
               behavior: 'smooth', 
-              block: 'start' 
+              block: 'nearest' //change from the centre to nearest
             });
           }
         }
@@ -172,7 +172,7 @@ const StylistSays = () => {
       if (containerRef.current) {
         containerRef.current.scrollIntoView({ 
           behavior: 'smooth', 
-          block: 'start' 
+          block: 'nearest' 
         });
       }
     }, 100);

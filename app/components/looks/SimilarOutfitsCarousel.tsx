@@ -10,6 +10,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import Image from "next/image";
 import Link from "next/link";
 import { getSimilarOutfits } from "@/app/utils/outfitsapi";
+import { Button } from "@/components/ui/button";
 
 // Global tracker to prevent duplicate calls across all instances
 const globalCallTracker = new Map<string, { timestamp: number; inProgress: boolean }>();
@@ -271,7 +272,7 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
                 isApiCallInProgress.current = true;
                 
                 console.log('Retry: Calling getSimilarOutfits with ID:', outfitId);
-                const result = await getSimilarOutfits(outfitId, 10, true); // Force refresh to clear cache
+                const result = await getSimilarOutfits(outfitId, 5, true); // Force refresh to clear cache
                 console.log('Retry: getSimilarOutfits API call completed, result:', result);
                 
                 hasFetched.current = true;
@@ -385,7 +386,7 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
       {filteredOutfits.map((outfit) => (
         <SwiperSlide key={outfit.outfit_data.main_outfit_id}>
           <Link href={`/looks/${outfit.outfit_data.main_outfit_id}`} className="block group h-full w-full">
-            <div className="h-[300px] ml-4 mr-4 mt-6 group-hover:scale-105 group-hover:shadow-lg transition-transform duration-200">
+            <div className="h-[300px] ml-5 mr-5 mt-6 group-hover:scale-105 group-hover:shadow-lg transition-transform duration-200">
               {/* Check if bottom_id is "0000" to show single dress layout */}
               {(outfit.outfit_data.bottom.id === "0000" || outfit.outfit_data.bottom.id === "0") ? (
                 /* Single dress layout */
@@ -399,7 +400,7 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
                 </div>
               ) : (
                 /* Two-piece outfit layout */
-                <div className="flex gap-2 h-full">
+                <div className="flex gap-1 h-full">
                   {/* Top garment */}
                   <div className="flex-1 relative">
                     <Image
@@ -421,9 +422,12 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
                 </div>
               )}
             </div>
-            <div className="text-center mt-2 text-sm font-medium text-[#007e90] opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="flex justify-end mr-4 mt-4">
+            <Button className=" border-2 h-8 border-blue-500 bg-white text-sm font-medium text-[#007e90] group-hover:opacity-100 transition-opacity duration-200">
               View Look
+            </Button>
             </div>
+            
           </Link>
         </SwiperSlide>
       ))}
