@@ -657,12 +657,14 @@ const LookPage = () => {
         return (
           <div key={product.id} className={`flex w-full mt-8 mb-6 gap-2 ${product.id == outfitData?.top.id ? 'flex-row-reverse' : ''}`}>            
             <div className="relative w-[221px] h-[260.5px] overflow-hidden flex-shrink-0">
+              <Link  href={`/products/${product.id}`}> 
               <RobustImage 
                 src={validImageUrl}
                 alt={product.name || 'Product Image'} 
                 fill 
                 className="object-cover"
               />
+              </Link>
             </div>
             <div className="relative flex flex-col flex-1 max-w-[400px] min-h-[260.5px] pl-2 pr-2">
               <h1 className="text-lg text-left mb-1 mt-0 text-[14px] font-bold">{product.name}</h1>
