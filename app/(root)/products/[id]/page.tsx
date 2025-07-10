@@ -580,12 +580,22 @@ export default function ProductPage() {
             ))}
           </div>
         )}
+      </div> 
+      {/* brancd name and title section */}
+      <div className="flex flex-row items-center mt-8 w-full">
+        {product?.name && (
+          <span className="text-lg text-gray-900 font-bold whitespace-nowrap">{product.name}</span>
+        )}
+        {product?.title && (
+          <span className="text-sm text-gray-500 font-semibold whitespace-nowrap">-{product.title}</span>
+        )}
       </div>
 
       {/*Price section*/}
       <div>
-        <div className="flex mt-8 items-center gap-1">
+        <div className="flex mt-4 items-center gap-1">
           <FaIndianRupeeSign className="text-lg" />
+          <h1 className="text-2xl text-gray-500 font-bold line-through">{product?.mrp}</h1>
           <h1 className="text-2xl font-bold">{product?.price}</h1>
         </div>
         <div className="w-full p-2 mt-[12px]">
@@ -799,11 +809,15 @@ export default function ProductPage() {
               </button>
             </Link>
           </div>
+          
         </div>
       )}
 
       {/*you may also like section*/}
       <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8">
+        
+      {/* Horizontal Line */}
+      <hr className="border border-black mt-4" />
         <div className="text-center mt-8 mb-2">
           <h1 className="font-medium" style={{ fontSize: "20px", fontWeight: 500 }}>
             YOU MAY ALSO LIKE
