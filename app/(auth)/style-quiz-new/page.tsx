@@ -19,7 +19,7 @@ import DynamicStylePreferenceStep from '@/app/components/style-quiz/DynamicStyle
 import ColorAnalyzer from '@/app/components/style-quiz/ColorAnalysis';
 
 // Import utilities
-import { PERSONALITY_QUESTIONS, handleSendOtp, handleVerifyOtp } from '@/app/utils/styleQuizUtils';
+import { PERSONALITY_QUESTIONS, handleSendOtp, handleVerifyOtp, handleSendMail, handleVerifyMail } from '@/app/utils/styleQuizUtils';
 import { trackEvent } from '@/lib/utils/analytics';
 
 // Types
@@ -27,7 +27,9 @@ interface FormData {
   name: string;
   gender: string;
   phone: string;
+  email: string;  // Add email field
   otp: string;
+  emailOtp: string;  // Add emailOtp field
   bodyType: string;
   upperWear: string;
   waistSize: string;
@@ -323,13 +325,16 @@ export default function StyleQuizNew() {
   const [isResendingOtp, setIsResendingOtp] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [resendSuccess, setResendSuccess] = useState(false);
+  const beta=process.env.NEXT_PUBLIC_TESTING_VAR
 
   // Form data - single state object
   const [formData, setFormData] = useState<FormData>({
     name: '',
     gender: '',
     phone: '',
+    email: '',  // Initialize email
     otp: '',
+    emailOtp: '',  // Initialize emailOtp
     bodyType: '',
     upperWear: '',
     waistSize: '',
@@ -445,7 +450,8 @@ export default function StyleQuizNew() {
             ...existingData,
             userId,
             styleQuizId,
-            phone: session.user.phone || existingData.phone || ''
+            phone: session.user.phone || existingData.phone || '',
+            email: session.user.email || existingData.email || '' // Preserve email
           });
           
           // Restore dynamic steps if goToStyle exists
@@ -466,7 +472,8 @@ export default function StyleQuizNew() {
             ...prev, 
             userId, 
             styleQuizId,
-            phone: session.user.phone || ''
+            phone: session.user.phone || '',
+            email: session.user.email || '' // Initialize email
           }));
         }
       } else {
@@ -567,24 +574,35 @@ export default function StyleQuizNew() {
 
   // Handle OTP sending
   const sendOtp = async () => {
-    if (!formData.phone) return;
+    if ((beta === 'yes' && !formData.email) || (beta !== 'yes' && !formData.phone)) return;
     
     setIsSubmitting(true);
     setError(null);
     
     try {
-      const { error } = await handleSendOtp(formData.phone);
-      if (error) {
-        setError(error.message);
+      if (beta === 'yes') {
+        // Use email verification in beta
+        const { error: emailError } = await handleSendMail(formData.email);
+        if (emailError) {
+          setError(emailError.message);
+          return;
+        }
       } else {
-        // OTP sent successfully, move to next step
-        setCurrentStep(prev => prev + 1);
-        setMaxCompletedStep(prev => Math.max(prev, currentStep));
-        // Start cooldown for resend (60 seconds)
-        setResendCooldown(60);
+        // Use phone verification normally
+        const { error: phoneError } = await handleSendOtp(formData.phone);
+        if (phoneError) {
+          setError(phoneError.message);
+          return;
+        }
       }
+
+      // OTP sent successfully, move to next step
+      setCurrentStep(prev => prev + 1);
+      setMaxCompletedStep(prev => Math.max(prev, currentStep));
+      // Start cooldown for resend (60 seconds)
+      setResendCooldown(60);
     } catch (err) {
-      setError('An error occurred while sending OTP');
+      setError('An error occurred while sending verification code');
     } finally {
       setIsSubmitting(false);
     }
@@ -633,13 +651,24 @@ export default function StyleQuizNew() {
     setError(null);
 
     try {
-      const { error } = await handleVerifyOtp(formData.phone, formData.otp);
-      if (error) {
-        setError(error.message);
-        setIsSubmitting(false);
-        return;
+      if (beta === 'yes') {
+        // Verify email OTP in beta
+        const { error: emailError } = await handleVerifyMail(formData.email, formData.emailOtp);
+        if (emailError) {
+          setError(emailError.message);
+          setIsSubmitting(false);
+          return;
+        }
+      } else {
+        // Verify phone OTP normally
+        const { error: phoneError } = await handleVerifyOtp(formData.phone, formData.otp);
+        if (phoneError) {
+          setError(phoneError.message);
+          setIsSubmitting(false);
+          return;
+        }
       }
-      
+
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
 
       if (!session || sessionError) {
@@ -661,6 +690,7 @@ export default function StyleQuizNew() {
           .upsert([{
             user_id: session.user.id,
             phone_number: session.user.phone,
+            email_address: session.user.email,
             created_at: new Date().toISOString(),
             style_quiz_id: styleQuizId,
             updated_at: new Date().toISOString() // Add updated_at to track changes
@@ -923,6 +953,7 @@ export default function StyleQuizNew() {
         id: formData.styleQuizId || undefined,
         name: formData.name.trim(),
         phone_number: formData.phone?.replace(/\D/g, '') || '',
+        email_address: formData.email?.trim(), // Add email to cleaned data
         gender: formData.gender,
         body_shape: formData.bodyType,
         upper_size: formData.upperWear,
@@ -1060,23 +1091,39 @@ export default function StyleQuizNew() {
       }
     }
     
-    // Phone step - validate phone number for non-authenticated users
+    // Phone/Email step validation
     if (currentStep === phoneStep) {
       if (isAuthenticated) {
         return true; // Skip validation for authenticated users
       } else {
-        return !!formData.phone && formData.phone.trim().length >= 10; // Require valid phone number
+        if (beta === 'yes') {
+          // Only require email in beta
+          return !!formData.email && formData.email.includes('@') && formData.phone.trim().length >= 10;
+        } else {
+          // Only require phone number normally
+          return !!formData.phone && formData.phone.trim().length >= 10;
+        }
+      }
+    }
+    
+    // OTP step validation
+    if (currentStep === otpStep) {
+      if (isAuthenticated) {
+        return true;
+      } else {
+        if (beta === 'yes') {
+          // Only require email OTP in beta
+          return !!formData.emailOtp;
+        } else {
+          // Only require phone OTP normally
+          return !!formData.otp;
+        }
       }
     }
     
     // Feedback step (optional)
     if (currentStep === feedbackStep) {
       return true; // Feedback is optional for all users
-    }
-    
-    // OTP step - only validate for non-authenticated users
-    if (currentStep === otpStep) {
-      return isAuthenticated || !!formData.otp;
     }
     
     return true;
@@ -1236,12 +1283,19 @@ export default function StyleQuizNew() {
         if (currentStep === phoneStep) {
           return (
             <div className="space-y-6">
-              <h2 className="text-2xl font-semibold text-gray-900">Phone Verification</h2>
+              <h2 className="text-2xl font-semibold text-gray-900">
+                {beta === 'yes' ? 'Email Verification' : 'Phone Verification'}
+              </h2>
               {isAuthenticated ? (
                 <div className="space-y-4">
-                  <p className="text-gray-600">Your phone number is already verified.</p>
+                  <p className="text-gray-600">Your contact information is already verified.</p>
                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-green-700">✓ Phone: {formData.phone || 'Verified'}</p>
+                    {beta === 'yes' ? (
+                      <p className="text-green-700">✓ Email: {formData.email || 'Verified'} <br /> ✓ Phone: {formData.phone || 'Verified'}</p>
+                      
+                    ) : (
+                      <p className="text-green-700">✓ Phone: {formData.phone || 'Verified'}</p>
+                    )}
                   </div>
                 </div>
               ) : (
@@ -1250,17 +1304,46 @@ export default function StyleQuizNew() {
                     We'll send you a verification code to secure your account.
                   </p>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Phone Number
-                    </label>
-                    <input
-                      type="tel"
-                      name="phone"
-                      value={formData.phone || ''}
-                      onChange={handleChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007e90] focus:border-transparent"
-                      placeholder="Enter your phone number"
-                    />
+                    {beta === 'yes' ? (
+                      <>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          name="email"
+                          value={formData.email || ''}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007e90] focus:border-transparent"
+                          placeholder="Enter your email address"
+                        />
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Phone Number
+                          <input  
+                            type="tel"
+                            name="phone"
+                            value={formData.phone || ''}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007e90] focus:border-transparent"
+                            placeholder="Enter your phone number"
+                          />
+                        </label>
+                      </>
+                    ) : (
+                      <>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Phone Number
+                        </label>
+                        <input
+                          type="tel"
+                          name="phone"
+                          value={formData.phone || ''}
+                          onChange={handleChange}
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007e90] focus:border-transparent"
+                          placeholder="Enter your phone number"
+                        />
+                      </>
+                    )}
                   </div>
                 </div>
               )}
@@ -1292,12 +1375,15 @@ export default function StyleQuizNew() {
         
         // OTP verification
         if (currentStep === otpStep) {
+          const verificationMethod = beta === 'yes' ? 'email' : 'phone';
+          const verificationContact = beta === 'yes' ? formData.email : formData.phone;
+          
           return (
             <div className="space-y-6">
               <h2 className="text-2xl font-semibold text-gray-900">Enter Verification Code</h2>
               <div className="space-y-4">
                 <p className="text-gray-600">
-                  We've sent a verification code to {formData.phone}. Please enter it below.
+                  We've sent a verification code to your {verificationMethod} ({verificationContact}).
                 </p>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1305,16 +1391,16 @@ export default function StyleQuizNew() {
                   </label>
                   <input
                     type="text"
-                    name="otp"
-                    value={formData.otp || ''}
+                    name={beta === 'yes' ? 'emailOtp' : 'otp'}
+                    value={beta === 'yes' ? formData.emailOtp || '' : formData.otp || ''}
                     onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007e90] focus:border-transparent text-center tracking-wider"
-                    placeholder="Enter the verification code"
+                    placeholder="Enter verification code"
                     maxLength={6}
                     disabled={isAuthenticated}
                   />
                 </div>
-                
+
                 {/* Resend OTP Section */}
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-sm text-gray-600">
@@ -1333,7 +1419,7 @@ export default function StyleQuizNew() {
                       ? 'Sending...'
                       : resendCooldown > 0 
                         ? `Resend in ${resendCooldown}s`
-                        : 'Resend OTP'
+                        : 'Resend Code'
                     }
                   </button>
                 </div>
