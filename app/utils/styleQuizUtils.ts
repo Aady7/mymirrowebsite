@@ -31,6 +31,21 @@ export const handleSendOtp = async (phone: string) => {
   return { error }
 }
 
+export const handleSendMail= async(email:string)=>{   
+  const {error}=await supabase.auth.signInWithOtp({
+    email:email,
+    options:{shouldCreateUser:true,emailRedirectTo:'null'}
+  })
+  return {error}
+}
+export const handleVerifyMail= async(email:string,otp:string)=>{
+  const {error}=await supabase.auth.verifyOtp({
+    email:email,
+    token:otp,
+    type:'email'
+  })
+  return {error}
+}
 export const handleVerifyOtp = async (phone: string, otp: string) => {
   let cleanedPhone = phone.replace(/\D/g, '')
   if (cleanedPhone.startsWith('0')) {
