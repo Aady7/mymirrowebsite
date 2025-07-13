@@ -89,6 +89,19 @@ const CartPage = () => {
     fetchCartItems()
   }, [])
 
+  // Trigger CueLinks to reprocess links after cart items load
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      // Small delay to ensure links are rendered
+      setTimeout(() => {
+        // Try to trigger CueLinks reprocessing
+        if (typeof window !== 'undefined' && (window as any).cuelinks) {
+          (window as any).cuelinks.processPage();
+        }
+      }, 1000);
+    }
+  }, [cartItems])
+
   const updateCart = async (updatedItems: CartItem[]) => {
     try {
       const { session } = await getSession()
@@ -186,6 +199,10 @@ const CartPage = () => {
       {/* header section */}
       <div className="text-black font-[Boston] text-[35px] px-[24px] not-italic leading-normal [font-variant:all-small-caps]">
         <h1>MY CART</h1>
+        {/* Test CueLinks with static link */}
+        <a href="https://www.myntra.com/tshirts" target="_blank" rel="noopener noreferrer" style={{fontSize: '12px', color: 'blue'}}>
+          Test CueLinks Link (Click to test)
+        </a>
       </div>
 
       {/* Horizontal Line */}
@@ -288,6 +305,7 @@ const CartPage = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-3 bg-orange-500 hover:bg-orange-600 text-white text-[12px] font-[Boston] font-medium uppercase py-2 px-4 tracking-wide h-8 inline-flex items-center justify-center rounded cursor-pointer no-underline"
+                  data-cuelinks="true"
                 >
                   Buy Now
                 </a>
