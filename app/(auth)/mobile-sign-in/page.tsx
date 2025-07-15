@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
+
 const MobileSignIn = () => {
   const [phone, setPhone] = useState('')
   const [otp, setOtp] = useState('')
@@ -149,6 +150,11 @@ const MobileSignIn = () => {
       setIsLoading(false)
     }
   }
+
+
+  
+
+
 
   return (
     <div className="min-h-screen bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8">
