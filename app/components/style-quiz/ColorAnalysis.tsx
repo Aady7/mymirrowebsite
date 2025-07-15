@@ -38,7 +38,7 @@ declare global {
 }
 
 const SKIN_TONES = [
-  { hex: '#E8C3B6 ', name: 'Light' },
+  { hex: '#E8C3B6', name: 'Light' },
   { hex: '#E5BBB4', name: 'Light Indian' },
   { hex: '#DCBAB3', name: 'Light-Medium Indian' },
   { hex: '#C68B6A', name: 'Medium Indian' },

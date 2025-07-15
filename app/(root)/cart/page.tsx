@@ -23,6 +23,7 @@ interface Product {
   price: number
   mrp: number
   productImages: string
+  url: string
 }
 
 const CartPage = () => {
@@ -64,7 +65,7 @@ const CartPage = () => {
           const productIds = items.map((item: CartItem) => item.productId)
           const { data: productsData, error: productsError } = await supabase
             .from('products')
-            .select('id, title, name, price, mrp, productImages')
+            .select('id, title, name, price, mrp, productImages, url')
             .in('id', productIds)
 
           if (productsError) throw productsError
@@ -279,6 +280,27 @@ const CartPage = () => {
               <span className="flex flex-row items-center text-[18px] font-normal mt-2">
                 <FaIndianRupeeSign className="mr-[4px] text-[18px] align-middle leading-none" /> {product?.price}
               </span>
+
+              {/* Buy Now Button */}
+              {product?.url && (
+                <a
+                  href={product.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 bg-orange-500 hover:bg-orange-600 text-white text-[12px] font-[Boston] font-medium uppercase py-2 px-4 tracking-wide h-8 inline-flex items-center justify-center rounded cursor-pointer no-underline"
+                  onClick={(e) => {
+                    // Check if CueLinks is blocked
+                    if ((window as any).cuelinksBlocked) {
+                      // CueLinks is blocked, but still redirect to product
+                      // (Won't get affiliate commission, but user can still shop)
+                      console.log('CueLinks blocked - redirecting directly to:', product.url);
+                    }
+                    // Otherwise, let CueLinks handle the conversion normally
+                  }}
+                >
+                  Buy Now
+                </a>
+              )}
             </div>
 
             {/* Right: delete icon */}

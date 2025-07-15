@@ -121,6 +121,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#007e90" />
         <meta name="impact-site-verification" content="08469440-e186-45a0-b97d-027b3e55ee53" />
         
+        {/* Google Tag Manager */}
+        <script async src="https://www.googletagmanager.com/gtm.js?id=GTM-PP44DZ7T"></script>
+        
         {/* Google Analytics */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-VE0MRBMNF5"></script>
         <script
@@ -140,6 +143,12 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased`} 
       >
+        {/* Google Tag Manager (noscript) */}
+        <noscript>
+          <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PP44DZ7T"
+                  height="0" width="0" style={{display:'none',visibility:'hidden'}}></iframe>
+        </noscript>
+        
         <Provider>
           <AnalyticsWrapper>
             <ScrollToTop />
@@ -150,6 +159,42 @@ export default function RootLayout({
         
         {/*footer*/}
         <Footer/>
+        
+        {/* CueLinks Affiliate Script - Added just before closing body tag for optimal performance */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              var cId = '237261';
+              var cuelinksLoaded = false;
+
+              (function(d, t) {
+                var s = document.createElement('script');
+                s.type = 'text/javascript';
+                s.async = true;
+                s.src = (document.location.protocol == 'https:' ? 'https://cdn0.cuelinks.com/js/' : 'http://cdn0.cuelinks.com/js/')  + 'cuelinksv2.js';
+                
+                s.onload = function() {
+                  cuelinksLoaded = true;
+                };
+                
+                s.onerror = function() {
+                  // CueLinks script blocked - set flag for manual handling
+                  window.cuelinksBlocked = true;
+                  console.warn('CueLinks script blocked by ad blocker. Affiliate links will redirect manually.');
+                };
+                
+                document.getElementsByTagName('body')[0].appendChild(s);
+              }());
+              
+              // Check if CueLinks loaded after 3 seconds
+              setTimeout(function() {
+                if (!cuelinksLoaded) {
+                  window.cuelinksBlocked = true;
+                }
+              }, 3000);
+            `,
+          }}
+        />
       </body>
     </html>
   );
