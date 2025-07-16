@@ -29,29 +29,7 @@ declare global {
 }
 
 // At the top of the file, add this type
-type PaymentStatus = 
-  | "Ready to start"
-  | "Payment concluded successfully"
-  | "Refund pending"
-  | "Refund completed"
-  | "Refund failed"
-  | "Payment cancelled by user"
-  | "Payment failed"
-  | "Payment pending"
-  | "Payment expired"
-  | "Payment status unknown"
-  | "Fetching authentication token..."
-  | "Authentication successful!"
-  | "Authentication failed!"
-  | "Authentication error occurred!"
-  | "Please authenticate first!"
-  | "Initiating payment..."
-  | "Payment initiated successfully! Redirecting..."
-  | "Payment initiation failed!"
-  | "Payment error occurred!"
-  | "Error verifying payment"
-  | "No Auth"
-  | `Payment successful! Amount: ${number}`;
+type PaymentStatus = string;
 
 interface RefundResponse {
   success: boolean;
@@ -92,8 +70,8 @@ const Checkout = () => {
   const [authLoading, setAuthLoading] = useState<boolean>(false);
   const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
   const [status, setStatus] = useState<PaymentStatus>("Ready to start");
-  const[vLoading, setVloading]=useState<boolean>(false);
-  const[orderID, setOrderID]=useState<string| null>(null);
+  const [vLoading, setVloading] = useState<boolean>(false);
+  const [orderID, setOrderID] = useState<string | null>(null);
   const [refundLoading, setRefundLoading] = useState<boolean>(false);
   const [refundStatus, setRefundStatus] = useState<string>("");
   const [merchantRefundId, setMerchantRefundId] = useState<string | null>(null);
@@ -102,7 +80,7 @@ const Checkout = () => {
   const [canCheckStatus, setCanCheckStatus] = useState(false);
   const [lastChecked, setLastChecked] = useState<string | null>(null);
 
-  const merchantOrderId=process.env.NEXT_PUBLIC_PHONEPE_MERCHANT_ORDER_ID;
+  const merchantOrderId = process.env.NEXT_PUBLIC_PHONEPE_MERCHANT_ORDER_ID;
 
   const fetchAuthToken = async () => {
     setAuthLoading(true);
@@ -126,15 +104,13 @@ const Checkout = () => {
       setAuthLoading(false);
     }
   };
-  
-
 
   const createPayment = async () => {
     if (!authToken) {
       setStatus("Please authenticate first!");
       return;
     }
-  
+
     setPaymentLoading(true);
     setStatus("Initiating payment...");
     try {
@@ -143,17 +119,17 @@ const Checkout = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: authToken }),
       });
-  
+
       const data: PhonePePaymentResponse = await response.json();
       if (data.state === "PENDING") {
         setStatus("Payment initiated successfully! Redirecting...");
         setOrderID(data.orderId);
-  
+
         const script = document.createElement("script");
         script.src = "https://mercury.phonepe.com/web/bundle/checkout.js";
         script.async = true;
         document.body.appendChild(script);
-  
+
         script.onload = () => {
           window.PhonePeCheckout.transact({
             tokenUrl: data.redirectUrl,
@@ -175,9 +151,8 @@ const Checkout = () => {
       setPaymentLoading(false);
     }
   };
-  
 
-  const varifyPayment = async () => {
+  const verifyPayment = async () => {
     setVloading(true);
     if (!authToken) {
       setStatus("No Auth");
@@ -189,7 +164,7 @@ const Checkout = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: authToken }),
       });
-  
+
       const data = await response.json();
       if (data.state === "COMPLETED") {
         setStatus(`Payment successful! Amount: ${data.amount}`);
@@ -209,7 +184,6 @@ const Checkout = () => {
       setVloading(false);
     }
   };
-  
 
   // Refund function
   const createRefund = async () => {
@@ -230,18 +204,18 @@ const Checkout = () => {
 
       const data: RefundResponse = await response.json();
       console.log("Refund response:", data);
-      
+
       if (response.ok && data.success) {
         const statusMessage = `Refund ${data.state.toLowerCase()}: ID ${data.refundId}`;
         console.log("Setting refund status:", statusMessage);
         setRefundStatus(`✅ ${statusMessage}`);
-        
+
         // Store the refund ID and enable status checking
         console.log("Setting merchantRefundId:", data.refundId);
         setMerchantRefundId(data.refundId);
         console.log("Enabling status check button");
         setCanCheckStatus(true);
-        
+
         switch (data.state) {
           case "PENDING":
             setStatus("Refund pending");
@@ -275,110 +249,36 @@ const Checkout = () => {
     });
   }, [canCheckStatus, merchantRefundId, refundStatus, status]);
 
-  // Function to check refund status
-  //const checkRefundStatus = async (mRefundId: string) => {
-  //  if (!authToken || !mRefundId) {
-  //    setRefundStatus("❌ Missing required information for status check");
-  //    return;
-  //  }
-//
-//   setRefundStatusLoading(true);
-//   try {
-//     const response = await fetch(
-//       `/api/phonepe/get-refund-status?merchantRefundId=${mRefundId}&token=${authToken}`
-//     );
-//
-//     // Try to parse the response as JSON
-//     let data: RefundStatusResponse;
-//     try {
-//       data = await response.json();
-//     } catch (parseError) {
-//       console.error("Failed to parse response:", parseError);
-//       setRefundStatus("❌ Invalid response from server");
-//       return;
-//     }
-//
-//     if (response.ok && data.success) {
-//       const statusMessage = `Refund ${data.state.toLowerCase()}: ID ${data.refundId}`;
-//       setRefundStatus(`✅ ${statusMessage}`);
-//       setLastChecked(new Date().toLocaleString());
-//       
-//       if (data.paymentDetails && data.paymentDetails.length > 0) {
-//         setRefundDetails(data.paymentDetails);
-//       }
-//       
-//       switch (data.state) {
-//         case "PENDING":
-//           setStatus("Refund pending");
-//           break;
-//         case "COMPLETED":
-//           setStatus("Refund completed");
-//           break;
-//         case "FAILED":
-//           setStatus("Refund failed");
-//           break;
-//       }
-//     } else {
-//       const errorMessage = data.message || "Failed to fetch refund status";
-//       console.error("Refund status error:", data.error);
-//       setRefundStatus(`❌ ${errorMessage}`);
-//       
-//       // If we get a specific error about the refund ID not being found,
-//       // we should disable the check status button
-//       if (response.status === 404 || errorMessage.includes("not found")) {
-//         setCanCheckStatus(false);
-//       }
-//     }
-//   } catch (err) {
-//     console.error("Error checking refund status:", err);
-//     setRefundStatus("❌ Network error while checking refund status");
-//   } finally {
-//     setRefundStatusLoading(false);
-//   }
-// };
+  const checkRefundStatus = async () => {
+    setStatus("Checking refund status...");
+    try {
+      const res = await fetch("/api/phonepe/get-refund-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token: authToken,
+          merchantRefundId: merchantRefundId,
+        }),
+      });
 
-  // Manual check refund status
-// const handleManualStatusCheck = () => {
-//   if (!authToken) {
-//     setRefundStatus("❌ Authentication token required");
-//     return;
-//   }
-//   setRefundStatus("Checking refund status...");
-//   // If no refund ID exists, use a default test value
-//   const refundIdToCheck = merchantRefundId || "refund_test123";
-//   checkRefundStatus(refundIdToCheck);
-// };
+      const data = await res.json();
 
-const checkRefundStatus = async () => {
-  setStatus("Checking refund status...");
-  try {
-    const res = await fetch("/api/phonepe/get-refund-status", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        token: authToken,
-        merchantRefundId: merchantRefundId, // from your frontend state or URL
-      }),
-    });
-
-    const data = await res.json();
-
-    if (data) {
-      console.log(data);
-      setStatus(`Refund status: ${data.data.state}`);
-    } else {
-      setStatus(`Refund check failed: ${data.message || 'Unknown error'}`);
+      if (data) {
+        console.log(data);
+        setStatus(`Refund status: ${data.data.state}`);
+      } else {
+        setStatus(`Refund check failed: ${data.message || 'Unknown error'}`);
+      }
+    } catch (err) {
+      setStatus("Refund status check failed");
     }
-  } catch (err) {
-    setStatus("Refund status check failed");
-  }
-};
+  };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-lg">
         <h1 className="text-2xl font-bold text-center mb-8">PhonePe Payment Test</h1>
-        
+
         <div className="space-y-4">
           <div className="flex flex-col space-y-2">
             <button
@@ -392,7 +292,7 @@ const checkRefundStatus = async () => {
             >
               {authLoading ? "Authenticating..." : "Step 1: Get Auth Token"}
             </button>
-            
+
             <button
               onClick={createPayment}
               disabled={paymentLoading || !authToken}
@@ -409,9 +309,9 @@ const checkRefundStatus = async () => {
           <div className="mt-4 p-4 rounded-md bg-gray-50">
             <p className="text-sm font-medium text-gray-700">Status:</p>
             <p className={`text-sm ${
-              error ? "text-red-600" : 
-              status.includes("successful") ? "text-green-600" : 
-              "text-gray-600"
+              error ? "text-red-600" :
+                status.includes("successful") ? "text-green-600" :
+                  "text-gray-600"
             }`}>
               {status || "Ready to start"}
             </p>
@@ -423,14 +323,14 @@ const checkRefundStatus = async () => {
                 An error occurred. Please try again.
               </p>
             </div>
-            
           )}
+
           {status === "Payment concluded successfully" && (
             <div className="mt-4 p-4 rounded-md bg-green-50">
               <p className="text-sm text-green-600">
                 Payment concluded successfully.
               </p>
-              
+
               {/* Always show both buttons */}
               <div className="space-y-4">
                 {/* Refund Button */}
@@ -443,14 +343,20 @@ const checkRefundStatus = async () => {
                       : "bg-purple-600 hover:bg-purple-700"
                   }`}
                 >
-                  {refundLoading 
-                    ? "Processing Refund..." 
+                  {refundLoading
+                    ? "Processing Refund..."
                     : "Initiate Refund"
                   }
                 </button>
 
                 {/* Check Status Button - Always visible */}
- 
+                <button
+                  onClick={checkRefundStatus}
+                  disabled={!authToken || !merchantRefundId}
+                  className="bg-purple-600 text-white px-4 py-2 rounded-md w-full"
+                >
+                  Check Refund Status
+                </button>
 
                 {/* Refund Status */}
                 {refundStatus && (
@@ -479,22 +385,22 @@ const checkRefundStatus = async () => {
                         <div className="grid grid-cols-2 gap-2 text-sm">
                           <div className="text-gray-600">Amount:</div>
                           <div className="text-gray-900">₹{detail.amount / 100}</div>
-                          
+
                           <div className="text-gray-600">Payment Method:</div>
                           <div className="text-gray-900">{detail.paymentMethod}</div>
-                          
+
                           <div className="text-gray-600">UTR:</div>
                           <div className="text-gray-900">{detail.utr}</div>
-                          
+
                           <div className="text-gray-600">Transaction ID:</div>
                           <div className="text-gray-900">{detail.transactionId}</div>
-                          
+
                           <div className="text-gray-600">VPA:</div>
                           <div className="text-gray-900">{detail.vpa}</div>
-                          
+
                           <div className="text-gray-600">Account Type:</div>
                           <div className="text-gray-900">{detail.accountType}</div>
-                          
+
                           <div className="text-gray-600">Account:</div>
                           <div className="text-gray-900">{detail.maskedAccount}</div>
                         </div>
@@ -505,21 +411,16 @@ const checkRefundStatus = async () => {
               </div>
             </div>
           )}
+
           <button
-            onClick={varifyPayment}
+            onClick={verifyPayment}
             disabled={vLoading || !orderID}
             className={`px-4 py-2 rounded-md text-white font-medium ${
               vLoading || !orderID ? "bg-gray-400 cursor-not-allowed" : "bg-yellow-600 hover:bg-yellow-700"
             }`}
-          ></button>
-                         <button
-  onClick={checkRefundStatus}
-  disabled={!authToken || !merchantRefundId}
-  className="bg-purple-600 text-white px-4 py-2 rounded-md"
->
-  Check Refund Status
-</button>
-
+          >
+            {vLoading ? "Verifying..." : "Verify Payment"}
+          </button>
         </div>
       </div>
     </div>
