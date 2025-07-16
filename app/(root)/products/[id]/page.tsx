@@ -587,7 +587,7 @@ export default function ProductPage() {
           <span className="text-lg text-gray-900 font-bold whitespace-nowrap">{product.name}</span>
         )}
         {product?.title && (
-          <span className="text-sm text-gray-500 font-semibold whitespace-nowrap">-{product.title}</span>
+          <span className="text-lg text-gray-500 font-semibold whitespace-nowrap">-{product.title}</span>
         )}
       </div>
 

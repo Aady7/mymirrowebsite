@@ -7,6 +7,7 @@ import "./globals.css";
 import ConditionalNav from './components/ConditionalNav';
 import ScrollToTop from './components/ScrollToTop';
 import AnalyticsWrapper from './components/AnalyticsWrapper';
+import { Toaster } from "react-hot-toast";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -153,6 +154,7 @@ export default function RootLayout({
           <AnalyticsWrapper>
             <ScrollToTop />
             <ConditionalNav />
+            <Toaster position="top-centre"/>
             {children}
           </AnalyticsWrapper>
         </Provider>

@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, useContext } from 'react'
-import { CartContext } from './provider'
+import { CartContext } from '@/app/components/provider'
 
 export default function Navigation() {
   const { signOut } = useAuth()

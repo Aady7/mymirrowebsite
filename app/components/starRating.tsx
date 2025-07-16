@@ -4,6 +4,7 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { useState, useEffect } from "react";
 import { FaStar } from "react-icons/fa";
 import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { toast } from "react-hot-toast";
 
 const StarRating = ({ 
   productId, 
@@ -96,6 +97,7 @@ const StarRating = ({
 
     setIsLoading(true);
     setRating(star);
+    toast.success("Rating saved successfully");
 
     console.log('Attempting to save rating:', { user_id: currentUserId, product_id: productIdentifier, rating: star });
 

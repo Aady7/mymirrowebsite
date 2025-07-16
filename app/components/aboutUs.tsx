@@ -119,19 +119,21 @@ const AboutUs = () => {
       </div>
 
       {/*founders section*/}
-      <div className="px-4 mt-15 sm:px-2">
+      
+      <div className="px-4 mt-15  md:px-8">
         {" "}
+        <div className="w-full max-w-screen-xl mx-auto">
         {/* Container with side padding */}
-        <div className="grid  sm:grid-cols-4 gap-3 sm:gap-5 mt-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-5 md:gap-5 mt-10">
           {/* Mayank bhaiya ka Image 1 */}
          
-          <div className="aspect-square flex-col space-y-2 rounded-lg">
+          <div className="aspect-square flex flex-col items-center space-y-2">
             <Image
               src="/assets/mayanksir.jpg"
               alt="Mayank Bhaiya"
               width={300}
               height={300}
-              className="w-full h-[300px] max-w-[350px] mx-auto object-cover hover:scale-105 transition-transform duration-300"
+              className="w-full h-[300px] max-w-[350px] mx-auto object-cover hover:scale-105 transition-transform duration-300 rounded-lg"
             />
 
             <p className="text-lg font-semibold px-6">Mayank</p>
@@ -139,44 +141,45 @@ const AboutUs = () => {
           </div>
 
           {/* Piyush bahiya ka Image 2 */}
-          <div className="aspect-square flex-col space-y-2 rounded-lg">
+          <div className="aspect-square flex flex-col items-center space-y-2">
             <Image
               src="/assets/ppiyush.avif"
               alt="Piyush bhaiya"
               width={300}
               height={300}
-              className="w-90 h-[300] max-w-[350px]  mx-auto object-cover hover:scale-105 transition-transform duration-300"
+              className="w-full h-[300px] max-w-[350px] mx-auto object-cover rounded-lg hover:scale-105 transition-transform duration-300"
             />
-             <p className="text-lg font-semibold px-6">Piyush Pratap Singh</p>
-            <p className="text-lg text-black px-6">Chief Business Officer</p>
+            <p className="text-lg font-semibold px-6 text-center">Piyush Pratap Singh</p>
+            <p className="text-lg text-black px-6 text-center">Chief Business Officer</p>
           </div>
 
           {/* Akhil bhaiya ka Image 3 */}
-          <div className="aspect-square flex-col space-y-2 rounded-lg">
+          <div className="aspect-square flex flex-col items-centers pace-y-2 ">
             <Image
               src="/assets/akhilBhaiya.avif"
               alt="Akhil bhaiya"
               width={300}
               height={300}
-              className="w-full h-[300] max-w-[350px]  mx-auto   object-cover hover:scale-105 transition-transform duration-300"
+              className="w-full h-[300px] max-w-[350px]  mx-auto  rounded-lg object-cover hover:scale-105 transition-transform duration-300"
             />
-             <p className="text-lg font-semibold px-6">Akhil Singh</p>
-            <p className="text-lg text-black px-6 ">Chief Technology Officer</p>
+             <p className="text-lg font-semibold px-6 text-center mt-2">Akhil Singh</p>
+            <p className="text-lg text-black px-6  text-center">Chief Technology Officer</p>
             
           </div>
 
           {/* Harshit bhaiya ka Image 4 */}
-          <div className="aspect-square flex-col space-y-2 rounded-lg mb-15">
+          <div className="aspect-square flex-col items-center space-y-2  mb-15">
             <Image
               src="/assets/harshit.jpg"
               alt="Harshit bhiya"
               width={300}
               height={300}
-              className="w-full h-[300] max-w-[350px]  mx-auto    object-cover hover:scale-105 transition-transform duration-300"
+              className="w-full h-[300px] max-w-[350px]  mx-auto rounded-lg   object-cover hover:scale-105 transition-transform duration-300"
             />
-             <p className="text-lg font-semibold px-6">Harshit</p>
-            <p className="text-lg text-black px-6">Chief Experience & Operations Officer</p>
+             <p className="text-lg font-semibold px-6  text-center mt-2">Harshit</p>
+            <p className="text-lg text-black px-6  text-center ">Chief Experience & Operations Officer</p>
           </div>
+        </div>
         </div>
       </div>
       
