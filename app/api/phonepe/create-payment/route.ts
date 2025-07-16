@@ -29,6 +29,31 @@ export async function POST(req: NextRequest) {
           redirectUrl: 'https://www.mymirror.in/checkout', // change this in prod
         },
       },
+      "paymentModeConfig": {
+        "enabledPaymentModes": [
+            {
+                "type": "UPI_INTENT"
+            },
+            {
+                "type": "UPI_COLLECT"
+            },
+            {
+                "type": "UPI_QR"
+            },
+            {
+                "type": "NET_BANKING"
+            },
+            {
+                "type": "CARD",
+                "cardTypes": [
+                    "DEBIT_CARD",
+                    "CREDIT_CARD"
+                ]
+            }
+        ],
+      },
+
+
       
         
       
