@@ -278,7 +278,7 @@ const CartPage = () => {
 
               {/* Price */}
               <span className="flex flex-row items-center text-[18px] font-normal mt-2">
-                <FaIndianRupeeSign className="mr-[4px] text-[18px] align-middle leading-none" /> {product?.price}
+                <FaIndianRupeeSign className="mr-[4px] text-[14px] align-middle leading-none" /><span className='line-through text-[14px] pr-1'>{product?.mrp}</span>{product?.price}
               </span>
 
               {/* Buy Now Button */}

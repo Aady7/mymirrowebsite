@@ -440,10 +440,19 @@ const LookPage = () => {
     }
   };
 
-  const getValidImageUrl = (image: string | undefined): string => {
+  const getValidImageUrl = (image: string | undefined | null): string => {
     if (!image || image === 'none' || image === 'undefined') {
       return '/fallback.jpg';
     }
+      // Allow absolute URLs
+  if (image.startsWith('http://') || image.startsWith('https://')) {
+    return image;
+  }
+    // Ensure relative URLs have a leading slash
+    if (!image.startsWith('/')) {
+      return '/' + image;
+    }
+  
     return image;
   };
 
@@ -716,7 +725,7 @@ const LookPage = () => {
               {/* Price and buttons section - now at the bottom */}
               <div className="mt-auto">
                 <h4 className="flex text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-2">
-                  <FaIndianRupeeSign className="h-4 mt-2" /> {product.price}
+                  <FaIndianRupeeSign className="h-4 mt-2" /><span className='line-through pr-2'>{product?.mrp}</span> {product.price}
                 </h4>
 
                 <div className="flex flex-row gap-2 items-center">
