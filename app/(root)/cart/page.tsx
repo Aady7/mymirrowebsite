@@ -235,7 +235,7 @@ const CartPage = () => {
                 type="checkbox"
                 checked={selectedItems.has(itemKey)}
                 onChange={() => toggleItemSelection(item.productId, item.size)}
-                className="absolute top-2 left-2 w-6 h-6 border-2 border-[#007e90] rounded appearance-none
+                className="absolute top-2 left-2 w-6 h-6 z-10 border-2 border-[#007e90] rounded
                   checked:bg-[#007e90]
                   checked:after:content-['✔'] checked:after:text-white checked:after:text-[14px] checked:after:flex checked:after:items-center checked:after:justify-center"
               />
