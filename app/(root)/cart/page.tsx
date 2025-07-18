@@ -139,7 +139,9 @@ const CartPage = () => {
     } else {
       newSelected.add(itemKey)
     }
+  
     setSelectedItems(newSelected)
+   
   }
 
   const calculateSelectedTotal = () => {
@@ -153,14 +155,27 @@ const CartPage = () => {
     }, 0)
   }
 
-  const saveCartToStorage= (selectedItems:CartItem[])=>{
-    try{
-      localStorage.setItem('mymirro_cart_items', JSON.stringify(selectedItems))
-      console.log("Cart items saved to localStorage:", selectedItems)
-    }catch(error){
-      console.error('Error saving cart to localStorage:', error)
+  const saveCartToStorage = () => {
+    try {
+      // Filter cart items to only include selected items
+      const selectedCartItems = cartItems.filter(item => {
+        const itemKey = `${item.productId}-${item.size}`
+        return selectedItems.has(itemKey)
+      })
+      
+      localStorage.setItem('mymirro_cart_items', JSON.stringify(selectedCartItems))
+      console.log("Selected cart items saved to localStorage:", selectedCartItems)
+    } catch (error) {
+      console.error('Error saving selected cart items to localStorage:', error)
     }
   }
+  
+  useEffect(() => {
+    // Save selected items to localStorage whenever selectedItems changes
+    if (selectedItems.size > 0) {
+      saveCartToStorage()
+    }
+  }, [selectedItems, cartItems])
   
   
 
@@ -387,7 +402,7 @@ const CartPage = () => {
     className="w-full bg-[#007e90] hover:bg-[#006d7d] text-white text-[14px] font-[Boston] font-medium uppercase py-3 px-6 tracking-wide rounded"
     disabled={selectedItems.size === 0}
     onClick={()=>{
-      saveCartToStorage(cartItems)
+      
     }}
   >
     Place Order
