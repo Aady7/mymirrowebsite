@@ -153,6 +153,17 @@ const CartPage = () => {
     }, 0)
   }
 
+  const saveCartToStorage= (selectedItems:CartItem[])=>{
+    try{
+      localStorage.setItem('mymirro_cart_items', JSON.stringify(selectedItems))
+      console.log("Cart items saved to localStorage:", selectedItems)
+    }catch(error){
+      console.error('Error saving cart to localStorage:', error)
+    }
+  }
+  
+  
+
   if (loading) {
     return <SmartLoader />
   }
@@ -371,12 +382,20 @@ const CartPage = () => {
         </p>
 
         {/* Place Order button */}
-        <button 
-          className="w-full max-w-xs bg-[#007e90] hover:bg-[#006d7d] text-white text-[14px] font-[Boston] font-medium uppercase py-3 px-6 tracking-wide rounded"
-          disabled={selectedItems.size === 0}
-        >
-          Place Order
-        </button>
+        <Link href="/address" className="block w-full max-w-xs">
+  <button 
+    className="w-full bg-[#007e90] hover:bg-[#006d7d] text-white text-[14px] font-[Boston] font-medium uppercase py-3 px-6 tracking-wide rounded"
+    disabled={selectedItems.size === 0}
+    onClick={()=>{
+      saveCartToStorage(cartItems)
+    }}
+  >
+    Place Order
+  </button>
+</Link>
+
+
+       
       </div>
     </>
   )

@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import { FaIndianRupeeSign } from "react-icons/fa6";
 
@@ -157,9 +158,11 @@ const page = () => {
         </p>
 
         {/* Place Order button */}
+        <Link href="/address">
         <button className="w-full max-w-xs bg-black text-white text-[14px] font-bold uppercase py-3 px-6 tracking-wide">
           Place Order
         </button>
+        </Link>
       </div>
     </>
   );

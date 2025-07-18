@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 
 
 export async function POST(req: NextRequest) {
-  const { token } = await req.json();
+  const { token , merchantOrderId, amount } = await req.json();
+
 
   const res = await fetch('https://api.phonepe.com/apis/pg/checkout/v2/pay', {
     method: 'POST',
@@ -12,8 +13,8 @@ export async function POST(req: NextRequest) {
       Authorization: `O-Bearer ${token}`,
     },
     body: JSON.stringify({
-      merchantOrderId:`txn_${Date.now()}`,
-      amount: 100,
+      merchantOrderId,
+      amount,
       expireAfter:3600,
       metaInfo: {
         udf1: 'test1',
