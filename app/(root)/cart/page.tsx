@@ -349,7 +349,7 @@ const CartPage = () => {
       </div>
 
       {/* billing section */}
-      <div className="px-[24px] md:p-6 lg:p-8">
+      <div className="px-[24px] md:p-6 lg:p-8 flex items-center justify-center">
         <div className="border border-black px-4 mt-9 py-4 w-full max-w-sm text-black font-[Boston] text-[16px] not-italic leading-normal [font-variant:all-small-caps]">
           {/* Header */}
           <h2 className="text-[16px] font-medium mb-3 border-b border-dashed border-gray-400 pb-2">
