@@ -21,7 +21,8 @@ import { getSimilarProducts } from "@/app/utils/productsapi";
 import { useSearchParams } from "next/navigation";
 import { trackEvent } from "@/lib/utils/analytics";
 import RobustImage from "@/app/components/common/RobustImage";
-
+//buy now button redirect link on it
+import { getAffiliate } from "@/app/utils/affiliateMap";
 interface Product {
   id: number;
   created_at: string;
@@ -605,6 +606,18 @@ export default function ProductPage() {
     }
   }
 
+  //buy now product handler
+  const handleBuyNow = () => {
+   
+    const finalLink = getAffiliate(product.url, (product as any).affiliatesource);
+    if (!finalLink) {
+      alert("No valid affiliate link available.");
+      return;
+    }
+  
+    window.open(finalLink, "_blank");
+  };
+
   return (
     <div className="w-full px-[24px] py-1 max-w-md mx-auto font-['Boston']">
       {/* Header */}
@@ -730,7 +743,7 @@ export default function ProductPage() {
         <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8">
           {/* Buttons Row */}
           <div className="flex items-center gap-4 mt-5">
-            <Button className="flex-[1] min-w-[100px] max-w-[160px] bg-[#007e90] hover:bg-[#006d7d] rounded text-white h-10 text-xs transition-colors">
+            <Button onClick={handleBuyNow} className="flex-[1] min-w-[100px] max-w-[160px] bg-[#007e90] hover:bg-[#006d7d] rounded text-white h-10 text-xs transition-colors">
               BUY NOW
             </Button>
             <Button
