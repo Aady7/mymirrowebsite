@@ -1302,11 +1302,14 @@ export default function StyleQuizNew() {
                 <div className="space-y-4">
                   <p className="text-gray-600">
                     We'll send you a verification code to secure your account.
+                    
+                    
                   </p>
                   <div>
                     {beta === 'yes' ? (
                       <>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <p className="text-gray-600 text-sm pb-4">*Both email and phone number are required</p>
+                        <label className="block text-sm font-medium text-gray-700 mb-2 mt-4">
                           Email Address
                         </label>
                         <input
@@ -1317,7 +1320,7 @@ export default function StyleQuizNew() {
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007e90] focus:border-transparent"
                           placeholder="Enter your email address"
                         />
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-2 mt-4">
                           Phone Number
                           <input  
                             type="tel"
