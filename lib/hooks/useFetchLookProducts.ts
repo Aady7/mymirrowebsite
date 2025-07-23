@@ -14,6 +14,7 @@ interface Product {
     sizesAvailable: string;
     productImages: string;
     specifications: string;
+    affiliatesource:string;
 }
 
 interface Look {
