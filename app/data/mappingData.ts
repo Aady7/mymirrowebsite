@@ -48,66 +48,66 @@ export const QUESTION_MAPPING_DATA: QuestionMappingEntry[] = [
   // Weekend Preference (Q1)
   {
     questionKey: "weekendPreference",
-    option: "PJ bottoms, OTT binge, snack delivery",
+    option: "Relaxing at home",
     personalityTags: ["comf", "mini"],
   },
   {
     questionKey: "weekendPreference",
-    option: "Trying the café that blew up on Reels this week",
+    option: "Exploring new spots",
     personalityTags: ["trend", "sc"],
   },
   {
     questionKey: "weekendPreference",
-    option: "Evening run club / badminton game, then coconut water",
+    option: "Being active",
     personalityTags: ["prac", "comf"],
   },
   {
     questionKey: "weekendPreference",
-    option: "Tickets to an indie stand-up or art gig you found on BookMyShow",
+    option: "Attending events, parties",
     personalityTags: ["ex", "rb"],
   },
 
   // Shopping Style (Q2)
   {
     questionKey: "shoppingStyle",
-    option: "Premium brand that screams success",
+    option: "Premium brands",
     personalityTags: ["stat", "conf"],
   },
   {
     questionKey: "shoppingStyle",
-    option: "Eye-catching, one-of-a-kind collab to flex creativity",
+    option: "Unique finds",
     personalityTags: ["bold", "ex"],
   },
   {
     questionKey: "shoppingStyle",
-    option: "Reliable classic label you've trusted for years",
+    option: "Trusted labels",
     personalityTags: ["trad", "pl"],
   },
   {
     questionKey: "shoppingStyle",
-    option: "Spreadsheet of specs, coupon codes, top reviews—then checkout",
+    option: "Research & compare",
     personalityTags: ["pl", "prac"],
   },
 
   // Workspace Style (Q3)
   {
     questionKey: "workspaceStyle",
-    option: "Clean, neutral desk with only the essentials",
+    option: "Clean and clutter-free",
     personalityTags: ["mini", "pl"],
   },
   {
     questionKey: "workspaceStyle",
-    option: "Cushions, snack bowl, foot-rest—comfort paradise",
+    option: "Full of cozy touches (plants, cushions, mug)",
     personalityTags: ["comf", "prac"],
   },
   {
     questionKey: "workspaceStyle",
-    option: "Sleek gadgets, wireless everything—LinkedIn-ad vibe",
+    option: "Tech-loaded",
     personalityTags: ["conf", "stat"],
   },
   {
     questionKey: "workspaceStyle",
-    option: "Random gifts, ticket stubs, action figures—fun chaos",
+    option: "Decor-rich and personal",
     personalityTags: ["rb", "ex"],
   },
 
@@ -129,41 +129,41 @@ export const QUESTION_MAPPING_DATA: QuestionMappingEntry[] = [
   },
   {
     questionKey: "friendCompliments",
-    option: "Your organised, thoughtful, Google-Sheet-for-everything approach",
+    option: "Your are organised and thoughtful",
     personalityTags: ["pl", "conf"],
   },
 
   // Work Outfit (Q5)
   {
     questionKey: "workOutfit",
-    option: "Crisp formal shirt, sharp trousers, polished shoes",
+    option: "Formal & sharp",
     personalityTags: ["conf", "stat"],
   },
   {
     questionKey: "workOutfit",
-    option: "Comfortable polo and well-fitted trousers",
+    option: "Elevated casual",
     personalityTags: ["prac", "comf"],
   },
   {
     questionKey: "workOutfit",
-    option: "Bold printed shirt with statement accessories",
+    option: "Standout bold",
     personalityTags: ["ex", "bold"],
   },
   {
     questionKey: "workOutfit",
-    option: "Simple white/black shirt with clean lines—let your work speak",
+    option: "Simple & classic",
     personalityTags: ["trad", "mini"],
   },
 
   // Wardrobe Content (Q6)
   {
     questionKey: "wardrobeContent",
-    option: "Designer labels or premium pieces you treasure",
+    option: "Signature pieces",
     personalityTags: ["stat", "bold"],
   },
   {
     questionKey: "wardrobeContent",
-    option: "Neutral basics that mix-and-match effortlessly",
+    option: "Neutral basics ",
     personalityTags: ["mini", "comf"],
   },
   {
@@ -173,7 +173,7 @@ export const QUESTION_MAPPING_DATA: QuestionMappingEntry[] = [
   },
   {
     questionKey: "wardrobeContent",
-    option: "Eclectic thrift finds, DIY patches—totally you",
+    option: "Signature pieces",
     personalityTags: ["rb", "ex"],
   },
 ];

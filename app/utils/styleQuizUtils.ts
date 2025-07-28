@@ -159,67 +159,67 @@ export const SIZE_OPTIONS = {
 export const PERSONALITY_QUESTIONS = [
   {
     key: 'weekendPreference',
-    label: "It's finally the weekend! What's your ideal Saturday evening?",
+    label: "Your ideal Saturday night?",
     options: [
-      'PJ bottoms, OTT binge, snack delivery',
-      'Trying the café that blew up on Reels this week',
-      'Evening run club / badminton game, then coconut water',
-      'Tickets to an indie stand-up or art gig you found on BookMyShow'
+      'Relaxing at home',
+      'Exploring new spots',
+      'Being active',
+      'Attending events, parties'
     ],
     group: 'personality'
   },
   {
     key: 'friendCompliments',
-    label: 'Your friends typically compliment you most on:',
+    label: 'What do friends praise you for?',
     options: [
       'Always knowing what\'s trending and the newest cool spots',
       'Being calm, dependable, and rooted',
       'Your bold ideas and adventurous spirit',
-      'Your organised, thoughtful, Google-Sheet-for-everything approach'
+      'Your organised and thoughtful'
     ],
     group: 'personality'
   },
   {
     key: 'shoppingStyle',
-    label: 'When shopping online, how do you usually make your final choice?',
+    label: 'How do you pick clothes online?',
     options: [
-      'Premium brand that screams success',
-      'Eye-catching, one-of-a-kind collab to flex creativity',
-      'Reliable classic label you\'ve trusted for years',
-      'Spreadsheet of specs, coupon codes, top reviews—then checkout'
+      'Premium brands',
+      'Unique finds',
+      'Trusted labels',
+      'Research & compare'
     ],
     group: 'social1'
   },
   {
     key: 'wardrobeContent',
-    label: 'If someone flung open your wardrobe, they\'d mostly see:',
+    label: 'Your wardrobe is mostly',
     options: [
-      'Designer labels or premium pieces you treasure',
-      'Neutral basics that mix-and-match effortlessly',
+      'Signature pieces',
+      'Neutral basics',
       'Curated ethnic + western classics, all paired up',
-      'Electic thrift finds, DIY patches—totally you'
+      'Creative finds'
     ],
     group: 'social1'
   },
   {
     key: 'workOutfit',
-    label: 'Big work presentation tomorrow—your outfit vibe?',
+    label: 'Big presentation tomorrow - what do you wear?',
     options: [
-      'Crisp formal shirt, sharp trousers, polished shoes',
-      'Comfortable polo and well-fitted trousers',
-      'Bold printed shirt with statement accessories',
-      'Simple white/black shirt with clean lines—let your work speak'
+      'Formal & sharp',
+      'Elevated casual',
+      'Standout bold',
+      'Simple & classic'
     ],
     group: 'work'
   },
   {
     key: 'workspaceStyle',
-    label: 'Your work or study desk usually looks like:',
+    label: 'Your work/tudy desk looks like',
     options: [
-      'Clean, neutral desk with only the essentials',
-      'Cushions, snack bowl, foot-rest—comfort paradise',
-      'Sleek gadgets, wireless everything—LinkedIn-ad vibe',
-      'Random gifts, ticket stubs, action figures—fun chaos',
+      'Clean and clutter-free',
+      'Full of cozy touches (plants, cushions, mug)',
+      'Tech-loaded',
+      'Decor-rich and personal',
     ],
     group: 'work'
   },
