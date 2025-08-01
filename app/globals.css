@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+ 
 
 @custom-variant dark (&:is(.dark *));
 
@@ -298,3 +298,20 @@
   overflow: hidden;
 }
 
+/* lookbook pop up menu*/
+@layer utilities {
+  .animate-slide-up {
+    animation: slideUp 0.8s ease-out forwards;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}

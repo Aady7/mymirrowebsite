@@ -175,6 +175,13 @@ export default function Navigation() {
               Recommendations
             </Link>
             <Link 
+              href="/lookbook" 
+              onClick={handleLinkClick}
+              className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
+            >
+              LookBook
+            </Link>
+            <Link 
               href="/cart" 
               onClick={handleLinkClick}
               className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
