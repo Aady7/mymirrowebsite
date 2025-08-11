@@ -1,5 +1,4 @@
 @import "tailwindcss";
- 
 
 @custom-variant dark (&:is(.dark *));
 
@@ -76,7 +75,6 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-
 }
 
 .dark {
@@ -121,110 +119,111 @@
     @apply bg-background text-foreground;
   }
 }
- html,body{
-   margin: 0;
+html,
+body {
+  margin: 0;
   padding: 0;
-   width: 100%;
+  width: 100%;
   overflow-x: hidden;
-   font-family: 'Boston', system-ui, sans-serif;
+  font-family: "Boston", system-ui, sans-serif;
 }
 * {
   box-sizing: border-box;
-  font-family: 'Boston', system-ui, sans-serif;
+  font-family: "Boston", system-ui, sans-serif;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonThin.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonThin.otf") format("opentype");
   font-weight: 100;
   font-style: normal;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonThinIt.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonThinIt.otf") format("opentype");
   font-weight: 100;
   font-style: italic;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonExtraLight.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonExtraLight.otf") format("opentype");
   font-weight: 200;
   font-style: normal;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonExtraLightIt.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonExtraLightIt.otf") format("opentype");
   font-weight: 200;
   font-style: italic;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonLight.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonLight.otf") format("opentype");
   font-weight: 300;
   font-style: normal;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonLightIt.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonLightIt.otf") format("opentype");
   font-weight: 300;
   font-style: italic;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonRegular.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonRegular.otf") format("opentype");
   font-weight: 400;
   font-style: normal;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonRegularIt.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonRegularIt.otf") format("opentype");
   font-weight: 400;
   font-style: italic;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonSemiBold.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonSemiBold.otf") format("opentype");
   font-weight: 600;
   font-style: normal;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonSemiBoldIt.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonSemiBoldIt.otf") format("opentype");
   font-weight: 600;
   font-style: italic;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonBold.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonBold.otf") format("opentype");
   font-weight: 700;
   font-style: normal;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonBoldIt.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonBoldIt.otf") format("opentype");
   font-weight: 700;
   font-style: italic;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonBlack.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonBlack.otf") format("opentype");
   font-weight: 900;
   font-style: normal;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonBlackIt.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonBlackIt.otf") format("opentype");
   font-weight: 900;
   font-style: italic;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonHeavy.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonHeavy.otf") format("opentype");
   font-weight: 950;
   font-style: normal;
 }
 @font-face {
-  font-family: 'Boston';
-  src: url('/fonts/boston/BostonHeavyIt.otf') format('opentype');
+  font-family: "Boston";
+  src: url("/fonts/boston/BostonHeavyIt.otf") format("opentype");
   font-weight: 950;
   font-style: italic;
 }
@@ -247,13 +246,12 @@
 }
 
 /* swiper styles sections*/
-@import 'swiper/css';
-@import 'swiper/css/navigation';
-@import 'swiper/css/pagination';
-
+@import "swiper/css";
+@import "swiper/css/navigation";
+@import "swiper/css/pagination";
 
 /* three greed image css*/
- .swiper-button-prev,
+.swiper-button-prev,
 .swiper-button-next {
   color: white;
   background-color: black;
@@ -313,5 +311,43 @@
       transform: translateY(0);
       opacity: 1;
     }
+  }
+}
+
+/* Custom animation keyframes and class */
+@layer utilities {
+  @keyframes slide-up {
+    0% {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.4s ease-out both;
+  }
+}
+
+@layer utilities {
+  @keyframes scale-in-center {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  .animate-scale-in {
+    animation: scale-in-center 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .animate-scale-in-from-bottom-right {
+    transform-origin: bottom right;
+    animation: scale-in-center 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 }

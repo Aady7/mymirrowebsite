@@ -8,7 +8,8 @@ import { User } from "@supabase/supabase-js";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-
+import EditLookBook from "./editlookbook";
+import { useRouter } from "next/navigation";
 type LookbookItem = {
   id: string;
   title: string;
@@ -22,11 +23,14 @@ const LookBook = () => {
     "/assets/tex-2.png",
   ]);
   const [user, setUser] = useState<User | null>(null);
+  const [editIndex, setEditIndex] = useState<number | null>(null);
   const { getSession } = useAuth();
   const [showPopup, setPopup] = useState(false);
   const [name, setName] = useState("");
   const gridRef = useRef<HTMLDivElement>(null);
-
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<LookbookItem | null>(null);
+  const router=useRouter();
   //chek the session id of the user
   useEffect(() => {
     const checkSession = async () => {
@@ -63,6 +67,9 @@ const LookBook = () => {
   //to edit the card
   const handleEdit = (id: number) => {
     console.log("Edit card with Id:", id);
+    setEditIndex(id);
+    router.push(`/lookbook/${id}`);
+    
   };
 
   function getColorByIndex(index: number) {
@@ -92,12 +99,11 @@ const LookBook = () => {
                 height={100}
                 className="w-full h-full"
               />
-               <h1 className="mt-10 pl-2 text-center align-center uppercase text-black text-md font-semibold">
+              <h1 className="mt-10 pl-2 text-center align-center uppercase text-black text-md font-semibold">
                 Looks like your Lookbook’s on vacation 👀 Time to add some fire
                 fits!
               </h1>
             </div>
-            
           ) : null}
           {lookbook.map((card, idx) => (
             <div
@@ -116,12 +122,14 @@ const LookBook = () => {
                   {card.title}
                 </p>
                 <div className="flex gap-2">
+                 
                   <button
                     className="w-7 h-7 flex items-center justify-center bg-white rounded-full shadow hover:scale-105 transition border-1 border-black"
                     onClick={() => handleEdit(idx)}
                   >
                     ✏️
                   </button>
+                  
                   <button
                     className="w-7 h-7 flex items-center justify-center bg-white rounded-full shadow hover:scale-105 transition border-1 border-black"
                     //onClick={() => handleEdit(card.id)}
@@ -130,10 +138,14 @@ const LookBook = () => {
                   </button>
                   <button
                     className="w-7 h-7 flex items-center justify-center bg-white rounded-full shadow hover:scale-105 transition border-1 border-black"
-                    onClick={() => handleDelete(card.id)}
+                    onClick={() => {
+                      setDeleteTarget(card);
+                      setShowDeleteModal(true);
+                    }}
                   >
                     🗑️
                   </button>
+                  
                 </div>
               </div>
 
@@ -233,6 +245,36 @@ const LookBook = () => {
               >
                 save
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center  bg-opacity-60">
+          <div className="bg-[#232323] rounded-xl p-6 w-[320px] text-center scale-90 animate-scale-in">
+            <h2 className="text-lg font-bold text-white mb-2">Delete lookbook?</h2>
+            <p className="text-sm text-gray-200 mb-6">
+              Are you sure you want to delete <br />
+              <span className="font-semibold">{deleteTarget.title}?</span>
+            </p>
+            <div className="flex border-t border-gray-700 pt-4 gap-4 justify-between">
+              <button
+                className="flex-1 text-blue-400 font-semibold py-2 rounded hover:bg-gray-800 transition"
+                onClick={() => setShowDeleteModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="flex-1 text-red-400 font-semibold py-2 rounded hover:bg-gray-800 transition"
+                onClick={() => {
+                  handleDelete(deleteTarget.id);
+                  setShowDeleteModal(false);
+                  setDeleteTarget(null);
+                }}
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

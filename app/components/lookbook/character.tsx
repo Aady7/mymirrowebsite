@@ -1,0 +1,31 @@
+export const Character = [
+    {
+        id:1,
+        image:"/assets/stickers/image_1.svg"
+    },
+    {
+        id:2,
+        image:"/assets/stickers/image_2.svg"
+    },
+    {
+        id:3,
+        image:"/assets/stickers/image_3.svg"
+    },
+    {
+        id:4,
+        image:"/assets/stickers/image_4.svg"
+    },
+    {
+        id:5,
+        image:"/assets/stickers/image_5.svg"
+    },
+    {
+        id:6,
+        image:"/assets/stickers/image_6.svg"
+    },
+    {
+        id:7,
+        image:"/assets/stickers/image_1.svg"
+    },
+    
+];
