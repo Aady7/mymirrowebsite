@@ -37,8 +37,7 @@ const EditLookBook = ({ item, onClose }: EditLookBookProps) => {
   const [sliderValue, setSliderValue] = useState(90); // default to last color
 
   return (
-    <>
-      <div className="bg-black text-white">
+    <div className="fixed inset-0 z-50 overflow-auto bg-black text-white animate-slide-up">
         {/*just to add a line height  */}
         <div className="min-h-5"></div>
 
@@ -115,7 +114,6 @@ const EditLookBook = ({ item, onClose }: EditLookBookProps) => {
             Stickers
           </Button>
         </div>
-      </div>
       {/*save popup section */}
       {showSave && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-60">
@@ -243,7 +241,7 @@ const EditLookBook = ({ item, onClose }: EditLookBookProps) => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 export default EditLookBook;

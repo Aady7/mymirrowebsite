@@ -31,6 +31,7 @@ const LookBook = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<LookbookItem | null>(null);
   const router=useRouter();
+  const [showEditLookBook, setShowEditLookBook] = useState(false);
   //chek the session id of the user
   useEffect(() => {
     const checkSession = async () => {
@@ -215,7 +216,12 @@ const LookBook = () => {
               Here's how your cover looks right now. Wanna make it so you?
             </p>
             <div className="flex items-center justify-center">
-              <Button className="text-sm bg-gray-100 text-black rounded-md px-4 py-2 mb-6">
+              <Button className="text-sm bg-gray-100 text-black rounded-md px-4 py-2 mb-6"
+                onClick={() => {
+                  setPopup(false);
+                  setShowEditLookBook(true);
+                }}
+              >
                 Create Your Own Cover
               </Button>
             </div>
@@ -248,6 +254,9 @@ const LookBook = () => {
             </div>
           </div>
         </div>
+      )}
+      {showEditLookBook && (
+        <EditLookBook item={lookbook[lookbook.length - 1]} onClose={() => setShowEditLookBook(false)} />
       )}
 
       {showDeleteModal && deleteTarget && (
