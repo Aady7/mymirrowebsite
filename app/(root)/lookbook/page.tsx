@@ -6,7 +6,9 @@ const LokBook = () => {
   return (
     <>
       <LookBook />
-    <EditLookBook/>
+
+
+
     </>
   );
 };

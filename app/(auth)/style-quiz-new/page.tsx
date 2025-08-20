@@ -1554,7 +1554,7 @@ export default function StyleQuizNew() {
       </div>
 
       {/* Fixed Navigation */}
-      <div className="bg-white border-t border-gray-200 p-4 md:p-6 fixed bottom-0 left-0 right-0 z-[100] shadow-lg">
+      <div className="bg-white border-t border-gray-200 p-4 md:p-6 sticky bottom-0 left-0 right-0 z-[100] shadow-lg">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center">
             <button
