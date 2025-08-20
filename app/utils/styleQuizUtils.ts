@@ -214,7 +214,7 @@ export const PERSONALITY_QUESTIONS = [
   },
   {
     key: 'workspaceStyle',
-    label: 'Your work/tudy desk looks like',
+    label: 'Your work/study desk looks like',
     options: [
       'Clean and clutter-free',
       'Full of cozy touches (plants, cushions, mug)',
