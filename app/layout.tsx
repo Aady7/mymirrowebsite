@@ -5,6 +5,7 @@ import Footer from "./components/footer";
 import Provider from './components/provider';
 import "./globals.css";
 import ConditionalNav from './components/ConditionalNav';
+import ConditionalFooter from './components/ConditionalFooter';
 import ScrollToTop from './components/ScrollToTop';
 import AnalyticsWrapper from './components/AnalyticsWrapper';
 import { Toaster } from "react-hot-toast";
@@ -154,13 +155,11 @@ export default function RootLayout({
           <AnalyticsWrapper>
             <ScrollToTop />
             <ConditionalNav />
-            <Toaster position="top-centre"/>
+            <Toaster position="top-center"/>
             {children}
+            <ConditionalFooter />
           </AnalyticsWrapper>
         </Provider>
-        
-        {/*footer*/}
-        <Footer/>
         
         {/* CueLinks Affiliate Script - Added just before closing body tag for optimal performance */}
         <script

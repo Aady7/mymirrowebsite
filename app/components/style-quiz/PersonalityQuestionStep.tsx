@@ -49,6 +49,7 @@ const PersonalityQuestionStep: React.FC<PersonalityQuestionStepProps> = ({
                                             checked={isSelected || false}
                                             onChange={handleChange}
                                             className="hidden"
+                                            suppressHydrationWarning
                                         />
                                         <div className={`w-full py-4 px-6 rounded-lg text-center cursor-pointer transition-all text-[14px] ${
                                             isSelected

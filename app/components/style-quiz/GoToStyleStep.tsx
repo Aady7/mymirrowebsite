@@ -25,6 +25,7 @@ const GoToStyleStep: React.FC<GoToStyleStepProps> = ({ formValues, handleChange 
                             checked={formValues.goToStyle?.includes(style) || false}
                             onChange={handleChange}
                             className="hidden"
+                            suppressHydrationWarning
                         />
                         <div className={`w-full aspect-[3/4] border-2 rounded-lg overflow-hidden transition-all ${
                             (formValues.goToStyle?.includes(style) || false) ? 'border-[#007e90] shadow-lg' : 'border-gray-200'

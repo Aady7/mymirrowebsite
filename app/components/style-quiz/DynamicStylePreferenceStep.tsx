@@ -42,6 +42,7 @@ const DynamicStylePreferenceStep: React.FC<DynamicStylePreferenceStepProps> = ({
                             checked={formValues[key]?.includes(itemName) || false}
                             onChange={handleChange}
                             className="hidden"
+                            suppressHydrationWarning
                         />
                         <div className={`w-full aspect-[3/4] border-2 rounded-lg overflow-hidden transition-all ${
                             (formValues[key]?.includes(itemName) || false) ? 'border-[#007e90] shadow-lg' : 'border-gray-200'

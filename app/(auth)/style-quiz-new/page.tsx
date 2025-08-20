@@ -1459,7 +1459,34 @@ export default function StyleQuizNew() {
   };
 
     return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <>
+      {/* Enhanced CSS for navigation stability */}
+      <style jsx>{`
+        .quiz-fixed-nav {
+          position: fixed !important;
+          bottom: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+          z-index: 9999 !important;
+          width: 100% !important;
+          background: white !important;
+        }
+        
+        @media screen and (min-width: 1px) {
+          .quiz-fixed-nav {
+            position: fixed !important;
+          }
+        }
+        
+        /* Ensure visibility at all zoom levels */
+        @media screen and (max-zoom: 0.5), screen and (min-zoom: 2) {
+          .quiz-fixed-nav {
+            position: fixed !important;
+            bottom: 0 !important;
+          }
+        }
+      `}</style>
+      <div className="min-h-screen bg-white flex flex-col">
       {/* Sticky Header */}
       <div className="bg-[#007e90] text-white p-4 md:p-6 sticky top-16 z-40 shadow-lg">
         <div className="max-w-4xl mx-auto">
@@ -1529,7 +1556,7 @@ export default function StyleQuizNew() {
           ref={contentRef}
 
           className="absolute inset-0 overflow-y-auto"
-          style={{ paddingBottom: '7rem' }} // Increased padding to ensure content doesn't get cut off
+          style={{ paddingBottom: '8rem' }} // Enhanced padding for fixed navigation at all zoom levels
 
           data-current-step={currentStep}
           data-dynamic-steps-count={dynamicSteps.length}
@@ -1553,10 +1580,10 @@ export default function StyleQuizNew() {
         <ScrollArrow contentRef={contentRef} />
       </div>
 
-      {/* Fixed Navigation */}
-      <div className="bg-white border-t border-gray-200 p-4 md:p-6 sticky bottom-0 left-0 right-0 z-[100] shadow-lg">
+      {/* Fixed Navigation - Enhanced for all zoom levels */}
+      <div className="quiz-fixed-nav bg-white border-t border-gray-200 p-4 md:p-6 shadow-lg">
         <div className="max-w-4xl mx-auto">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center gap-4">
             <button
               onClick={() => {
                 console.log('Previous button clicked, current step:', currentStep);
@@ -1596,7 +1623,7 @@ export default function StyleQuizNew() {
                 setCurrentStep(newStep);
               }}
               disabled={currentStep === 1}
-              className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-200 transition-colors font-medium"
+              className="flex-shrink-0 min-w-[100px] px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg disabled:opacity-50 hover:bg-gray-200 transition-colors font-medium text-center"
             >
               Previous
             </button>
@@ -1655,7 +1682,7 @@ export default function StyleQuizNew() {
                 }
               }}
               disabled={isSubmitting || !isStepValid()}
-              className="px-6 py-2.5 bg-[#007e90] text-white rounded-lg hover:bg-[#006d7d] disabled:opacity-50 transition-colors font-medium flex items-center gap-2"
+              className="flex-shrink-0 min-w-[120px] px-6 py-2.5 bg-[#007e90] text-white rounded-lg hover:bg-[#006d7d] disabled:opacity-50 transition-colors font-medium flex items-center justify-center gap-2"
             >
               {isSubmitting && (
                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
@@ -1684,6 +1711,7 @@ export default function StyleQuizNew() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 } 
