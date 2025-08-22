@@ -25,6 +25,7 @@ const BodyTypeStep: React.FC<BodyTypeStepProps> = ({ formValues, handleChange })
                             checked={formValues.bodyType === type}
                             onChange={handleChange}
                             className="hidden"
+                            suppressHydrationWarning
                         />
                         <div className={`w-full aspect-[3/4] border-2 rounded-lg overflow-hidden transition-all ${formValues.bodyType === type ? 'border-[#007e90] shadow-lg' : 'border-gray-200'
                             }`}>

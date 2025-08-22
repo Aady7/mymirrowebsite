@@ -34,6 +34,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({
                         placeholder="+91 9876543210"
                         pattern="^(\+91[\s-]?)?[0]?[789]\d{9}$"
                         title="Please enter a valid Indian phone number"
+                        suppressHydrationWarning
                     />
                 </div>
             </div>
@@ -51,6 +52,7 @@ const OtpVerificationStep: React.FC<OtpVerificationStepProps> = ({
                             placeholder="Enter 6-digit OTP"
                             pattern="\d{6}"
                             maxLength={6}
+                            suppressHydrationWarning
                         />
                     </div>
                 </div>

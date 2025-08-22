@@ -4,54 +4,70 @@ import Image from 'next/image';
 interface LookBookCardProps {
   imageUrl: string;
   heading: string;
+  backgroundColor?: string;
+  avatarSticker?: string;
   onEdit?: () => void;
   onDelete?: () => void;
+  onShare?: () => void;
 }
 
 const LookBookCard: React.FC<LookBookCardProps> = ({ 
   imageUrl, 
   heading, 
+  backgroundColor = "#B58CD2",
+  avatarSticker,
   onEdit, 
-  onDelete 
+  onDelete,
+  onShare
 }) => {
   return (
-    <div className="relative w-full max-w-sm mx-auto bg-[#B58CD2] rounded-3xl p-6 shadow-xl overflow-hidden">
+    <div 
+      className="relative w-full max-w-sm mx-auto rounded-3xl p-6 shadow-xl overflow-hidden"
+      style={{ backgroundColor }}
+    >
       {/* Header with title and action buttons */}
       <div className="flex justify-between items-start mb-8">
         <h2 className="text-white font-bold text-lg sm:text-xl leading-tight max-w-[200px]">
           {heading}
         </h2>
         
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           {onEdit && (
             <button 
-              onClick={onEdit}
-              className="w-10 h-10 bg-white bg-opacity-40 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-opacity-60 transition-all duration-200 shadow-lg"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              className="w-7 h-7 bg-white rounded-full flex items-center justify-center hover:scale-105 transition shadow border-1 border-black"
               aria-label="Edit look"
             >
-              <Image
-                src="/LookBook/edit.svg"
-                alt="Edit"
-                width={20}
-                height={20}
-                className="object-contain"
-              />
+              ✏️
+            </button>
+          )}
+          
+          {onShare && (
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onShare();
+              }}
+              className="w-7 h-7 bg-white rounded-full flex items-center justify-center hover:scale-105 transition shadow border-1 border-black"
+              aria-label="Share look"
+            >
+              📎
             </button>
           )}
           
           {onDelete && (
             <button 
-              onClick={onDelete}
-              className="w-10 h-10 bg-white bg-opacity-40 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-opacity-60 transition-all duration-200 shadow-lg"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="w-7 h-7 bg-white rounded-full flex items-center justify-center hover:scale-105 transition shadow border-1 border-black"
               aria-label="Delete look"
             >
-              <Image
-                src="/LookBook/delete.svg"
-                alt="Delete"
-                width={20}
-                height={20}
-                className="object-contain"
-              />
+              🗑️
             </button>
           )}
         </div>
@@ -97,8 +113,49 @@ const LookBookCard: React.FC<LookBookCardProps> = ({
             sizes="(max-width: 640px) 144px, 160px"
           />
         </div>
-         
-        </div>
+        
+        {/* Multiple stickers around character - like reference image */}
+        {avatarSticker && (
+          <>
+            <div className="absolute top-20 left-8 z-20 w-8 h-8">
+              <Image
+                src={avatarSticker}
+                alt="Avatar sticker"
+                fill
+                className="object-contain opacity-80"
+                sizes="32px"
+              />
+            </div>
+            <div className="absolute top-24 right-10 z-20 w-6 h-6">
+              <Image
+                src={avatarSticker}
+                alt="Avatar sticker"
+                fill
+                className="object-contain opacity-60"
+                sizes="24px"
+              />
+            </div>
+            <div className="absolute bottom-16 left-10 z-20 w-7 h-7">
+              <Image
+                src={avatarSticker}
+                alt="Avatar sticker"
+                fill
+                className="object-contain opacity-70"
+                sizes="28px"
+              />
+            </div>
+            <div className="absolute bottom-20 right-8 z-20 w-8 h-8">
+              <Image
+                src={avatarSticker}
+                alt="Avatar sticker"
+                fill
+                className="object-contain opacity-80"
+                sizes="32px"
+              />
+            </div>
+          </>
+        )}
+      </div>
       </div>
   );
 };
