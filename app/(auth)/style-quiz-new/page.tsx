@@ -1238,6 +1238,7 @@ export default function StyleQuizNew() {
                         checked={formData.minimalistic === option}
                         onChange={handleChange}
                         className="hidden"
+                        suppressHydrationWarning
                       />
                       <div className={`w-full py-3 px-4 rounded-lg text-center transition-all ${
                         formData.minimalistic === option
@@ -1319,6 +1320,7 @@ export default function StyleQuizNew() {
                           onChange={handleChange}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007e90] focus:border-transparent"
                           placeholder="Enter your email address"
+                          suppressHydrationWarning
                         />
                         <label className="block text-sm font-medium text-gray-700 mb-2 mt-4">
                           Phone Number
@@ -1329,6 +1331,7 @@ export default function StyleQuizNew() {
                             onChange={handleChange}
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007e90] focus:border-transparent"
                             placeholder="Enter your phone number"
+                            suppressHydrationWarning
                           />
                         </label>
                       </>
@@ -1344,6 +1347,7 @@ export default function StyleQuizNew() {
                           onChange={handleChange}
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007e90] focus:border-transparent"
                           placeholder="Enter your phone number"
+                          suppressHydrationWarning
                         />
                       </>
                     )}
@@ -1370,6 +1374,7 @@ export default function StyleQuizNew() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007e90] focus:border-transparent"
                   rows={4}
                   placeholder="Share any additional preferences or requirements..."
+                  suppressHydrationWarning
                 />
               </div>
             </div>
@@ -1401,6 +1406,7 @@ export default function StyleQuizNew() {
                     placeholder="Enter verification code"
                     maxLength={6}
                     disabled={isAuthenticated}
+                    suppressHydrationWarning
                   />
                 </div>
 

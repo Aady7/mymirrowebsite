@@ -28,6 +28,7 @@ const StylePreferencesStep: React.FC<StylePreferencesStepProps> = ({ formValues,
                                 checked={formValues.outfitAdventurous?.includes(level) || false}
                                 onChange={handleChange}
                                 className="hidden"
+                                suppressHydrationWarning
                             />
                             <div
                                 className={`w-full py-3 px-4 rounded-lg text-center cursor-pointer transition-all text-[14px] ${

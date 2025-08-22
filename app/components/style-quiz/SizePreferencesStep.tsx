@@ -24,6 +24,7 @@ const SizePreferencesStep: React.FC<SizePreferencesStepProps> = ({ formValues, h
                                 checked={formValues.upperWear === size}
                                 onChange={handleChange}
                                 className="hidden"
+                                suppressHydrationWarning
                             />
                             <div className={`w-16 h-16 rounded-lg flex items-center justify-center cursor-pointer transition-all text-[14px] ${formValues.upperWear === size ? 'bg-[#007e90] text-white' : 'bg-white text-gray-700 border-2 border-gray-200'
                                 }`}>
@@ -45,6 +46,7 @@ const SizePreferencesStep: React.FC<SizePreferencesStepProps> = ({ formValues, h
                                 checked={formValues.waistSize === size}
                                 onChange={handleChange}
                                 className="hidden"
+                                suppressHydrationWarning
                             />
                             <div className={`w-16 h-16 rounded-lg flex items-center justify-center cursor-pointer transition-all text-[14px] ${formValues.waistSize === size ? 'bg-[#007e90] text-white' : 'bg-white text-gray-700 border-2 border-gray-200'
                                 }`}>

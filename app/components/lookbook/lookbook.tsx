@@ -10,18 +10,13 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import EditLookBook from "./editlookbook";
 import { useRouter } from "next/navigation";
-type LookbookItem = {
-  id: string;
-  title: string;
-  outfitImage: string[];
-};
+import { LookbookItem, LookbookRecord, CreateLookbookRequest } from "@/app/types/lookbook";
+import { stickerMapping, getStickerByName, defaultSticker } from "@/app/data/stickerMapping";
+import LookBookCard from "../look-book/lookBooklookCard";
+import { Character } from "./character";
 
 const LookBook = () => {
   const [lookbook, setLookbook] = useState<LookbookItem[]>([]);
-  const [selectedImage, setSelectedImage] = useState<string[]>([
-    "/assets/look-11.png",
-    "/assets/tex-2.png",
-  ]);
   const [user, setUser] = useState<User | null>(null);
   const [editIndex, setEditIndex] = useState<number | null>(null);
   const { getSession } = useAuth();
@@ -32,12 +27,68 @@ const LookBook = () => {
   const [deleteTarget, setDeleteTarget] = useState<LookbookItem | null>(null);
   const router=useRouter();
   const [showEditLookBook, setShowEditLookBook] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  
+  // Fetch existing lookbooks from Supabase
+  const fetchLookbooks = async (userId: string) => {
+    try {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('lookbook')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Convert Supabase records to local LookbookItem format
+      const lookbookItems: LookbookItem[] = data.map((record: LookbookRecord) => {
+        const stickerData = getStickerByName(record.avatar || '') || defaultSticker;
+        
+        // Parse character data from outfits field, fallback to default
+        let characterData = Character[0]; // Default character
+        try {
+          if (record.outfits) {
+            characterData = JSON.parse(record.outfits);
+          }
+        } catch (e) {
+          console.warn('Failed to parse character data:', e);
+        }
+        
+        return {
+          id: record.id!.toString(),
+          title: record.name || 'Untitled',
+          characterImage: characterData.image,
+          characterData: characterData,
+          color: record.color || undefined,
+          visibility: record.visibility || undefined,
+          shareUrl: record.shareUrl || undefined,
+          avatarSticker: record.avatar || defaultSticker.name,
+          avatarStickerUrl: stickerData.image,
+        };
+      });
+
+      setLookbook(lookbookItems);
+    } catch (error) {
+      console.error('Error fetching lookbooks:', error);
+      setError(error instanceof Error ? error.message : 'Failed to fetch lookbooks');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   //chek the session id of the user
   useEffect(() => {
     const checkSession = async () => {
       const { session } = await getSession();
       if (session?.user) {
         setUser(session.user);
+        // Fetch existing lookbooks when user is authenticated
+        await fetchLookbooks(session.user.id);
       }
     };
     checkSession();
@@ -45,32 +96,166 @@ const LookBook = () => {
 
   //to add a new card
   const handleAddNewCard = async () => {
-    /* if (!gridRef.current) {
+    if (!user || !name.trim()) {
+      setError("Please make sure you're logged in and have entered a name");
       return;
-    } 
-     const canvas = await html2canvas(gridRef.current);
-    const imageData = canvas.toDataURL("image/png");*/
+    }
 
-    const newLook: LookbookItem = {
-      id: Date.now().toString(),
-      title: name,
-      outfitImage: selectedImage,
-    };
-    // Add new card to the end (bottom) so it appears at the bottom of the stack
-    setLookbook((prev) => [...prev, newLook]);
-    setPopup(false);
-    setName("");
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Create the lookbook record for Supabase
+      const defaultCharacter = Character[0];
+      const lookbookData: CreateLookbookRequest = {
+        user_id: user.id,
+        name: name.trim(),
+        color: getColorByIndex(lookbook.length), // Use the same color logic
+        avatar: defaultSticker.name, // Store sticker name in database
+        visibility: 1, // Default to public, you can make this configurable// Store character data as JSON
+        products: undefined, // Will be populated later as mentioned
+        shareUrl: undefined, // Can be generated later if needed
+      };
+
+      // Insert into Supabase
+      const { data, error: supabaseError } = await supabase
+        .from('lookbook')
+        .insert([lookbookData])
+        .select()
+        .single();
+
+      if (supabaseError) {
+        throw new Error(supabaseError.message);
+      }
+
+      // Create local lookbook item for immediate UI update
+      const newLook: LookbookItem = {
+        id: data.id.toString(),
+        title: name,
+        characterImage: Character[0].image,
+        characterData: Character[0],
+        color: lookbookData.color || undefined,
+        visibility: lookbookData.visibility || undefined,
+        shareUrl: lookbookData.shareUrl || undefined,
+        avatarSticker: defaultSticker.name,
+        avatarStickerUrl: defaultSticker.image,
+      };
+
+             // Add new card to the end of array (appears at bottom of visual stack)
+       setLookbook((prev) => [...prev, newLook]);
+      setPopup(false);
+      setName("");
+    } catch (error) {
+      console.error('Error creating lookbook:', error);
+      setError(error instanceof Error ? error.message : 'Failed to create lookbook');
+    } finally {
+      setIsLoading(false);
+    }
   };
   //to delete the card
-  const handleDelete = (id: string) => {
-    setLookbook((prev) => prev.filter((card) => card.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Delete from Supabase
+      const { error: supabaseError } = await supabase
+        .from('lookbook')
+        .delete()
+        .eq('id', parseInt(id));
+
+      if (supabaseError) {
+        throw new Error(supabaseError.message);
+      }
+
+      // Remove from local state
+      setLookbook((prev) => prev.filter((card) => card.id !== id));
+    } catch (error) {
+      console.error('Error deleting lookbook:', error);
+      setError(error instanceof Error ? error.message : 'Failed to delete lookbook');
+    } finally {
+      setIsLoading(false);
+    }
   };
   //to edit the card
-  const handleEdit = (id: number) => {
-    console.log("Edit card with Id:", id);
-    setEditIndex(id);
-    router.push(`/lookbook/${id}`);
-    
+  const handleEdit = (idx: number) => {
+    console.log("Edit card with Index:", idx);
+    setEditIndex(idx);
+    setShowEditLookBook(true);
+  };
+
+  //to share the card
+  const handleShare = (card: LookbookItem) => {
+    if (card.shareUrl) {
+      navigator.clipboard.writeText(card.shareUrl);
+      // You can add a toast notification here
+      console.log("Share URL copied to clipboard");
+    } else {
+      // Generate share URL if not exists
+      const shareUrl = `${window.location.origin}/lookbook/shared/${card.id}`;
+      navigator.clipboard.writeText(shareUrl);
+      console.log("Share URL copied to clipboard");
+    }
+  };
+
+  //to handle card expansion/collapse
+  const handleCardClick = (cardId: string) => {
+    if (expandedCardId === cardId) {
+      setExpandedCardId(null); // Collapse if already expanded
+    } else {
+      setExpandedCardId(cardId); // Expand the clicked card
+    }
+  };
+
+  //to update lookbook data
+  const handleUpdateLookbook = async (lookbookId: string, updatedData: {
+    color: string;
+    avatarSticker: string;
+    title: string;
+    selectedCharacter: any;
+  }) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Update in Supabase
+      const { error: supabaseError } = await supabase
+        .from('lookbook')
+        .update({
+          name: updatedData.title,
+          color: updatedData.color,
+          avatar: updatedData.avatarSticker,
+          
+        })
+        .eq('id', parseInt(lookbookId));
+
+      if (supabaseError) {
+        throw new Error(supabaseError.message);
+      }
+
+      // Update local state
+      const stickerData = getStickerByName(updatedData.avatarSticker) || defaultSticker;
+      setLookbook((prev) =>
+        prev.map((item) =>
+          item.id === lookbookId
+            ? {
+                ...item,
+                title: updatedData.title,
+                color: updatedData.color,
+                avatarSticker: updatedData.avatarSticker,
+                avatarStickerUrl: stickerData.image,
+                characterImage: updatedData.selectedCharacter.image,
+                characterData: updatedData.selectedCharacter,
+              }
+            : item
+        )
+      );
+    } catch (error) {
+      console.error('Error updating lookbook:', error);
+      setError(error instanceof Error ? error.message : 'Failed to update lookbook');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   function getColorByIndex(index: number) {
@@ -82,15 +267,55 @@ const LookBook = () => {
     <>
       <LookBookBanner />
 
-      {/* card section */}
-      <div className="px-5 mt-[-45px] mb-10">
+      {/* Error display */}
+      {error && (
+        <div className="px-5 mt-[-45px] mb-4">
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+            <strong className="font-bold">Error: </strong>
+            <span className="block sm:inline">{error}</span>
+            <button
+              className="absolute top-0 bottom-0 right-0 px-4 py-3"
+              onClick={() => setError(null)}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Loading indicator */}
+      {isLoading && (
+        <div className="px-5 mt-[-45px] mb-4">
+          <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
+            <span className="block sm:inline">Loading...</span>
+          </div>
+        </div>
+      )}
+
+             {/* card section */}
+       <div 
+         className="px-5 mt-[-45px]"
+         style={{
+           marginBottom: lookbook.length > 0 ? `${Math.max(8, 40 - lookbook.length * 4)}px` : '32px'
+         }}
+       >
         {/* Heading */}
         <h1 className="text-[25px] text-black font-bold tracking-wider uppercase">
           Your Lookbook
         </h1>
 
-        {/* Card Container (Stack) */}
-        <div className="relative mt-6">
+                 {/* Card Container (Stack) */}
+         <div 
+           className="relative mt-20"
+           style={{
+             // Calculate height dynamically based on expanded state
+             minHeight: lookbook.length > 0 
+               ? expandedCardId 
+                 ? `${520 + (lookbook.length - 1) * 100}px` // More space when expanded
+                 : `${420 + (lookbook.length - 1) * 160}px` // Normal stacking
+               : 'auto'
+           }}
+         >
           {lookbook.length === 0 ? (
             <div className="px-4 mt-10 flex flex-col items-center justify-center">
               <Image
@@ -106,81 +331,71 @@ const LookBook = () => {
               </h1>
             </div>
           ) : null}
-          {lookbook.map((card, idx) => (
-            <div
-              key={card.id}
-              className={`relative w-[100%] rounded-xl p-4 shadow-lg transition-transform duration-300 mb-4`}
-              style={{
-                marginTop: idx === 0 ? 0 : -340, // Stack cards with negative margin
-                zIndex: idx + 1, // Higher index = higher z-index (newer cards on top)
-                backgroundColor: getColorByIndex(idx),
-                transform: `translateY(${idx * 10}px)`, // Additional visual stacking
-              }}
-            >
-              {/* Card Header */}
-              <div className="flex justify-between items-center mb-4">
-                <p className="text-white font-semibold uppercase text-sm">
-                  {card.title}
-                </p>
-                <div className="flex gap-2">
-                 
-                  <button
-                    className="w-7 h-7 flex items-center justify-center bg-white rounded-full shadow hover:scale-105 transition border-1 border-black"
-                    onClick={() => handleEdit(idx)}
-                  >
-                    ✏️
-                  </button>
-                  
-                  <button
-                    className="w-7 h-7 flex items-center justify-center bg-white rounded-full shadow hover:scale-105 transition border-1 border-black"
-                    //onClick={() => handleEdit(card.id)}
-                  >
-                    📎
-                  </button>
-                  <button
-                    className="w-7 h-7 flex items-center justify-center bg-white rounded-full shadow hover:scale-105 transition border-1 border-black"
-                    onClick={() => {
-                      setDeleteTarget(card);
-                      setShowDeleteModal(true);
-                    }}
-                  >
-                    🗑️
-                  </button>
-                  
-                </div>
+                                          {lookbook.map((card, idx) => {
+            const isExpanded = expandedCardId === card.id;
+            const isOtherExpanded = expandedCardId !== null && expandedCardId !== card.id;
+            
+            return (
+              <div
+                key={card.id}
+                className={`relative transition-all duration-500 ease-in-out cursor-pointer hover:shadow-2xl`}
+                style={{
+                  marginTop: isExpanded 
+                    ? 0 // Expanded card moves to natural position
+                    : isOtherExpanded 
+                      ? (idx === 0 ? 0 : -280) // Other cards become more hidden when one is expanded
+                      : (idx === 0 ? 0 : -220), // Normal stacking
+                  zIndex: isExpanded 
+                    ? 1000 // Expanded card goes to top
+                    : isOtherExpanded 
+                      ? idx // Other cards maintain their order but lower z-index
+                      : idx + 1, // Normal z-index
+                  transform: isExpanded 
+                    ? `translateY(0px) scale(1.02)` // Expanded card: no offset, slightly larger
+                    : isOtherExpanded
+                      ? `translateY(${idx * 8}px) scale(0.95)` // Other cards: smaller and more compressed
+                      : `translateY(${idx * 12}px)`, // Normal offset
+                  opacity: isOtherExpanded ? 0.6 : 1, // Dim other cards when one is expanded
+                }}
+                onClick={() => handleCardClick(card.id)}
+              >
+                <LookBookCard
+                  imageUrl={card.characterImage}
+                  heading={card.title}
+                  backgroundColor={card.color || getColorByIndex(idx)}
+                  avatarSticker={card.avatarStickerUrl}
+                  onEdit={() => handleEdit(idx)}
+                  onShare={() => handleShare(card)}
+                  onDelete={() => {
+                    setDeleteTarget(card);
+                    setShowDeleteModal(true);
+                  }}
+                />
               </div>
+            );
+          })}
 
-              {/* Card Image - positioned below the header buttons */}
-              <div className="w-full h-full bg-white rounded-lg overflow-hidden flex gap-1">
-                {card.outfitImage.map((cardImage, i) => (
-                  <img
-                    key={i}
-                    src={cardImage}
-                    alt="Outfit"
-                    className="object-cover w-1/2 h-[300px] border-2 border-black rounded-lg"
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-
-          {/* Add New Card Button - positioned at bottom-right corner over the newest card */}
-          <div
-            className="relative"
-            style={{
-              marginTop: lookbook.length > 0 ? -40 : 0,
-              zIndex: lookbook.length + 2, // Higher than the newest card
-              width: "100%",
-              height: "200px",
-            }}
-          >
-            <button
-              onClick={() => setPopup(true)}
-              className="absolute bottom-[120px] right-[-10px] w-15 h-15 bg-white rounded-full border-1 border-gray-400 shadow-xl flex items-center justify-center text-5xl font-bold hover:scale-105 transition pointer-events-auto"
-            >
-              +
-            </button>
-          </div>
+                     {/* Add New Card Button - positioned beneath the newest card */}
+           <div
+             className="relative"
+             style={{
+               marginTop: lookbook.length > 0 
+                 ? expandedCardId 
+                   ? -30 // Less margin when expanded
+                   : -50 // Normal margin
+                 : 0,
+               zIndex: lookbook.length + 10, // Higher than all cards
+               width: "100%",
+               height: "80px",
+             }}
+           >
+             <button
+               onClick={() => setPopup(true)}
+               className="absolute bottom-2 right-4 w-16 h-16 bg-white rounded-full border-2 border-gray-400 shadow-xl flex items-center justify-center text-3xl font-bold hover:scale-105 transition pointer-events-auto"
+             >
+               +
+             </button>
+           </div>
         </div>
       </div>
 
@@ -196,19 +411,64 @@ const LookBook = () => {
             </button>
 
             <div className="px-4 w-full h-50 bg-black rounded-xl mb-6">
-              <div
-                // ref={gridRef}
-                className=" grid grid-cols-2 gap-1 border-8 shadow-xl bg-white rounded-xl   w-full h-[200px] overflow-hidden"
+              <div 
+                className="relative border-8 shadow-xl rounded-xl w-full h-[200px] overflow-hidden"
+                style={{ backgroundColor: getColorByIndex(lookbook.length) }}
               >
-                {/* example */}
-                {selectedImage.map((img, i) => (
-                  <img
-                    key={i}
-                    src={img}
-                    alt={`Preview ${i + 1}`}
-                    className="object-cover w-full h-full border border-black"
+                {/* Grid pattern overlay */}
+                <div className="absolute inset-0 opacity-40">
+                  <div className="grid grid-cols-6 grid-rows-4 h-full w-full">
+                    {Array.from({ length: 24 }).map((_, i) => (
+                      <div key={i} className="border border-white/50"></div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* White semicircle background */}
+                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-32 h-16 bg-white rounded-t-full"></div>
+
+                {/* Default Character Preview */}
+                <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-24 h-24 z-20">
+                  <Image
+                    src={Character[0].image}
+                    alt="Character Preview"
+                    fill
+                    className="object-contain"
                   />
-                ))}
+                </div>
+
+                {/* Default Stickers */}
+                <div className="absolute top-4 left-4 w-6 h-6 z-10">
+                  <Image
+                    src={defaultSticker.image}
+                    alt="Sticker"
+                    fill
+                    className="object-contain opacity-80"
+                  />
+                </div>
+                <div className="absolute top-6 right-4 w-5 h-5 z-10">
+                  <Image
+                    src={defaultSticker.image}
+                    alt="Sticker"
+                    fill
+                    className="object-contain opacity-60"
+                  />
+                </div>
+                <div className="absolute bottom-12 left-3 w-6 h-6 z-10">
+                  <Image
+                    src={defaultSticker.image}
+                    alt="Sticker"
+                    fill
+                    className="object-contain opacity-70"
+                  />
+                </div>
+
+                {/* Title preview */}
+                <div className="absolute top-2 left-4 right-4 z-30">
+                  <h3 className="text-white font-bold text-xs uppercase truncate">
+                    {name || "My Lookbook"}
+                  </h3>
+                </div>
               </div>
             </div>
 
@@ -216,12 +476,17 @@ const LookBook = () => {
               Here's how your cover looks right now. Wanna make it so you?
             </p>
             <div className="flex items-center justify-center">
-              <Button className="text-sm bg-gray-100 text-black rounded-md px-4 py-2 mb-6"
-                onClick={() => {
-                  setPopup(false);
-                  setShowEditLookBook(true);
-                }}
-              >
+                             <Button className="text-sm bg-gray-100 text-black rounded-md px-4 py-2 mb-6"
+                 onClick={async () => {
+                   // First create the lookbook, then open edit
+                   const currentLength = lookbook.length;
+                   await handleAddNewCard();
+                   // The new card will be at index = currentLength (since we add to end)
+                   setEditIndex(currentLength);
+                   setShowEditLookBook(true);
+                 }}
+                 disabled={!name.trim()}
+               >
                 Create Your Own Cover
               </Button>
             </div>
@@ -244,19 +509,27 @@ const LookBook = () => {
 
             <div className="flex items-center justify-center mt-10 ">
               <Button
-                onClick={() => {
-                  handleAddNewCard(), setPopup(false);
-                }}
-                className={`text-sm uppercase bg-gray-100 text-black rounded-md px-4 py-2 mb-2 w-25  `}
+                onClick={handleAddNewCard}
+                disabled={isLoading || !name.trim()}
+                className={`text-sm uppercase bg-gray-100 text-black rounded-md px-4 py-2 mb-2 w-25 ${
+                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                save
+                {isLoading ? 'Saving...' : 'save'}
               </Button>
             </div>
           </div>
         </div>
       )}
-      {showEditLookBook && (
-        <EditLookBook item={lookbook[lookbook.length - 1]} onClose={() => setShowEditLookBook(false)} />
+      {showEditLookBook && editIndex !== null && lookbook[editIndex] && (
+        <EditLookBook 
+          item={lookbook[editIndex]} 
+          onClose={() => {
+            setShowEditLookBook(false);
+            setEditIndex(null);
+          }}
+          onSave={handleUpdateLookbook}
+        />
       )}
 
       {showDeleteModal && deleteTarget && (
@@ -275,14 +548,15 @@ const LookBook = () => {
                 Cancel
               </button>
               <button
-                className="flex-1 text-red-400 font-semibold py-2 rounded hover:bg-gray-800 transition"
-                onClick={() => {
-                  handleDelete(deleteTarget.id);
+                className="flex-1 text-red-400 font-semibold py-2 rounded hover:bg-gray-800 transition disabled:opacity-50"
+                disabled={isLoading}
+                onClick={async () => {
+                  await handleDelete(deleteTarget.id);
                   setShowDeleteModal(false);
                   setDeleteTarget(null);
                 }}
               >
-                Delete
+                {isLoading ? 'Deleting...' : 'Delete'}
               </button>
             </div>
           </div>
