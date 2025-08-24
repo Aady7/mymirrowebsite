@@ -9,6 +9,11 @@ declare global {
       targetId: string | Date,
       config?: Record<string, any>
     ) => void;
+    fbq?: (
+      command: 'track' | 'trackCustom' | 'init',
+      eventName: string,
+      parameters?: Record<string, any>
+    ) => void;
   }
 }
 
@@ -35,6 +40,21 @@ export const event = (action: string, parameters?: Record<string, any>) => {
     }
   } catch (error) {
     console.warn('Analytics event error:', error);
+  }
+};
+
+// Track Meta Pixel events
+export const fbPixelEvent = (eventName: string, parameters?: Record<string, any>) => {
+  try {
+    if (typeof window !== 'undefined' && window.fbq) {
+      if (parameters) {
+        window.fbq('track', eventName, parameters);
+      } else {
+        window.fbq('track', eventName);
+      }
+    }
+  } catch (error) {
+    console.warn('Meta Pixel event error:', error);
   }
 };
 
@@ -69,14 +89,29 @@ export const trackEvent = {
 
   // Style quiz events
   startStyleQuiz: () => {
+    // Track with Google Analytics
     event('quiz_start', {
       quiz_type: 'style_quiz',
+    });
+    
+    // Track with Meta Pixel
+    fbPixelEvent('InitiateCheckout', {
+      content_name: 'Style Quiz',
+      content_category: 'quiz_start'
     });
   },
 
   completeStyleQuiz: () => {
+    // Track with Google Analytics
     event('quiz_complete', {
       quiz_type: 'style_quiz',
+    });
+    
+    // Track with Meta Pixel
+    fbPixelEvent('CompleteRegistration', {
+      content_name: 'Style Quiz',
+      content_category: 'quiz_completion',
+      status: 'completed'
     });
   },
 
