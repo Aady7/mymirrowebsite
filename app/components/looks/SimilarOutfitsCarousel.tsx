@@ -381,9 +381,24 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
         .group:hover .swiper-button-prev {
           opacity: 1;
         }
+
+        .swiper-pagination {
+          position: relative !important;
+          margin-top: 20px !important;
+          bottom: auto !important;
+        }
+
+        .swiper-pagination-bullet {
+          background-color: #007e90 !important;
+          opacity: 0.3 !important;
+        }
+
+        .swiper-pagination-bullet-active {
+          opacity: 1 !important;
+        }
       `}</style>
 
-      {filteredOutfits.map((outfit) => (
+      {filteredOutfits.slice(0,5).map((outfit) => (
         <SwiperSlide key={outfit.outfit_data.main_outfit_id}>
           <Link href={`/looks/${outfit.outfit_data.main_outfit_id}`} className="block group h-full w-full">
             <div className="h-[300px] ml-5 mr-5 mt-6 group-hover:scale-105 group-hover:shadow-lg transition-transform duration-200">
@@ -423,9 +438,11 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
               )}
             </div>
             <div className="flex justify-end mr-4 mt-4">
-            <Button className=" border-2 h-8 border-blue-500 bg-white text-sm font-medium text-[#007e90] group-hover:opacity-100 transition-opacity duration-200">
+              <Link href={`/looks/${outfit.outfit_data.main_outfit_id}`}> 
+            <Button className="w-20 h-8 bg-[#007e90] hover:bg-[#006d7d] text-white text-xs font-medium rounded transition-colors">
               View Look
             </Button>
+            </Link>
             </div>
             
           </Link>
