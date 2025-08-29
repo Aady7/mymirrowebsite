@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { useStyleQuizData } from '@/lib/hooks/useStyleQuizData';
-import { FaThumbsUp, FaThumbsDown } from "react-icons/fa";
+import { FaThumbsUp, FaThumbsDown, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { toast } from 'react-hot-toast';
 
 interface Outfit {
@@ -43,6 +43,12 @@ const OutfitRatingPage = () => {
   const [styleRating, setStyleRating] = useState<number>(0);
   const [fitRating, setFitRating] = useState<number>(0);
   const [occasionRating, setOccasionRating] = useState<number>(0);
+  
+  // Navigation states
+  const [allOutfits, setAllOutfits] = useState<string[]>([]);
+  const [currentIndex, setCurrentIndex] = useState<number>(-1);
+  const [hasNext, setHasNext] = useState<boolean>(false);
+  const [hasPrevious, setHasPrevious] = useState<boolean>(false);
 
   // Fetch everything once id is ready
   useEffect(() => {
@@ -74,8 +80,8 @@ const OutfitRatingPage = () => {
         const { data: outfitData, error: outfitError } = await supabase
           .from('user_outfits')
           .select('main_outfit_id, outfit_name, top_id, bottom_id')
-                .eq('main_outfit_id', id)
-                .single();
+          .eq('main_outfit_id', id)
+          .single();
 
         console.log("Outfit query result:", { outfitData, outfitError });
 
@@ -148,6 +154,11 @@ const OutfitRatingPage = () => {
           setUserName(quizData.name);
         }
 
+        // Fetch navigation data after user is authenticated
+        if (session?.user) {
+          await fetchUnratedOutfits(session.user.id);
+        }
+
       } catch (error) {
         console.error('Error in fetchData:', error);
         setError(error instanceof Error ? error.message : 'An unexpected error occurred');
@@ -199,6 +210,83 @@ const OutfitRatingPage = () => {
       console.error('Error submitting rating:', error);
       toast.error('Failed to submit rating. Please try again.');
     }
+  };
+
+  // Navigation functions
+  const fetchUnratedOutfits = async (userId: string) => {
+    try {
+      // Fetch all outfits (regardless of user)
+      const { data: allOutfits, error: outfitsError } = await supabase
+        .from('user_outfits')
+        .select('main_outfit_id')
+        .order('created_at', { ascending: true });
+
+      if (outfitsError) throw outfitsError;
+
+      // Get all rated outfit IDs for this user
+      const { data: ratedOutfits, error: ratingsError } = await supabase
+        .from('outfit_rating_advance')
+        .select('outfit_id')
+        .eq('user_id', userId);
+
+      if (ratingsError) throw ratingsError;
+
+      // Create a set of rated outfit IDs for quick lookup
+      const ratedOutfitIds = new Set(
+        ratedOutfits?.map(rating => rating.outfit_id) || []
+      );
+
+      // Filter out already rated outfits
+      const unratedOutfits = allOutfits?.filter(
+        outfit => !ratedOutfitIds.has(outfit.main_outfit_id)
+      ) || [];
+
+      const unratedOutfitIds = unratedOutfits.map(outfit => outfit.main_outfit_id);
+      setAllOutfits(unratedOutfitIds);
+
+      // Find current outfit index
+      const currentIdx = unratedOutfitIds.findIndex(outfitId => outfitId === id);
+      setCurrentIndex(currentIdx);
+      setHasPrevious(currentIdx > 0);
+      setHasNext(currentIdx < unratedOutfitIds.length - 1);
+
+      console.log('Navigation state:', {
+        total: unratedOutfitIds.length,
+        current: currentIdx,
+        hasPrevious: currentIdx > 0,
+        hasNext: currentIdx < unratedOutfitIds.length - 1
+      });
+
+    } catch (error) {
+      console.error('Error fetching unrated outfits:', error);
+    }
+  };
+
+  const navigateToOutfit = (direction: 'next' | 'previous') => {
+    if (direction === 'next' && hasNext && currentIndex < allOutfits.length - 1) {
+      const nextOutfitId = allOutfits[currentIndex + 1];
+      router.push(`/outfitrating/${nextOutfitId}`);
+    } else if (direction === 'previous' && hasPrevious && currentIndex > 0) {
+      const previousOutfitId = allOutfits[currentIndex - 1];
+      router.push(`/outfitrating/${previousOutfitId}`);
+    }
+  };
+
+  const submitAndGoNext = async () => {
+    await submitRating();
+    
+    // Wait a bit for the rating to be saved, then navigate
+    setTimeout(() => {
+      if (hasNext) {
+        navigateToOutfit('next');
+      } else {
+        // No more outfits, redirect to home or completion page
+        toast.success('All outfits rated! Great job!', {
+          position: 'top-right',
+        });
+        router.push('/');
+      }
+    }, 1000);
   };
 
   // Loading state
@@ -255,6 +343,43 @@ const OutfitRatingPage = () => {
         <h1 className="text-[30px] font-bold mb-6   font-[Boston]">
           STYLED FOR {userName?.toUpperCase() || 'YOU'}
         </h1>
+        
+        {/* Navigation Info */}
+        {allOutfits.length > 0 && (
+          <div className="flex justify-between items-center mb-4">
+            <button
+              onClick={() => navigateToOutfit('previous')}
+              disabled={!hasPrevious}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                hasPrevious 
+                  ? 'bg-[#007e90] text-white hover:bg-[#006d7d]' 
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              <FaChevronLeft size={14} />
+              Previous
+            </button>
+            
+            <div className="text-center">
+              <span className="text-sm text-gray-600">
+                {currentIndex + 1} of {allOutfits.length} outfits
+              </span>
+            </div>
+            
+            <button
+              onClick={() => navigateToOutfit('next')}
+              disabled={!hasNext}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                hasNext 
+                  ? 'bg-[#007e90] text-white hover:bg-[#006d7d]' 
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              Next
+              <FaChevronRight size={14} />
+            </button>
+          </div>
+        )}
       
         {/* Outfit Images */}
         <div className="flex flex-row items-center gap-2 justify-center pl-8 pr-8 mb-8">
@@ -412,14 +537,33 @@ const OutfitRatingPage = () => {
         </div>
 
         {/* Submit Button */}
-        <div className="mt-8 text-center">
-          <button
-            onClick={submitRating}
-            disabled={!overallRating}
-            className="bg-[#007e90] text-white px-8 py-3 rounded-lg hover:bg-[#006d7d] disabled:bg-[#5ba8b4] disabled:cursor-not-allowed font-medium"
-          >
-            Submit Rating
-          </button>
+        <div className="mt-8 text-center space-y-4">
+          <div className="flex gap-4 justify-center">
+            <button
+              onClick={submitRating}
+              disabled={!overallRating}
+              className="bg-[#007e90] text-white px-6 py-3 rounded-lg hover:bg-[#006d7d] disabled:bg-[#5ba8b4] disabled:cursor-not-allowed font-medium"
+            >
+              Submit Rating
+            </button>
+            
+            {hasNext && (
+              <button
+                onClick={submitAndGoNext}
+                disabled={!overallRating}
+                className="bg-[#5ba8b4] text-white px-6 py-3 rounded-lg hover:bg-[#4a959e] disabled:bg-[#a0c4c7] disabled:cursor-not-allowed font-medium flex items-center gap-2"
+              >
+                Submit & Next
+                <FaChevronRight size={14} />
+              </button>
+            )}
+          </div>
+          
+          {!hasNext && allOutfits.length > 0 && (
+            <p className="text-sm text-gray-600">
+              This is the last outfit to rate!
+            </p>
+          )}
         </div>
     </div>
 
