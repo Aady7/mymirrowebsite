@@ -398,26 +398,52 @@ export default function ProductPage() {
           );
           console.log("📊 Raw similar products data:", data.similar_products);
 
-          // Filter out products with null essential data and format the valid ones
-          const formattedProducts = data.similar_products
-            .filter((item: any) => item.product_id && item.title  && item.price)
-            .map((item: any) => ({
+          // Filter out products with null essential data
+          const validProducts = data.similar_products.filter((item: any) => item.product_id && item.title && item.price);
+          
+          if (validProducts.length > 0) {
+            // Get product IDs to fetch brand names from products table
+            const productIds = validProducts.map((item: any) => item.product_id);
+            
+            // Fetch brand names from products table
+            const { data: productsData, error: productsError } = await supabase
+              .from('products')
+              .select('id, name')
+              .in('id', productIds);
+            
+            if (productsError) {
+              console.error('Error fetching product brand names:', productsError);
+            }
+            
+            // Create a map of product_id to brand name for quick lookup
+            const brandMap = new Map();
+            if (productsData) {
+              productsData.forEach((product: any) => {
+                brandMap.set(String(product.id), product.name);
+              });
+            }
+            
+            // Format products with brand names
+            const formattedProducts = validProducts.map((item: any) => ({
               id: item.product_id,
               title: item.title,
-              name: item.name,
+              name: brandMap.get(String(item.product_id)) || '', // Brand name from products table
+              brandname: brandMap.get(String(item.product_id)) || '', // Alias for brand name
               price: item.price,
               productImages: item.image_url || "/fallback.jpg",
             }));
-          console.log("formeated similar products:",formattedProducts)
-          console.log(
-            "✅ Formatted products after filtering:",
-            formattedProducts.length
-          );
-          setSimilarProducts(formattedProducts);
+            
+            console.log("formatted similar products:", formattedProducts);
+            console.log(
+              "✅ Formatted products after filtering:",
+              formattedProducts.length
+            );
+            setSimilarProducts(formattedProducts);
+          }
 
           // If no valid products after filtering, show an appropriate message
           if (
-            formattedProducts.length === 0 &&
+            validProducts.length === 0 &&
             data.similar_products.length > 0
           ) {
             console.log(
@@ -1023,30 +1049,55 @@ export default function ProductPage() {
                           data.similar_products
                         );
 
-                        // Filter out products with null essential data and format the valid ones
-                        const formattedProducts = data.similar_products
-                          .filter(
-                            (item: any) =>
-                              item.product_id && item.title && item.price
-                          )
-                          .map((item: any) => ({
+                        // Filter out products with null essential data
+                        const validProducts = data.similar_products.filter(
+                          (item: any) =>
+                            item.product_id && item.title && item.price
+                        );
+                        
+                        if (validProducts.length > 0) {
+                          // Get product IDs to fetch brand names from products table
+                          const productIds = validProducts.map((item: any) => item.product_id);
+                          
+                          // Fetch brand names from products table
+                          const { data: productsData, error: productsError } = await supabase
+                            .from('products')
+                            .select('id, name')
+                            .in('id', productIds);
+                          
+                          if (productsError) {
+                            console.error('Error fetching product brand names (retry):', productsError);
+                          }
+                          
+                          // Create a map of product_id to brand name for quick lookup
+                          const brandMap = new Map();
+                          if (productsData) {
+                            productsData.forEach((product: any) => {
+                              brandMap.set(String(product.id), product.name);
+                            });
+                          }
+                          
+                          // Format products with brand names
+                          const formattedProducts = validProducts.map((item: any) => ({
                             id: item.product_id,
                             title: item.title,
-                            name: item.name,
+                            name: brandMap.get(String(item.product_id)) || '', // Brand name from products table
+                            brandname: brandMap.get(String(item.product_id)) || '', // Alias for brand name
                             price: item.price,
                             productImages: item.image_url || "/fallback.jpg",
                           }));
 
-                        console.log(
-                          "✅ Formatted products after filtering (retry):",
-                          formattedProducts.length
-                        );
-                        setSimilarProducts(formattedProducts);
+                          console.log(
+                            "✅ Formatted products after filtering (retry):",
+                            formattedProducts.length
+                          );
+                          setSimilarProducts(formattedProducts);
+                        }
                         hasFetchedSimilar.current = true;
 
                         // If no valid products after filtering, show an appropriate message
                         if (
-                          formattedProducts.length === 0 &&
+                          validProducts.length === 0 &&
                           data.similar_products.length > 0
                         ) {
                           console.log(
@@ -1106,9 +1157,15 @@ export default function ProductPage() {
                     />
                   </Link>
                   <div className="flex flex-col flex-1 w-full">
-
+                    {/* Brand Name */}
+                    {similarProduct?.name && (
+                      <p className="text-xs font-bold text-left mb-1 text-gray-800 w-full">
+                        {similarProduct.name}
+                      </p>
+                    )}
+                    {/* Product Title */}
                     <p className="text-sm font-medium text-left mb-2 line-clamp-2 leading-tight w-full">
-                    {similarProduct?.title}
+                      {similarProduct?.title}
                     </p>
                     <div className="flex items-center gap-1 mb-3 w-full">
                       <span className="text-sm font-bold text-black">
