@@ -383,7 +383,7 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
         }
       `}</style>
 
-      {filteredOutfits.map((outfit) => (
+      {filteredOutfits.slice(0,5).map((outfit) => (
         <SwiperSlide key={outfit.outfit_data.main_outfit_id}>
           <Link href={`/looks/${outfit.outfit_data.main_outfit_id}`} className="block group h-full w-full">
             <div className="h-[300px] ml-5 mr-5 mt-6 group-hover:scale-105 group-hover:shadow-lg transition-transform duration-200">
@@ -423,9 +423,11 @@ const SimilarOutfitsCarousel = ({ onActiveOutfitChange }: SimilarOutfitsCarousel
               )}
             </div>
             <div className="flex justify-end mr-4 mt-4">
-            <Button className=" border-2 h-8 border-blue-500 bg-white text-sm font-medium text-[#007e90] group-hover:opacity-100 transition-opacity duration-200">
+              <Link href={`/looks/${outfit.outfit_data.main_outfit_id}`}> 
+            <Button className="border-1 w-17 h-8 border-blue-500 bg-white text-xs font-medium text-[#007e90] group-hover:opacity-100 transition-opacity duration-200">
               View Look
             </Button>
+            </Link>
             </div>
             
           </Link>

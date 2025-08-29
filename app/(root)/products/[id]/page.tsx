@@ -46,11 +46,18 @@ interface Product {
 
 interface SimilarProduct {
   id: string;
+  brandname:string,
   title: string;
   name: string;
   price: number;
   productImages: string;
 }
+
+interface tagged_products{
+  id:number,
+}
+
+
 
 export default function ProductPage() {
   const { id } = useParams();
@@ -393,15 +400,15 @@ export default function ProductPage() {
 
           // Filter out products with null essential data and format the valid ones
           const formattedProducts = data.similar_products
-            .filter((item: any) => item.product_id && item.title && item.price)
+            .filter((item: any) => item.product_id && item.title  && item.price)
             .map((item: any) => ({
               id: item.product_id,
               title: item.title,
-              name: item.title,
+              name: item.name,
               price: item.price,
               productImages: item.image_url || "/fallback.jpg",
             }));
-
+          console.log("formeated similar products:",formattedProducts)
           console.log(
             "✅ Formatted products after filtering:",
             formattedProducts.length
@@ -1025,7 +1032,7 @@ export default function ProductPage() {
                           .map((item: any) => ({
                             id: item.product_id,
                             title: item.title,
-                            name: item.title,
+                            name: item.name,
                             price: item.price,
                             productImages: item.image_url || "/fallback.jpg",
                           }));
@@ -1099,8 +1106,9 @@ export default function ProductPage() {
                     />
                   </Link>
                   <div className="flex flex-col flex-1 w-full">
+
                     <p className="text-sm font-medium text-left mb-2 line-clamp-2 leading-tight w-full">
-                      {similarProduct.name}
+                    {similarProduct?.title}
                     </p>
                     <div className="flex items-center gap-1 mb-3 w-full">
                       <span className="text-sm font-bold text-black">
