@@ -91,5 +91,6 @@ export const config = {
 		"/recommendations/:path*",
 		"/aboutpage/:path*",
 		"/api/:path*",
+		
 	],
 };
