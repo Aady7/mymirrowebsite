@@ -210,11 +210,11 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
       {/* Content */}
       <div className="flex-1 px-6 py-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-black mb-2">
+        <div className="mb-6">
+          <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
             Almost There!
           </h1>
-          <p className="text-gray-600 text-base">
+          <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
             Enter the 6-digit OTP we sent to your {beta === 'yes' ? 'email' : 'number'} to access your personalized style recommendations.
           </p>
         </div>
@@ -235,7 +235,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
                 onChange={(e) => handleOtpChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
                 onPaste={index === 0 ? handlePaste : undefined}
-                className={`w-14 h-14 text-center text-lg font-semibold border-2 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                className={`w-14 h-14 text-center text-[14px] font-[400] leading-[100%] tracking-[-0.02em] border-2 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
                   error 
                     ? 'border-red-500 focus:ring-red-500' 
                     : digit 
@@ -257,7 +257,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
                 {isResending ? 'Resending...' : 'Resend OTP'}
               </button>
             ) : (
-              <p className="text-gray-500 text-sm">
+              <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-500">
                 resend otp in {countdown}s
               </p>
             )}
@@ -268,7 +268,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
         {error && (
           <div className="mb-6">
             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-600 text-sm text-center">{error}</p>
+              <p className="text-red-600 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-center">{error}</p>
             </div>
           </div>
         )}
@@ -277,7 +277,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
         {isOtpComplete && !error && !isLoading && (
           <div className="mb-6">
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-600 text-sm text-center">
+              <p className="text-green-600 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-center">
                 ✓ OTP entered. Ready to verify!
               </p>
             </div>
@@ -288,19 +288,17 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
         <div className="mb-6 text-center">
           {beta === 'yes' ? (
             <div>
-              <p className="text-sm text-gray-500">
+              <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-500">
                 OTP sent to: {email}
               </p>
-              <p className="text-xs text-blue-600 mt-1">
-                ℹ️ Beta mode: Email verification
-              </p>
+             
             </div>
           ) : (
             <div>
-              <p className="text-sm text-gray-500">
+              <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-500">
                 OTP sent to: {phone.replace(/(\d{2})(\d{5})(\d{3})/, '+91 $1****$3')}
               </p>
-              <p className="text-xs text-green-600 mt-1">
+              <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-green-600 mt-1">
                 📱 Phone verification
               </p>
             </div>
@@ -309,13 +307,13 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
       </div>
 
       {/* Footer with Complete Quiz Button */}
-      <div className="px-6 pb-8">
+      <div className="px-6 pb-8 flex justify-center">
         <QuizButton
           variant="primary"
           size="lg"
           onClick={handleCompleteQuiz}
           disabled={!isOtpComplete || isLoading}
-          className="w-full"
+          className="w-full max-w-md"
         >
           {isLoading ? 'Verifying...' : 'Complete Quiz'}
         </QuizButton>

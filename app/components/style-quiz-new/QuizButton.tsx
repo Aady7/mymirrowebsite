@@ -21,7 +21,7 @@ const QuizButton: React.FC<QuizButtonProps> = ({
   className = '',
   type = 'button'
 }) => {
-  const baseClasses = "font-medium rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2";
+  const baseClasses = "font-[400] text-[14px] leading-[100%] tracking-[-0.02em] rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2";
   
   const variantClasses = {
     primary: "bg-black text-white hover:bg-gray-800 focus:ring-black",
@@ -32,9 +32,9 @@ const QuizButton: React.FC<QuizButtonProps> = ({
   };
   
   const sizeClasses = {
-    sm: "px-4 py-2 text-sm",
-    md: "px-6 py-3 text-base",
-    lg: "px-8 py-4 text-lg"
+    sm: "px-4 py-2",
+    md: "px-6 py-3",
+    lg: "px-8 py-4"
   };
   
   const disabledClasses = disabled 

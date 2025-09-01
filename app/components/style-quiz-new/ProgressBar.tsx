@@ -11,15 +11,21 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   totalSteps, 
   className = "" 
 }) => {
-  const progressPercentage = (currentStep / totalSteps) * 100;
+  // Create 6 segments for the progress bar
+  const totalSegments = 6;
+  const completedSegments = Math.min(Math.ceil((currentStep / totalSteps) * totalSegments), totalSegments);
 
   return (
     <div className={`w-full ${className}`}>
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className="bg-green-500 h-2 rounded-full transition-all duration-300 ease-out"
-          style={{ width: `${progressPercentage}%` }}
-        />
+      <div className="flex w-full h-2 gap-1">
+        {Array.from({ length: totalSegments }, (_, index) => (
+          <div 
+            key={index}
+            className={`flex-1 h-full rounded-full ${
+              index < completedSegments ? 'bg-green-500' : 'bg-gray-200'
+            }`}
+          />
+        ))}
       </div>
     </div>
   );

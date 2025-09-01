@@ -118,8 +118,8 @@ const StyleOrigin: React.FC<StyleOriginProps> = ({
       {/* Content */}
       <div className="flex-1 px-6 py-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-black mb-2">
+        <div className="mb-6">
+          <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
             Where does your style come from?
           </h1>
         </div>
@@ -152,7 +152,7 @@ const StyleOrigin: React.FC<StyleOriginProps> = ({
                 </div>
                 
                 {/* Style Name */}
-                <h3 className="text-xs font-semibold text-black leading-tight">
+                <h3 className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-black leading-tight">
                   {style.name}
                 </h3>
               </button>
@@ -163,19 +163,19 @@ const StyleOrigin: React.FC<StyleOriginProps> = ({
         {/* Error Message */}
         {error && (
           <div className="mb-6">
-            <p className="text-red-500 text-sm text-center">{error}</p>
+            <p className="text-red-500 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-center">{error}</p>
           </div>
         )}
       </div>
 
       {/* Footer with Continue Button */}
-      <div className="px-6 pb-8">
+      <div className="px-6 pb-8 flex justify-center">
         <QuizButton
           variant="primary"
           size="lg"
           onClick={handleContinue}
           disabled={!selectedStyle}
-          className="w-full"
+          className="w-full max-w-md"
         >
           Continue
         </QuizButton>

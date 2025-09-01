@@ -80,11 +80,11 @@ const ColorAnalysis: React.FC<ColorAnalysisProps> = ({
       {/* Content */}
       <div className="flex-1 px-6 py-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-black mb-2">
+        <div className="mb-6">
+          <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
             Colors that love you back
           </h1>
-          <p className="text-gray-600 text-base">
+          <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
             Choose the one that's closest to your natural skin tone.
           </p>
         </div>
@@ -98,7 +98,7 @@ const ColorAnalysis: React.FC<ColorAnalysisProps> = ({
                 key={tone.hex}
                 onClick={() => handleToneSelect(tone.hex, tone.name)}
                 className={`
-                  w-full aspect-[1/3] rounded-sm transition-all duration-200
+                  w-full aspect-[1/3]  transition-all duration-200
                   ${selectedTone === tone.hex
                     ? 'ring-2 ring-black ring-offset-2 scale-105'
                     : 'hover:ring-2 hover:ring-gray-400 hover:ring-offset-1'
@@ -111,7 +111,7 @@ const ColorAnalysis: React.FC<ColorAnalysisProps> = ({
           </div>
 
           {/* Tip text */}
-          <p className="text-xs text-gray-500 italic text-center">
+          <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-500 italic text-left">
             Tip: Choose the tone closest to your inner forearm or jawline.
           </p>
         </div>
@@ -124,7 +124,7 @@ const ColorAnalysis: React.FC<ColorAnalysisProps> = ({
                 className="w-6 h-6 rounded-full border border-gray-300"
                 style={{ backgroundColor: selectedTone }}
               />
-              <p className="text-gray-700 font-medium">
+              <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-700">
                 Selected: {getSelectedToneName()}
               </p>
               <span className="text-green-500">✓</span>
@@ -135,7 +135,7 @@ const ColorAnalysis: React.FC<ColorAnalysisProps> = ({
         {/* Error Message */}
         {error && (
           <div className="mb-6">
-            <p className="text-red-500 text-sm text-center">{error}</p>
+            <p className="text-red-500 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-center">{error}</p>
           </div>
         )}
 
@@ -144,13 +144,13 @@ const ColorAnalysis: React.FC<ColorAnalysisProps> = ({
       </div>
 
       {/* Footer with Continue Button */}
-      <div className="px-6 pb-8">
+      <div className="px-6 pb-8 flex justify-center">
         <QuizButton
           variant="primary"
           size="lg"
           onClick={handleContinue}
           disabled={!selectedTone}
-          className="w-full"
+          className="w-full max-w-md"
         >
           Continue
         </QuizButton>

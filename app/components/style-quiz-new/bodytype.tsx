@@ -144,11 +144,11 @@ const BodyType: React.FC<BodyTypeProps> = ({
       {/* Content */}
       <div className="flex-1 px-6 py-4">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-2xl font-bold text-black mb-2">
+        <div className="mb-6">
+          <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
             Let's get the fit right
           </h1>
-          <p className="text-gray-600 text-base">
+          <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
             Pick the body type that feels closest to you, no stress, all styles welcome.
           </p>
         </div>
@@ -220,7 +220,7 @@ const BodyType: React.FC<BodyTypeProps> = ({
                       </div>
                       
                       {/* Body Type Name */}
-                      <span className="text-sm font-medium text-black">
+                      <span className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-black">
                         {bodyType.name}
                       </span>
                     </button>
@@ -256,7 +256,7 @@ const BodyType: React.FC<BodyTypeProps> = ({
                   </div>
                   
                   {/* Body Type Name */}
-                  <span className="text-sm font-medium text-black">
+                  <span className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-black">
                     {bodyType.name}
                   </span>
                 </button>
@@ -268,19 +268,19 @@ const BodyType: React.FC<BodyTypeProps> = ({
         {/* Error Message */}
         {error && (
           <div className="mb-6">
-            <p className="text-red-500 text-sm text-center">{error}</p>
+            <p className="text-red-500 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-center">{error}</p>
           </div>
         )}
       </div>
 
       {/* Footer with Continue Button */}
-      <div className="px-6 pb-8">
+      <div className="px-6 pb-8 flex justify-center">
         <QuizButton
           variant="primary"
           size="lg"
           onClick={handleContinue}
           disabled={!selectedBodyType}
-          className="w-full"
+          className="w-full max-w-md"
         >
           Continue
         </QuizButton>
