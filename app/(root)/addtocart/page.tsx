@@ -150,8 +150,8 @@ const page = () => {
         </div>
       </div>
 
-      {/* place order */}
-      <div className="w-full mt-9 px-4 py-6 flex flex-col items-center justify-center gap-3 border-t border-gray-200">
+      {/* place order - HIDDEN FOR AFFILIATE MARKETING */}
+      <div className="w-full mt-9 px-4 py-6 flex flex-col items-center justify-center gap-3 border-t border-gray-200" style={{display: 'none'}}>
         {/* Text */}
         <p className="text-[14px] text-gray-500  font-[Boston] not-italic font-normal leading-normal">
           1 Item selected for order

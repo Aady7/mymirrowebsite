@@ -246,7 +246,9 @@ const Address = () => {
         } else {
           console.log("Address saved successfully:", data) // Debug log
           setError(false)
-          setCurrentStep(2)
+          // Show success message and redirect back to cart
+          alert("Address saved successfully! You can now proceed with affiliate purchases.")
+          router.push("/cart")
         }
       } catch (err) {
         console.error("Unexpected error:", err) // Debug log
@@ -254,14 +256,15 @@ const Address = () => {
         setErrorMessage("An unexpected error occurred")
       }
 
-      createOrder();
-      fetchAuthToken();
-      if(authError){
-        setError(true)
-        setErrorMessage("Authentication error. Please try again.")
-        router.push("/cart")
-        return
-      }
+      // ORDER CREATION AND PAYMENT DISABLED FOR AFFILIATE MARKETING
+      // createOrder();
+      // fetchAuthToken();
+      // if(authError){
+      //   setError(true)
+      //   setErrorMessage("Authentication error. Please try again.")
+      //   router.push("/cart")
+      //   return
+      // }
       
     } else {
       setError(true)
@@ -282,8 +285,9 @@ const Address = () => {
   
   return (
     <>
-      {orderId ? (
-        <div className="w-full max-w-2xl mx-auto px-4 md:px-6 lg:px-8 py-6">
+      {/* ORDER AND PAYMENT SECTION - HIDDEN FOR AFFILIATE MARKETING */}
+      {false && orderId ? (
+        <div className="w-full max-w-2xl mx-auto px-4 md:px-6 lg:px-8 py-6" style={{display: 'none'}}>
         <CheckoutTracker currentStep={currentStep} />
       
         {/* Order Summary Box */}
