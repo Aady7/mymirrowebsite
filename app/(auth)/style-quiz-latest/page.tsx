@@ -6,6 +6,7 @@ import ColorAnalysis, { ColorAnalysisData } from '@/app/components/style-quiz-ne
 import StyleOrigin, { StyleOriginData } from '@/app/components/style-quiz-new/styleorigin';
 import StyleVibe, { StyleVibeData } from '@/app/components/style-quiz-new/styleVibe';
 import AnsQuestion, { AnsQuestionData } from '@/app/components/style-quiz-new/ansQuestion';
+import OutfitSwipe, { SwipeResultData } from '@/app/components/style-quiz-new/outfitSwipe';
 import ContactVerification, { ContactVerificationData } from '@/app/components/style-quiz-new/contactVerification';
 import OtpVerification, { OtpVerificationData } from '@/app/components/style-quiz-new/otpVerification';
 
@@ -17,6 +18,7 @@ interface StyleQuizState {
   styleOrigin: StyleOriginData | null;
   styleVibe: StyleVibeData | null;
   ansQuestion: AnsQuestionData | null;
+  outfitSwipe: SwipeResultData | null;
   contactVerification: ContactVerificationData | null;
   otpVerification: OtpVerificationData | null;
   // Add more steps as needed
@@ -31,6 +33,7 @@ const StyleQuizPages = () => {
     styleOrigin: null,
     styleVibe: null,
     ansQuestion: null,
+    outfitSwipe: null,
     contactVerification: null,
     otpVerification: null,
   });
@@ -38,9 +41,9 @@ const StyleQuizPages = () => {
   // Calculate total steps based on whether user selected trend-focused
   const getTotalSteps = () => {
     if (quizState.styleOrigin?.styleOrigin === 'trend-focused') {
-      return 6; // Skip styleVibe and ansQuestion
+      return 7; // PersonalInfo(1) -> BodyType(2) -> ColorAnalysis(3) -> StyleOrigin(4) -> OutfitSwipe(5) -> ContactVerification(6) -> OtpVerification(7)
     }
-    return 8; // Include all steps
+    return 9; // Include all steps including outfitSwipe
   };
 
   const totalSteps = getTotalSteps();
@@ -75,21 +78,13 @@ const StyleQuizPages = () => {
   const handleStyleOriginNext = (data: StyleOriginData) => {
     console.log('Style Origin Data:', data);
     
-    if (data.styleOrigin === 'trend-focused') {
-      // Skip directly to contact verification
-      setQuizState(prev => ({
-        ...prev,
-        styleOrigin: data,
-        currentStep: 6 // Jump to contact verification step
-      }));
-    } else {
-      // Continue to next step (styleVibe)
-      setQuizState(prev => ({
-        ...prev,
-        styleOrigin: data,
-        currentStep: prev.currentStep + 1
-      }));
-    }
+    // Always go to the next step, but the conditional logic in renderCurrentStep
+    // will determine what component to show based on styleOrigin selection
+    setQuizState(prev => ({
+      ...prev,
+      styleOrigin: data,
+      currentStep: prev.currentStep + 1
+    }));
   };
 
   const handleStyleVibeNext = (data: StyleVibeData) => {
@@ -106,6 +101,15 @@ const StyleQuizPages = () => {
     setQuizState(prev => ({
       ...prev,
       ansQuestion: data,
+      currentStep: prev.currentStep + 1
+    }));
+  };
+
+  const handleOutfitSwipeNext = (data: SwipeResultData) => {
+    console.log('Outfit Swipe Data:', data);
+    setQuizState(prev => ({
+      ...prev,
+      outfitSwipe: data,
       currentStep: prev.currentStep + 1
     }));
   };
@@ -133,8 +137,14 @@ const StyleQuizPages = () => {
       let newStep = Math.max(1, prev.currentStep - 1);
       
       // Handle back navigation for trend-focused users
-      if (prev.styleOrigin?.styleOrigin === 'trend-focused' && prev.currentStep === 6) {
-        newStep = 4; // Go back to styleOrigin
+      if (prev.styleOrigin?.styleOrigin === 'trend-focused') {
+        if (prev.currentStep === 5) { // outfit swipe step
+          newStep = 4; // Go back to styleOrigin
+        } else if (prev.currentStep === 6) { // contact verification step
+          newStep = 5; // Go back to outfit swipe
+        } else if (prev.currentStep === 7) { // otp verification step
+          newStep = 6; // Go back to contact verification
+        }
       }
       
       return {
@@ -193,19 +203,32 @@ const StyleQuizPages = () => {
         );
       
       case 5:
-        return (
-          <StyleVibe
-            onNext={handleStyleVibeNext}
-            onBack={handleBack}
-            initialData={quizState.styleVibe || undefined}
-            currentStep={quizState.currentStep}
-            totalSteps={totalSteps}
-            gender={quizState.personalInfo?.gender || ''}
-          />
-        );
+        // Check if trend-focused (outfit swipe) or styleVibe for regular flow
+        if (quizState.styleOrigin?.styleOrigin === 'trend-focused') {
+          return (
+            <OutfitSwipe
+              onNext={handleOutfitSwipeNext}
+              onBack={handleBack}
+              currentStep={quizState.currentStep}
+              totalSteps={totalSteps}
+              gender={quizState.personalInfo?.gender || 'Male'}
+            />
+          );
+        } else {
+          return (
+            <StyleVibe
+              onNext={handleStyleVibeNext}
+              onBack={handleBack}
+              initialData={quizState.styleVibe || undefined}
+              currentStep={quizState.currentStep}
+              totalSteps={totalSteps}
+              gender={quizState.personalInfo?.gender || ''}
+            />
+          );
+        }
       
       case 6:
-        // Check if we should show ansQuestion or contactVerification
+        // Check if trend-focused (contact verification) or ansQuestion
         if (quizState.styleOrigin?.styleOrigin === 'trend-focused') {
           return (
             <ContactVerification
@@ -229,7 +252,7 @@ const StyleQuizPages = () => {
         }
       
       case 7:
-        // This step only exists for non-trend-focused users
+        // Check if trend-focused (OTP verification) or outfit swipe
         if (quizState.styleOrigin?.styleOrigin === 'trend-focused') {
           return (
             <OtpVerification
@@ -245,18 +268,30 @@ const StyleQuizPages = () => {
           );
         } else {
           return (
-            <ContactVerification
-              onNext={handleContactVerificationNext}
+            <OutfitSwipe
+              onNext={handleOutfitSwipeNext}
               onBack={handleBack}
-              initialData={quizState.contactVerification || undefined}
               currentStep={quizState.currentStep}
               totalSteps={totalSteps}
+              gender={quizState.personalInfo?.gender || 'Male'}
             />
           );
         }
       
       case 8:
-        // This step only exists for non-trend-focused users
+        // Contact Verification step (only for non-trend-focused users)
+        return (
+          <ContactVerification
+            onNext={handleContactVerificationNext}
+            onBack={handleBack}
+            initialData={quizState.contactVerification || undefined}
+            currentStep={quizState.currentStep}
+            totalSteps={totalSteps}
+          />
+        );
+      
+      case 9:
+        // OTP Verification step (only for non-trend-focused users)
         return (
           <OtpVerification
             onNext={handleOtpVerificationNext}

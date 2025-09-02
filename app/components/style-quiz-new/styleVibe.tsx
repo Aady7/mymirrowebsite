@@ -14,7 +14,7 @@ interface StyleVibeProps {
 }
 
 export interface StyleVibeData {
-  styleVibe: string;
+  styleVibes: string[];
 }
 
 // Define style vibes for each gender
@@ -82,8 +82,8 @@ const StyleVibe: React.FC<StyleVibeProps> = ({
   totalSteps = 8,
   gender = 'Male'
 }) => {
-  const [selectedVibe, setSelectedVibe] = useState<string>(
-    initialData?.styleVibe || ''
+  const [selectedVibes, setSelectedVibes] = useState<string[]>(
+    initialData?.styleVibes || []
   );
   const [error, setError] = useState<string>('');
 
@@ -100,20 +100,28 @@ const StyleVibe: React.FC<StyleVibeProps> = ({
   const styleVibes = getStyleVibes();
 
   const handleVibeSelect = (vibeId: string) => {
-    setSelectedVibe(vibeId);
+    setSelectedVibes(prev => {
+      if (prev.includes(vibeId)) {
+        // Remove if already selected
+        return prev.filter(id => id !== vibeId)
+      } else {
+        // Add if not selected
+        return [...prev, vibeId]
+      }
+    });
     if (error) {
       setError('');
     }
   };
 
   const handleContinue = () => {
-    if (!selectedVibe) {
-      setError('Please select a style vibe');
+    if (selectedVibes.length === 0) {
+      setError('Please select at least one style vibe');
       return;
     }
 
     const data: StyleVibeData = {
-      styleVibe: selectedVibe
+      styleVibes: selectedVibes
     };
 
     onNext?.(data);
@@ -134,8 +142,11 @@ const StyleVibe: React.FC<StyleVibeProps> = ({
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
-            Which style vibe do you relate to?
+            Which style vibes do you relate to?
           </h1>
+          <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
+            Select all that apply
+          </p>
         </div>
 
         {/* Style Vibes Grid */}
@@ -149,7 +160,7 @@ const StyleVibe: React.FC<StyleVibeProps> = ({
                 className={`
                   w-full p-3 border-2 rounded-2xl transition-all duration-200 
                   flex flex-col items-center text-center
-                  ${selectedVibe === vibe.id 
+                  ${selectedVibes.includes(vibe.id) 
                     ? 'border-black bg-gray-50' 
                     : 'border-gray-300 hover:border-gray-400'
                   }
@@ -184,7 +195,7 @@ const StyleVibe: React.FC<StyleVibeProps> = ({
                   className={`
                     w-full p-3 border-2 rounded-2xl transition-all duration-200 
                     flex flex-col items-center text-center
-                    ${selectedVibe === vibe.id 
+                    ${selectedVibes.includes(vibe.id) 
                       ? 'border-black bg-gray-50' 
                       : 'border-gray-300 hover:border-gray-400'
                     }
@@ -202,7 +213,7 @@ const StyleVibe: React.FC<StyleVibeProps> = ({
                   </div>
                   
                   {/* Style Name */}
-                  <h3 className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-black leading-tight">
+                  <h3 className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-black">
                     {vibe.name}
                   </h3>
                 </button>
@@ -225,7 +236,7 @@ const StyleVibe: React.FC<StyleVibeProps> = ({
           variant="primary"
           size="lg"
           onClick={handleContinue}
-          disabled={!selectedVibe}
+          disabled={selectedVibes.length === 0}
           className="w-full max-w-md"
         >
           Continue

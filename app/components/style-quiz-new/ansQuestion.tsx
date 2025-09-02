@@ -5,7 +5,7 @@ import ProgressBar from './ProgressBar'
 import QuizButton from './QuizButton'
 
 export interface AnsQuestionData {
-  answer: string
+  answers: string[]
 }
 
 interface AnsQuestionProps {
@@ -23,7 +23,7 @@ const AnsQuestion: React.FC<AnsQuestionProps> = ({
   currentStep,
   totalSteps
 }) => {
-  const [selectedAnswer, setSelectedAnswer] = useState<string>(initialData?.answer || '')
+  const [selectedAnswers, setSelectedAnswers] = useState<string[]>(initialData?.answers || [])
   const [error, setError] = useState<string>('')
 
   const answers = [
@@ -34,18 +34,26 @@ const AnsQuestion: React.FC<AnsQuestionProps> = ({
   ]
 
   const handleAnswerSelect = (answer: string) => {
-    setSelectedAnswer(answer)
+    setSelectedAnswers(prev => {
+      if (prev.includes(answer)) {
+        // Remove if already selected
+        return prev.filter(a => a !== answer)
+      } else {
+        // Add if not selected
+        return [...prev, answer]
+      }
+    })
     setError('')
   }
 
   const handleNext = () => {
-    if (!selectedAnswer) {
-      setError('Please select an answer to continue')
+    if (selectedAnswers.length === 0) {
+      setError('Please select at least one answer to continue')
       return
     }
 
     onNext({
-      answer: selectedAnswer
+      answers: selectedAnswers
     })
   }
 
@@ -66,6 +74,9 @@ const AnsQuestion: React.FC<AnsQuestionProps> = ({
           <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
             When you dress, what are you saying to the world?
           </h1>
+          <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
+            Select all that apply
+          </p>
         </div>
 
         {/* Answer Options */}
@@ -77,8 +88,8 @@ const AnsQuestion: React.FC<AnsQuestionProps> = ({
                 onClick={() => handleAnswerSelect(answer)}
                 className={`
                   w-full px-4 py-3 border-2 rounded-lg transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
-                  ${selectedAnswer === answer
-                    ? 'border-black text-black'
+                  ${selectedAnswers.includes(answer)
+                    ? 'border-black text-black bg-gray-50'
                     : 'border-gray-300 text-gray-700 hover:border-gray-400'
                   }
                 `}
@@ -105,7 +116,7 @@ const AnsQuestion: React.FC<AnsQuestionProps> = ({
           variant="primary"
           size="lg"
           onClick={handleNext}
-          disabled={!selectedAnswer}
+          disabled={selectedAnswers.length === 0}
           className="w-full max-w-md"
         >
           Continue
