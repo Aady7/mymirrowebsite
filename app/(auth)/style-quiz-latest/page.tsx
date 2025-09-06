@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PersonalInfo, { PersonalInfoData } from '@/app/components/style-quiz-new/personalInfo';
 import BodyType, { BodyTypeData } from '@/app/components/style-quiz-new/bodytype';
 import ColorAnalysis, { ColorAnalysisData } from '@/app/components/style-quiz-new/colorAnalysis';
@@ -9,6 +9,7 @@ import AnsQuestion, { AnsQuestionData } from '@/app/components/style-quiz-new/an
 import OutfitSwipe, { SwipeResultData } from '@/app/components/style-quiz-new/outfitSwipe';
 import ContactVerification, { ContactVerificationData } from '@/app/components/style-quiz-new/contactVerification';
 import OtpVerification, { OtpVerificationData } from '@/app/components/style-quiz-new/otpVerification';
+import { storeQuizDataLocally, getQuizDataFromStorage } from '@/app/utils/styleQuizUtils';
 
 interface StyleQuizState {
   currentStep: number;
@@ -37,6 +38,23 @@ const StyleQuizPages = () => {
     contactVerification: null,
     otpVerification: null,
   });
+
+  // Load quiz data from local storage on component mount
+  useEffect(() => {
+    const savedData = getQuizDataFromStorage();
+    if (savedData) {
+      setQuizState(savedData);
+      console.log('Loaded quiz data from local storage:', savedData);
+    }
+  }, []);
+
+  // Save quiz data to local storage whenever quiz state changes
+  useEffect(() => {
+    // Only save if we have some data (not initial empty state)
+    if (quizState.personalInfo || quizState.bodyType || quizState.colorAnalysis) {
+      storeQuizDataLocally(quizState);
+    }
+  }, [quizState]);
 
   // Calculate total steps based on whether user selected trend-focused
   const getTotalSteps = () => {
@@ -264,6 +282,7 @@ const StyleQuizPages = () => {
               email={quizState.contactVerification?.email || ''}
               phone={quizState.contactVerification?.phone || ''}
               allQuizData={quizState}
+              isLatestVersion={true}
             />
           );
         } else {
@@ -302,29 +321,13 @@ const StyleQuizPages = () => {
             email={quizState.contactVerification?.email || ''}
             phone={quizState.contactVerification?.phone || ''}
             allQuizData={quizState}
+            isLatestVersion={true}
           />
         );
       
-      default:
-        return (
-          <div className="min-h-screen bg-white flex items-center justify-center">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                Step {quizState.currentStep} Coming Soon
-              </h2>
-              <p className="text-gray-600 mb-6">
-                This step is under development
-              </p>
-              <button
-                onClick={handleBack}
-                className="bg-black text-white px-6 py-3 rounded-full hover:bg-gray-800 transition-colors"
-              >
-                Go Back
-              </button>
-            </div>
-          </div>
-        );
-    }
+
+      } 
+    
   };
 
   return (

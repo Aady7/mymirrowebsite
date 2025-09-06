@@ -17,36 +17,41 @@ export interface BodyTypeData {
   bodyType: string;
 }
 
-// Define body types for each gender
+// Define body types for each gender with unselected and selected images
 const MALE_BODY_TYPES = [
   {
-    id: 'vshape',
-    name: 'V-Shape',
-    image: '/assets/newstylequizimages/maleBodyTypes/bodytypemalevshape.png',
+    id: 'invertedtriangle',
+    name: 'Inverted Triangle',
+    unselectedImage: '/assets/newstylequizimages/maleBodyTypes/maleoptions/maleinvertedtriangle.svg',
+    selectedImage: '/assets/newstylequizimages/maleBodyTypes/selectMale/selectmaleinvertedtriangle.svg',
     description: 'Broad shoulders, narrow waist'
   },
   {
     id: 'triangle',
     name: 'Triangle',
-    image: '/assets/newstylequizimages/maleBodyTypes/bodytypemaletriangle.png',
+    unselectedImage: '/assets/newstylequizimages/maleBodyTypes/maleoptions/maletriangle.svg',
+    selectedImage: '/assets/newstylequizimages/maleBodyTypes/selectMale/selectmaletriangle.svg',
     description: 'Narrow shoulders, wider hips'
   },
   {
     id: 'hourglass',
     name: 'Hourglass',
-    image: '/assets/newstylequizimages/maleBodyTypes/bodytypemalehourglass.png',
+    unselectedImage: '/assets/newstylequizimages/maleBodyTypes/maleoptions/malehourglass.svg',
+    selectedImage: '/assets/newstylequizimages/maleBodyTypes/selectMale/selectmalehourglass.svg',
     description: 'Balanced shoulders and hips'
   },
   {
     id: 'rectangle',
     name: 'Rectangle',
-    image: '/assets/newstylequizimages/maleBodyTypes/bodytypemalerectangle.png',
+    unselectedImage: '/assets/newstylequizimages/maleBodyTypes/maleoptions/malerectangle.svg',
+    selectedImage: '/assets/newstylequizimages/maleBodyTypes/selectMale/selectmalerectangle.svg',
     description: 'Straight body shape'
   },
   {
     id: 'oval',
     name: 'Oval',
-    image: '/assets/newstylequizimages/maleBodyTypes/bodytypemaleoval.png',
+    unselectedImage: '/assets/newstylequizimages/maleBodyTypes/maleoptions/maleoval.svg',
+    selectedImage: '/assets/newstylequizimages/maleBodyTypes/selectMale/selectmaleoval.svg',
     description: 'Fuller midsection'
   }
 ];
@@ -55,31 +60,36 @@ const FEMALE_BODY_TYPES = [
   {
     id: 'hourglass',
     name: 'Hourglass',
-    image: '/assets/newstylequizimages/femaleBodyTypes/bodytypefemalehourglass.png',
+    unselectedImage: '/assets/newstylequizimages/femaleBodyTypes/femaleoptions/femhourglass.svg',
+    selectedImage: '/assets/newstylequizimages/femaleBodyTypes/selectfem/selectfemhourglass.svg',
     description: 'Balanced shoulders and hips'
   },
   {
     id: 'pear',
     name: 'Pear',
-    image: '/assets/newstylequizimages/femaleBodyTypes/bodytypefemalepear.png',
+    unselectedImage: '/assets/newstylequizimages/femaleBodyTypes/femaleoptions/femalepear.svg',
+    selectedImage: '/assets/newstylequizimages/femaleBodyTypes/selectfem/selectfempear.svg',
     description: 'Narrow shoulders, wider hips'
   },
   {
     id: 'apple',
     name: 'Apple',
-    image: '/assets/newstylequizimages/femaleBodyTypes/bodytypefemaleapple.png',
+    unselectedImage: '/assets/newstylequizimages/femaleBodyTypes/femaleoptions/femaleapple.svg',
+    selectedImage: '/assets/newstylequizimages/femaleBodyTypes/selectfem/selectfemaleapple.svg',
     description: 'Fuller midsection'
   },
   {
     id: 'rectangle',
     name: 'Rectangle',
-    image: '/assets/newstylequizimages/femaleBodyTypes/bodytypefemalerectangle.png',
+    unselectedImage: '/assets/newstylequizimages/femaleBodyTypes/femaleoptions/femalerectangle.svg',
+    selectedImage: '/assets/newstylequizimages/femaleBodyTypes/selectfem/selectfemrectangle.svg',
     description: 'Straight body shape'
   },
   {
     id: 'oval',
     name: 'Oval',
-    image: '/assets/newstylequizimages/femaleBodyTypes/bodytypefemaleoval.png',
+    unselectedImage: '/assets/newstylequizimages/femaleBodyTypes/femaleoptions/femaleoval.svg',
+    selectedImage: '/assets/newstylequizimages/femaleBodyTypes/selectfem/selectfemaleoval.svg',
     description: 'Fuller midsection'
   }
 ];
@@ -176,7 +186,7 @@ const BodyType: React.FC<BodyTypeProps> = ({
                     {/* Body Type Image */}
                     <div className="relative w-16 h-20 mb-2">
                       <Image
-                        src={bodyType.image}
+                        src={selectedBodyType === bodyType.id ? bodyType.selectedImage : bodyType.unselectedImage}
                         alt={bodyType.name}
                         fill
                         className="object-contain"
@@ -211,7 +221,7 @@ const BodyType: React.FC<BodyTypeProps> = ({
                       {/* Body Type Image */}
                       <div className="relative w-16 h-20 mb-2">
                         <Image
-                          src={bodyType.image}
+                          src={selectedBodyType === bodyType.id ? bodyType.selectedImage : bodyType.unselectedImage}
                           alt={bodyType.name}
                           fill
                           className="object-contain"
@@ -247,7 +257,7 @@ const BodyType: React.FC<BodyTypeProps> = ({
                   {/* Body Type Image */}
                   <div className="relative w-16 h-20 mb-2">
                     <Image
-                      src={bodyType.image}
+                      src={selectedBodyType === bodyType.id ? bodyType.selectedImage : bodyType.unselectedImage}
                       alt={bodyType.name}
                       fill
                       className="object-contain"

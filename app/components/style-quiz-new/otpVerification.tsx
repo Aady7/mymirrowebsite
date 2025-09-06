@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import ProgressBar from './ProgressBar';
 import QuizButton from './QuizButton';
-import { handleVerifyOtp, handleVerifyMail, handleSendOtp, handleSendMail } from '@/app/utils/styleQuizUtils';
+import { handleVerifyOtp, handleVerifyMail, handleSendOtp, handleSendMail, transformQuizDataForV2, storeQuizDataInSupabase, clearQuizDataFromStorage } from '@/app/utils/styleQuizUtils';
 const beta=process.env.NEXT_PUBLIC_TESTING_VAR
 
 interface OtpVerificationProps {
@@ -15,6 +15,7 @@ interface OtpVerificationProps {
   email?: string;
   phone?: string;
   allQuizData?: any; // All collected quiz data for logging
+  isLatestVersion?: boolean; // Flag to determine if this is for style-quiz-latest
 }
 
 export interface OtpVerificationData {
@@ -31,7 +32,8 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
   totalSteps = 7,
   email = '',
   phone = '',
-  allQuizData = {}
+  allQuizData = {},
+  isLatestVersion = false
 }) => {
   const router = useRouter();
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', '']);
@@ -176,6 +178,24 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
       console.log('🎉 Style Quiz Completed Successfully!', completeQuizData);
      
       console.log('📋 Complete Quiz Data:', JSON.stringify(completeQuizData, null, 2));
+
+      // Store data in Supabase if this is the latest version
+      if (isLatestVersion) {
+        console.log('Storing data in style-quiz-v2 table...');
+        const transformedData = transformQuizDataForV2(completeQuizData);
+        const { data: storedData, error: storageError } = await storeQuizDataInSupabase(transformedData);
+        
+        if (storageError) {
+          console.error('Failed to store quiz data:', storageError);
+          setError('Quiz completed but failed to save data. Please contact support.');
+          return;
+        }
+        
+        console.log('✅ Quiz data successfully stored in Supabase!', storedData);
+        
+        // Clear local storage after successful storage
+        clearQuizDataFromStorage();
+      }
 
       // Call onNext if provided
       onNext?.(verificationData);

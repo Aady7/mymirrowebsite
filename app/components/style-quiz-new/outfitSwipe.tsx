@@ -33,43 +33,117 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
   totalSteps,
   gender
 }) => {
-  // Define outfits based on gender (using male style vibe images as example)
+  // Define outfits based on gender
   const getOutfits = (): OutfitData[] => {
     const maleOutfits = [
       {
+        id: 'casual',
+        name: 'Casual',
+        image: '/assets/newstylequizimages/menSwipe/menCasual.svg',
+        category: 'Casual'
+      },
+      {
         id: 'streetwear',
-        name: 'Streetwear chic',
-        image: '/assets/newstylequizimages/maleStyleVibe/streetwearcasual.svg',
+        name: 'Streetwear',
+        image: '/assets/newstylequizimages/menSwipe/menStreetWear.svg',
         category: 'Streetwear'
       },
       {
-        id: 'minimal',
-        name: 'Minimal & clean',
-        image: '/assets/newstylequizimages/maleStyleVibe/minimal&clean.svg',
-        category: 'Minimal'
+        id: 'formal',
+        name: 'Formal',
+        image: '/assets/newstylequizimages/menSwipe/menformal.svg',
+        category: 'Formal'
       },
       {
-        id: 'oldmoney',
-        name: 'Old money',
-        image: '/assets/newstylequizimages/maleStyleVibe/oldmoney.svg',
-        category: 'Classic'
+        id: 'business-casual',
+        name: 'Business Casual',
+        image: '/assets/newstylequizimages/menSwipe/menBusinessCasual.svg',
+        category: 'Business'
       },
       {
-        id: 'sporty',
-        name: 'Sporty athleisure',
-        image: '/assets/newstylequizimages/maleStyleVibe/sportyathleisure.svg',
+        id: 'athleisure',
+        name: 'Athleisure',
+        image: '/assets/newstylequizimages/menSwipe/menAthleisure.svg',
         category: 'Athletic'
       },
       {
-        id: 'bold',
-        name: 'Bold & statement',
-        image: '/assets/newstylequizimages/maleStyleVibe/bold&statement.svg',
-        category: 'Bold'
+        id: 'high-street-casual',
+        name: 'High Street Casual',
+        image: '/assets/newstylequizimages/menSwipe/menHighStreenCasual.svg',
+        category: 'High Street'
+      },
+      {
+        id: 'resort-look',
+        name: 'Resort Look',
+        image: '/assets/newstylequizimages/menSwipe/menResortLook.svg',
+        category: 'Resort'
+      },
+      {
+        id: 'oversized',
+        name: 'Oversized',
+        image: '/assets/newstylequizimages/menSwipe/menoversized.svg',
+        category: 'Oversized'
       }
     ]
 
-    // For now, return male outfits. You can add female outfits later
-    return maleOutfits
+    const femaleOutfits = [
+      {
+        id: 'casual',
+        name: 'Casual',
+        image: '/assets/newstylequizimages/womenSwipe/casual.svg',
+        category: 'Casual'
+      },
+      {
+        id: 'formal',
+        name: 'Formal',
+        image: '/assets/newstylequizimages/womenSwipe/formal.svg',
+        category: 'Formal'
+      },
+      {
+        id: 'business-casual',
+        name: 'Business Casual',
+        image: '/assets/newstylequizimages/womenSwipe/businessCasual.svg',
+        category: 'Business'
+      },
+      {
+        id: 'athleisure',
+        name: 'Athleisure',
+        image: '/assets/newstylequizimages/womenSwipe/athleisure.svg',
+        category: 'Athletic'
+      },
+      {
+        id: 'high-street',
+        name: 'High Street',
+        image: '/assets/newstylequizimages/womenSwipe/highStreet.svg',
+        category: 'High Street'
+      },
+      {
+        id: 'summer-dress',
+        name: 'Summer Dress',
+        image: '/assets/newstylequizimages/womenSwipe/summerDress.svg',
+        category: 'Summer'
+      },
+      {
+        id: 'little-black-dress',
+        name: 'Little Black Dress',
+        image: '/assets/newstylequizimages/womenSwipe/littleBlackDress.svg',
+        category: 'Evening'
+      },
+      {
+        id: 'desi-core',
+        name: 'Desi Core',
+        image: '/assets/newstylequizimages/womenSwipe/desiCore.svg',
+        category: 'Traditional'
+      }
+    ]
+
+    // Return outfits based on gender
+    if (gender === 'Female') {
+      return femaleOutfits
+    } else {
+      // Default to male outfits for 'Male', 'Other', or empty
+      return maleOutfits
+    }
   }
 
   const outfits = getOutfits()
@@ -147,15 +221,15 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Progress Bar */}
-      <div className="px-6 pt-12 pb-4">
+      <div className="px-4 pt-8 pb-2">
         <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-6 py-4">
+      <div className="flex-1 px-4 py-2 flex flex-col">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
+        <div className="mb-4">
+          <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-2">
             Swipe into Your Style
           </h1>
           <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
@@ -164,8 +238,8 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
         </div>
 
                  {/* Swipe Cards Container */}
-         <div className="relative h-[500px] mb-8 flex justify-center">
-           <div className="relative w-full max-w-sm">
+         <div className="relative flex-1 mb-8 flex justify-center">
+           <div className="relative w-full max-w-sm" style={{ height: 'calc(100vh - 200px)' }}>
              {/* Render multiple cards for smooth stacking */}
              {outfits.slice(currentIndex, currentIndex + 3).map((outfit, index) => {
                const cardIndex = currentIndex + index
@@ -191,7 +265,7 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
              {/* Swipe Action Icon - Clickable for Super Swipe */}
              <button 
                onClick={() => handleSwipe('up')}
-               className="absolute bottom-[-42.5px] left-1/2 transform -translate-x-1/2 w-[85px] h-[85px] bg-white rounded-[42.5px] shadow-lg flex items-center justify-center border-[1.7px] border-gray-200 z-50 hover:bg-blue-50 hover:border-blue-300 transition-colors duration-200 active:scale-95" 
+               className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-[85px] h-[85px] bg-white rounded-[42.5px]  flex items-center justify-center shadow-lg z-50 hover:bg-blue-50 hover:border-blue-300 transition-colors duration-200 active:scale-95" 
                style={{ paddingTop: '28.33px', paddingRight: '26.07px', paddingBottom: '28.33px', paddingLeft: '26.07px' }}
                disabled={isCardExiting}
              >
@@ -202,7 +276,7 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
       </div>
 
       {/* Bottom Indicator */}
-      <div className="pb-4 flex justify-center">
+      <div className="pb-2 flex justify-center">
         <div className="w-32 h-1 bg-black rounded-full"></div>
       </div>
     </div>
@@ -375,14 +449,10 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
           rotate,
           rotateY,
           backgroundColor,
-          borderWidth: '2px',
-          borderColor,
           cursor: 'grab'
         }),
         ...(!isCurrentCard && {
-          backgroundColor: 'white',
-          borderWidth: '1px',
-          borderColor: 'rgba(229, 231, 235, 1)'
+          backgroundColor: 'white'
         })
       }}
       drag={isCurrentCard ? true : false}
@@ -391,25 +461,16 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
       animate={getCardAnimation()}
       transition={getTransition()}
     >
-      {/* Category Header */}
-      <div className="p-4 bg-gray-50 border-b border-gray-200">
-        <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600">
-          {outfit.category}
-        </p>
-      </div>
-
-      {/* Outfit Image */}
-      <div className="relative flex-1 bg-gray-100 min-h-[400px]">
+      {/* Full Screen Outfit Image */}
+      <div className="relative w-full h-full bg-white">
         <Image
           src={outfit.image}
           alt={outfit.name}
           fill
-          className="object-contain p-4"
+          className="object-contain"
           priority
         />
       </div>
-
-      
     </motion.div>
   )
 }
