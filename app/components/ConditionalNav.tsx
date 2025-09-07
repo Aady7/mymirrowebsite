@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/lib/hooks/useAuth'
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import AuthNav from './authNav'
 import RootNav from './rootNav'
 import { supabase } from '@/lib/supabase'
@@ -11,6 +12,12 @@ const ConditionalNav = () => {
   const { getSession } = useAuth()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const pathname = usePathname()
+
+  // Don't show navigation on style-quiz pages
+  if (pathname === '/style-quiz-latest' || pathname === '/style-quiz') {
+    return null
+  }
 
   useEffect(() => {
     // Initial auth check

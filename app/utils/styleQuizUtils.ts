@@ -301,4 +301,114 @@ export const STYLE_PREFERENCE_IMAGES = {
       Shorts: '/stylequizimages/GotoStyle/FemaleAthleisure/image105.png',
     }
   }
+};
+
+// ========== STYLE QUIZ V2 DATA HANDLING ==========
+
+// Interface for style-quiz-v2 table structure
+export interface StyleQuizV2Data {
+  name: string;
+  gender: string;
+  age: string;
+  occupation: string;
+  body_type: string;
+  skin_tone: string;
+  style_origin: string;
+  style_vibes: string;
+  personality_ques: string;
+  outfit_swipe: string;
+  phone_number: string;
+  email: string;
+}
+
+// Local storage key for style quiz latest data
+const QUIZ_STORAGE_KEY = 'style_quiz_latest_data';
+
+// Store quiz data in local storage
+export const storeQuizDataLocally = (data: any) => {
+  try {
+    localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(data));
+    console.log('Quiz data stored locally:', data);
+  } catch (error) {
+    console.error('Error storing quiz data locally:', error);
+  }
+};
+
+// Get quiz data from local storage
+export const getQuizDataFromStorage = () => {
+  try {
+    const data = localStorage.getItem(QUIZ_STORAGE_KEY);
+    return data ? JSON.parse(data) : null;
+  } catch (error) {
+    console.error('Error getting quiz data from storage:', error);
+    return null;
+  }
+};
+
+// Clear quiz data from local storage
+export const clearQuizDataFromStorage = () => {
+  try {
+    localStorage.removeItem(QUIZ_STORAGE_KEY);
+    console.log('Quiz data cleared from local storage');
+  } catch (error) {
+    console.error('Error clearing quiz data from storage:', error);
+  }
+};
+
+// Transform quiz state to style-quiz-v2 format
+export const transformQuizDataForV2 = (quizState: any): StyleQuizV2Data => {
+  return {
+    name: quizState.personalInfo?.name || '',
+    gender: quizState.personalInfo?.gender || '',
+    age: quizState.personalInfo?.age || '',
+    occupation: quizState.personalInfo?.occupation || '',
+    body_type: quizState.bodyType?.bodyType || '',
+    skin_tone: quizState.colorAnalysis?.selectedTone || '',
+    style_origin: quizState.styleOrigin?.styleOrigin || '',
+    style_vibes: JSON.stringify(quizState.styleVibe?.styleVibes || []),
+    personality_ques: JSON.stringify(quizState.ansQuestion?.answers || []),
+    outfit_swipe: JSON.stringify({
+      liked: quizState.outfitSwipe?.likedOutfits || [],
+      disliked: quizState.outfitSwipe?.dislikedOutfits || [],
+      superLiked: quizState.outfitSwipe?.superLikedOutfits || []
+    }),
+    phone_number: quizState.contactVerification?.phone || '',
+    email: quizState.contactVerification?.email || ''
+  };
+};
+
+// Store quiz data in Supabase style-quiz-v2 table
+export const storeQuizDataInSupabase = async (quizData: StyleQuizV2Data) => {
+  try {
+    // Get the current authenticated user
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !session?.user) {
+      throw new Error('No authenticated user found');
+    }
+
+    // Insert data into style-quiz-v2 table
+    const { data, error } = await supabase
+      .from('style-quiz-v2')
+      .insert([{
+        ...quizData,
+        user_id: session.user.id,
+        created_at: new Date().toISOString()
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    console.log('Quiz data successfully stored in Supabase:', data);
+    return { data, error: null };
+  } catch (error) {
+    console.error('Error storing quiz data in Supabase:', error);
+    return { 
+      data: null, 
+      error: error instanceof Error ? error.message : 'Failed to store quiz data' 
+    };
+  }
 }; 
