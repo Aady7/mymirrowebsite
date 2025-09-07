@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import ProgressBar from './ProgressBar';
-import QuizButton from './QuizButton';
+import SingleViewportLayout from './SingleViewportLayout';
 import { handleVerifyOtp, handleVerifyMail, handleSendOtp, handleSendMail, transformQuizDataForV2, storeQuizDataInSupabase, clearQuizDataFromStorage } from '@/app/utils/styleQuizUtils';
 const beta=process.env.NEXT_PUBLIC_TESTING_VAR
 
@@ -218,132 +217,112 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
   const isOtpComplete = otp.every(digit => digit !== '');
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Progress Bar */}
-      <div className="px-6 pt-12 pb-4">
-        <ProgressBar 
-          currentStep={currentStep} 
-          totalSteps={totalSteps}
-        />
+    <SingleViewportLayout
+      onNext={handleCompleteQuiz}
+      onBack={onBack}
+      currentStep={currentStep}
+      totalSteps={totalSteps}
+      isFormValid={isOtpComplete}
+      isLoading={isLoading}
+      nextButtonText={isLoading ? 'Verifying...' : 'Complete Quiz'}
+      showBackButton={currentStep > 1}
+    >
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
+          Almost There!
+        </h1>
+        <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
+          Enter the 6-digit OTP we sent to your {beta === 'yes' ? 'email' : 'number'} to access your personalized style recommendations.
+        </p>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 px-6 py-4">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
-            Almost There!
-          </h1>
-          <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
-            Enter the 6-digit OTP we sent to your {beta === 'yes' ? 'email' : 'number'} to access your personalized style recommendations.
-          </p>
+      {/* OTP Input Boxes */}
+      <div className="mb-6">
+        <div className="flex justify-center gap-2 mb-6">
+          {otp.map((digit, index) => (
+            <input
+              key={index}
+              ref={(el) => {
+                otpRefs.current[index] = el;
+              }}
+              type="text"
+              inputMode="numeric"
+              maxLength={1}
+              value={digit}
+              onChange={(e) => handleOtpChange(index, e.target.value)}
+              onKeyDown={(e) => handleKeyDown(index, e)}
+              onPaste={index === 0 ? handlePaste : undefined}
+              className={`w-10 h-10 text-center text-[14px] font-[400] leading-[100%] tracking-[-0.02em] border-2 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
+                error 
+                  ? 'border-red-500 focus:ring-red-500' 
+                  : digit 
+                    ? 'border-black focus:ring-purple-500' 
+                    : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'
+              }`}
+            />
+          ))}
         </div>
 
-        {/* OTP Input Boxes */}
-        <div className="mb-6">
-          <div className="flex justify-center gap-3 mb-6">
-            {otp.map((digit, index) => (
-              <input
-                key={index}
-                ref={(el) => {
-                  otpRefs.current[index] = el;
-                }}
-                type="text"
-                inputMode="numeric"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleOtpChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
-                onPaste={index === 0 ? handlePaste : undefined}
-                className={`w-14 h-14 text-center text-[14px] font-[400] leading-[100%] tracking-[-0.02em] border-2 rounded-lg focus:outline-none focus:ring-2 transition-colors ${
-                  error 
-                    ? 'border-red-500 focus:ring-red-500' 
-                    : digit 
-                      ? 'border-black focus:ring-purple-500' 
-                      : 'border-gray-300 focus:ring-purple-500 focus:border-purple-500'
-                }`}
-              />
-            ))}
-          </div>
-
-          {/* Resend OTP */}
-          <div className="text-center mb-6">
-            {canResend ? (
-              <button
-                onClick={handleResendOtp}
-                disabled={isResending}
-                className="text-purple-600 hover:text-purple-700 font-medium underline disabled:opacity-50"
-              >
-                {isResending ? 'Resending...' : 'Resend OTP'}
-              </button>
-            ) : (
-              <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-500">
-                resend otp in {countdown}s
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6">
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-600 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-center">{error}</p>
-            </div>
-          </div>
-        )}
-
-        {/* Success Message */}
-        {isOtpComplete && !error && !isLoading && (
-          <div className="mb-6">
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <p className="text-green-600 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-center">
-                ✓ OTP entered. Ready to verify!
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Contact Info Display */}
-        <div className="mb-6 text-center">
-          {beta === 'yes' ? (
-            <div>
-              <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-500">
-                OTP sent to: {email}
-              </p>
-             
-            </div>
+        {/* Resend OTP */}
+        <div className="text-center mb-6">
+          {canResend ? (
+            <button
+              onClick={handleResendOtp}
+              disabled={isResending}
+              className="text-purple-600 hover:text-purple-700 font-medium underline disabled:opacity-50"
+            >
+              {isResending ? 'Resending...' : 'Resend OTP'}
+            </button>
           ) : (
-            <div>
-              <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-500">
-                OTP sent to: {phone.replace(/(\d{2})(\d{5})(\d{3})/, '+91 $1****$3')}
-              </p>
-              <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-green-600 mt-1">
-                📱 Phone verification
-              </p>
-            </div>
+            <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-500">
+              resend otp in {countdown}s
+            </p>
           )}
         </div>
       </div>
 
-      {/* Footer with Complete Quiz Button */}
-      <div className="px-6 pb-8 flex justify-center">
-        <QuizButton
-          variant="primary"
-          size="lg"
-          onClick={handleCompleteQuiz}
-          disabled={!isOtpComplete || isLoading}
-          className="w-full max-w-md"
-        >
-          {isLoading ? 'Verifying...' : 'Complete Quiz'}
-        </QuizButton>
-      </div>
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-red-600 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-center">{error}</p>
+          </div>
+        </div>
+      )}
 
-      {/* Bottom Indicator */}
-      <div className="pb-4 flex justify-center">
-        <div className="w-32 h-1 bg-black rounded-full"></div>
+      {/* Success Message */}
+      {isOtpComplete && !error && !isLoading && (
+        <div className="mb-6">
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+            <p className="text-green-600 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-center">
+              ✓ OTP entered. Ready to verify!
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Contact Info Display */}
+      <div className="mb-6 text-center">
+        {beta === 'yes' ? (
+          <div>
+            <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-500">
+              OTP sent to: {email}
+            </p>
+           
+          </div>
+        ) : (
+          <div>
+            <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-500">
+              OTP sent to: {phone.replace(/(\d{2})(\d{5})(\d{3})/, '+91 $1****$3')}
+            </p>
+            <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-green-600 mt-1">
+              📱 Phone verification
+            </p>
+          </div>
+        )}
       </div>
-    </div>
+    </SingleViewportLayout>
   );
 };
 

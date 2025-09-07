@@ -1,8 +1,7 @@
 "use client";
 import React, { useState } from 'react';
 import Image from 'next/image';
-import ProgressBar from './ProgressBar';
-import QuizButton from './QuizButton';
+import SingleViewportLayout from './SingleViewportLayout';
 
 interface StyleVibeProps {
   onNext?: (data: StyleVibeData) => void;
@@ -128,32 +127,65 @@ const StyleVibe: React.FC<StyleVibeProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Progress Bar */}
-      <div className="px-6 pt-12 pb-4">
-        <ProgressBar 
-          currentStep={currentStep} 
-          totalSteps={totalSteps}
-        />
+    <SingleViewportLayout
+      onNext={handleContinue}
+      onBack={onBack}
+      currentStep={currentStep}
+      totalSteps={totalSteps}
+      isFormValid={selectedVibes.length > 0}
+      nextButtonText="Continue"
+      showBackButton={currentStep > 1}
+    >
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
+          Which style vibes do you relate to?
+        </h1>
+        <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
+          Select all that apply
+        </p>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 px-6 py-4">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
-            Which style vibes do you relate to?
-          </h1>
-          <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
-            Select all that apply
-          </p>
+      {/* Style Vibes Grid */}
+      <div className="mb-8 space-y-4">
+        {/* Top row - 3 items */}
+        <div className="grid grid-cols-3 gap-4">
+          {styleVibes.slice(0, 3).map((vibe) => (
+            <button
+              key={vibe.id}
+              onClick={() => handleVibeSelect(vibe.id)}
+              className={`
+                w-full p-3 border-2 rounded-2xl transition-all duration-200 
+                flex flex-col items-center text-center
+                ${selectedVibes.includes(vibe.id) 
+                  ? 'border-black bg-gray-50' 
+                  : 'border-gray-300 hover:border-gray-400'
+                }
+              `}
+            >
+              {/* Style Image */}
+              <div className="relative w-full aspect-[3/4] mb-3">
+                <Image
+                  src={vibe.image}
+                  alt={vibe.name}
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 30vw, 120px"
+                />
+              </div>
+              
+              {/* Style Name */}
+              <h3 className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-black ">
+                {vibe.name}
+              </h3>
+            </button>
+          ))}
         </div>
 
-        {/* Style Vibes Grid */}
-        <div className="mb-8 space-y-4">
-          {/* Top row - 3 items */}
-          <div className="grid grid-cols-3 gap-4">
-            {styleVibes.slice(0, 3).map((vibe) => (
+        {/* Bottom row - 2 items centered */}
+        <div className="flex justify-center">
+          <div className="grid grid-cols-2 gap-4 w-2/3">
+            {styleVibes.slice(3, 5).map((vibe) => (
               <button
                 key={vibe.id}
                 onClick={() => handleVibeSelect(vibe.id)}
@@ -178,76 +210,22 @@ const StyleVibe: React.FC<StyleVibeProps> = ({
                 </div>
                 
                 {/* Style Name */}
-                <h3 className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-black ">
+                <h3 className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-black">
                   {vibe.name}
                 </h3>
               </button>
             ))}
           </div>
-
-          {/* Bottom row - 2 items centered */}
-          <div className="flex justify-center">
-            <div className="grid grid-cols-2 gap-4 w-2/3">
-              {styleVibes.slice(3, 5).map((vibe) => (
-                <button
-                  key={vibe.id}
-                  onClick={() => handleVibeSelect(vibe.id)}
-                  className={`
-                    w-full p-3 border-2 rounded-2xl transition-all duration-200 
-                    flex flex-col items-center text-center
-                    ${selectedVibes.includes(vibe.id) 
-                      ? 'border-black bg-gray-50' 
-                      : 'border-gray-300 hover:border-gray-400'
-                    }
-                  `}
-                >
-                  {/* Style Image */}
-                  <div className="relative w-full aspect-[3/4] mb-3">
-                    <Image
-                      src={vibe.image}
-                      alt={vibe.name}
-                      fill
-                      className="object-contain"
-                      sizes="(max-width: 768px) 30vw, 120px"
-                    />
-                  </div>
-                  
-                  {/* Style Name */}
-                  <h3 className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-black">
-                    {vibe.name}
-                  </h3>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6">
-            <p className="text-red-500 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-center">{error}</p>
-          </div>
-        )}
       </div>
 
-      {/* Footer with Continue Button */}
-      <div className="px-6 pb-8 flex justify-center">
-        <QuizButton
-          variant="primary"
-          size="lg"
-          onClick={handleContinue}
-          disabled={selectedVibes.length === 0}
-          className="w-full max-w-md"
-        >
-          Continue
-        </QuizButton>
-      </div>
-
-      {/* Bottom Indicator */}
-      <div className="pb-4 flex justify-center">
-        <div className="w-32 h-1 bg-black rounded-full"></div>
-      </div>
-    </div>
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6">
+          <p className="text-red-500 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-center">{error}</p>
+        </div>
+      )}
+    </SingleViewportLayout>
   );
 };
 

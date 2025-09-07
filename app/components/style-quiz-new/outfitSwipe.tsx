@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion'
 import Image from 'next/image'
-import ProgressBar from './ProgressBar'
+import SingleViewportLayout from './SingleViewportLayout'
 
 export interface OutfitData {
   id: string
@@ -193,12 +193,16 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
 
   if (!currentOutfit) {
     return (
-      <div className="min-h-screen bg-white flex flex-col">
-        <div className="px-6 pt-12 pb-4">
-          <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
-        </div>
-        
-        <div className="flex-1 flex items-center justify-center px-6">
+      <SingleViewportLayout
+        onNext={() => onNext({ likedOutfits, dislikedOutfits, superLikedOutfits })}
+        onBack={onBack}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        isFormValid={true}
+        nextButtonText="Continue"
+        showBackButton={currentStep > 1}
+      >
+        <div className="flex items-center justify-center h-full">
           <div className="text-center">
             <h2 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-4">
               Great choices! 
@@ -206,80 +210,69 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
             <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 mb-6">
               You've reviewed all outfits. Let's continue with your style journey.
             </p>
-                         <button
-               onClick={() => onNext({ likedOutfits, dislikedOutfits, superLikedOutfits })}
-               className="bg-black text-white px-8 py-4 rounded-lg text-[14px] font-[600] leading-[100%] tracking-[-0.02em]"
-             >
-              Continue
-            </button>
           </div>
         </div>
-      </div>
+      </SingleViewportLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Progress Bar */}
-      <div className="px-4 pt-8 pb-2">
-        <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
+    <SingleViewportLayout
+      onNext={() => onNext({ likedOutfits, dislikedOutfits, superLikedOutfits })}
+      onBack={onBack}
+      currentStep={currentStep}
+      totalSteps={totalSteps}
+      isFormValid={true}
+      nextButtonText="Continue"
+      showBackButton={currentStep > 1}
+    >
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
+          Swipe into Your Style
+        </h1>
+        <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
+          Like it, ditch it, or love it — Every swipe gets us closer to your fit.
+        </p>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 px-4 py-2 flex flex-col">
-        {/* Header */}
-        <div className="mb-4">
-          <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-2">
-            Swipe into Your Style
-          </h1>
-          <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
-            Like it, ditch it, or love it — Every swipe gets us closer to your fit.
-          </p>
+      {/* Swipe Cards Container */}
+      <div className="relative flex-1 flex justify-center">
+        <div className="relative w-full max-w-sm mb-10" style={{ minHeight: '400px' }}>
+          {/* Render multiple cards for smooth stacking */}
+          {outfits.slice(currentIndex, currentIndex + 3).map((outfit, index) => {
+            const cardIndex = currentIndex + index
+            const isCurrentCard = index === 0
+            const isNextCard = index === 1
+            const isThirdCard = index === 2
+            
+            return (
+              <SwipeCard
+                key={`${outfit.id}-${cardIndex}`}
+                outfit={outfit}
+                onSwipe={isCurrentCard ? handleSwipe : () => {}}
+                isCurrentCard={isCurrentCard}
+                isNextCard={isNextCard}
+                isThirdCard={isThirdCard}
+                swipingDirection={isCurrentCard ? swipingDirection : null}
+                isCardExiting={isCurrentCard ? isCardExiting : false}
+                zIndex={10 - index}
+              />
+            )
+          })}
+          
+          {/* Swipe Action Icon - Clickable for Super Swipe */}
+          <button 
+            onClick={() => handleSwipe('up')}
+            className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-[85px] h-[85px] bg-white rounded-[42.5px]  flex items-center justify-center shadow-lg z-50 hover:bg-blue-50 hover:border-blue-300 transition-colors duration-200 active:scale-95" 
+            style={{ paddingTop: '28.33px', paddingRight: '26.07px', paddingBottom: '28.33px', paddingLeft: '26.07px' }}
+            disabled={isCardExiting}
+          >
+            <span className="text-2xl">🤌</span>
+          </button>
         </div>
-
-                 {/* Swipe Cards Container */}
-         <div className="relative flex-1 mb-8 flex justify-center">
-           <div className="relative w-full max-w-sm" style={{ height: 'calc(100vh - 200px)' }}>
-             {/* Render multiple cards for smooth stacking */}
-             {outfits.slice(currentIndex, currentIndex + 3).map((outfit, index) => {
-               const cardIndex = currentIndex + index
-               const isCurrentCard = index === 0
-               const isNextCard = index === 1
-               const isThirdCard = index === 2
-               
-               return (
-                 <SwipeCard
-                   key={`${outfit.id}-${cardIndex}`}
-                   outfit={outfit}
-                   onSwipe={isCurrentCard ? handleSwipe : () => {}}
-                   isCurrentCard={isCurrentCard}
-                   isNextCard={isNextCard}
-                   isThirdCard={isThirdCard}
-                   swipingDirection={isCurrentCard ? swipingDirection : null}
-                   isCardExiting={isCurrentCard ? isCardExiting : false}
-                   zIndex={10 - index}
-                 />
-               )
-             })}
-             
-             {/* Swipe Action Icon - Clickable for Super Swipe */}
-             <button 
-               onClick={() => handleSwipe('up')}
-               className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 w-[85px] h-[85px] bg-white rounded-[42.5px]  flex items-center justify-center shadow-lg z-50 hover:bg-blue-50 hover:border-blue-300 transition-colors duration-200 active:scale-95" 
-               style={{ paddingTop: '28.33px', paddingRight: '26.07px', paddingBottom: '28.33px', paddingLeft: '26.07px' }}
-               disabled={isCardExiting}
-             >
-               <span className="text-2xl">🤌</span>
-             </button>
-           </div>
-         </div>
       </div>
-
-      {/* Bottom Indicator */}
-      <div className="pb-2 flex justify-center">
-        <div className="w-32 h-1 bg-black rounded-full"></div>
-      </div>
-    </div>
+    </SingleViewportLayout>
   )
 }
 
@@ -452,7 +445,7 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
           cursor: 'grab'
         }),
         ...(!isCurrentCard && {
-          backgroundColor: 'white'
+          backgroundColor: 'transparent'
         })
       }}
       drag={isCurrentCard ? true : false}
@@ -467,7 +460,8 @@ const SwipeCard: React.FC<SwipeCardProps> = ({
           src={outfit.image}
           alt={outfit.name}
           fill
-          className="object-contain"
+          className="object-cover"
+          style={{ objectPosition: 'center 5%' }}
           priority
         />
       </div>

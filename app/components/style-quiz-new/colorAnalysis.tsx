@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import ProgressBar from './ProgressBar';
-import QuizButton from './QuizButton';
+import SingleViewportLayout from './SingleViewportLayout';
 
 interface ColorAnalysisProps {
   onNext?: (data: ColorAnalysisData) => void;
@@ -68,99 +67,75 @@ const ColorAnalysis: React.FC<ColorAnalysisProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Progress Bar */}
-      <div className="px-6 pt-12 pb-4">
-        <ProgressBar 
-          currentStep={currentStep} 
-          totalSteps={totalSteps}
-        />
+    <SingleViewportLayout
+      onNext={handleContinue}
+      onBack={onBack}
+      currentStep={currentStep}
+      totalSteps={totalSteps}
+      isFormValid={!!selectedTone}
+      nextButtonText="Continue"
+      showBackButton={currentStep > 1}
+    >
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
+          Colors that love you back
+        </h1>
+        <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
+          Choose the one that's closest to your natural skin tone.
+        </p>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 px-6 py-4">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
-            Colors that love you back
-          </h1>
-          <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
-            Choose the one that's closest to your natural skin tone.
-          </p>
+      {/* Skin Tone Selection */}
+      <div className="mb-8">
+        {/* Skin tone grid - 8 colors in a row */}
+        <div className="grid grid-cols-8 gap-1 mb-4">
+          {SKIN_TONES.map((tone) => (
+            <button
+              key={tone.hex}
+              onClick={() => handleToneSelect(tone.hex, tone.name)}
+              className={`
+                w-full aspect-[1/3]  transition-all duration-200
+                ${selectedTone === tone.hex
+                  ? 'ring-2 ring-black ring-offset-2 scale-105'
+                  : 'hover:ring-2 hover:ring-gray-400 hover:ring-offset-1'
+                }
+              `}
+              style={{ backgroundColor: tone.hex }}
+              title={tone.name}
+            />
+          ))}
         </div>
 
-        {/* Skin Tone Selection */}
+        {/* Tip text */}
+        <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-500 italic text-left">
+          Tip: Choose the tone closest to your inner forearm or jawline.
+        </p>
+      </div>
+
+      {/* Selected tone feedback */}
+      {selectedTone && (
         <div className="mb-8">
-          {/* Skin tone grid - 8 colors in a row */}
-          <div className="grid grid-cols-8 gap-1 mb-4">
-            {SKIN_TONES.map((tone) => (
-              <button
-                key={tone.hex}
-                onClick={() => handleToneSelect(tone.hex, tone.name)}
-                className={`
-                  w-full aspect-[1/3]  transition-all duration-200
-                  ${selectedTone === tone.hex
-                    ? 'ring-2 ring-black ring-offset-2 scale-105'
-                    : 'hover:ring-2 hover:ring-gray-400 hover:ring-offset-1'
-                  }
-                `}
-                style={{ backgroundColor: tone.hex }}
-                title={tone.name}
-              />
-            ))}
+          <div className="flex items-center justify-center gap-3 p-4 bg-gray-50 rounded-lg">
+            <div
+              className="w-6 h-6 rounded-full border border-gray-300"
+              style={{ backgroundColor: selectedTone }}
+            />
+            <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-700">
+              Selected: {getSelectedToneName()}
+            </p>
+            <span className="text-green-500">✓</span>
           </div>
-
-          {/* Tip text */}
-          <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-500 italic text-left">
-            Tip: Choose the tone closest to your inner forearm or jawline.
-          </p>
         </div>
+      )}
 
-        {/* Selected tone feedback */}
-        {selectedTone && (
-          <div className="mb-8">
-            <div className="flex items-center justify-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <div
-                className="w-6 h-6 rounded-full border border-gray-300"
-                style={{ backgroundColor: selectedTone }}
-              />
-              <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-700">
-                Selected: {getSelectedToneName()}
-              </p>
-              <span className="text-green-500">✓</span>
-            </div>
-          </div>
-        )}
-
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6">
-            <p className="text-red-500 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-center">{error}</p>
-          </div>
-        )}
-
-        {/* Additional spacing to push button to bottom */}
-        <div className="flex-1" />
-      </div>
-
-      {/* Footer with Continue Button */}
-      <div className="px-6 pb-8 flex justify-center">
-        <QuizButton
-          variant="primary"
-          size="lg"
-          onClick={handleContinue}
-          disabled={!selectedTone}
-          className="w-full max-w-md"
-        >
-          Continue
-        </QuizButton>
-      </div>
-
-      {/* Bottom Indicator */}
-      <div className="pb-4 flex justify-center">
-        <div className="w-32 h-1 bg-black rounded-full"></div>
-      </div>
-    </div>
+      {/* Error Message */}
+      {error && (
+        <div className="mb-6">
+          <p className="text-red-500 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-center">{error}</p>
+        </div>
+      )}
+    </SingleViewportLayout>
   );
 };
 

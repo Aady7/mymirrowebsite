@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import ProgressBar from './ProgressBar';
-import QuizButton from './QuizButton';
+import SingleViewportLayout from './SingleViewportLayout';
 
 interface PersonalInfoProps {
   onNext?: (data: PersonalInfoData) => void;
@@ -99,50 +98,48 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
   const isFormValid = formData.name.trim() && formData.gender && formData.age && formData.occupation;
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      {/* Progress Bar */}
-      <div className="px-6 pt-12 pb-4">
-        <ProgressBar 
-          currentStep={currentStep} 
-          totalSteps={totalSteps}
-        />
+    <SingleViewportLayout
+      onNext={handleContinue}
+      onBack={onBack}
+      currentStep={currentStep}
+      totalSteps={totalSteps}
+      isFormValid={isFormValid}
+      nextButtonText="Continue"
+      showBackButton={currentStep > 1}
+    >
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
+          Hey there, Style Icon!
+        </h1>
+        <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
+          Start by telling us a bit about you.
+        </p>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 px-6 py-4">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-[26px] font-[700] leading-[100%] tracking-[-0.02em] text-black mb-3">
-            Hey there, Style Icon!
-          </h1>
-          <p className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-gray-600 text-left">
-            Start by telling us a bit about you.
-          </p>
-        </div>
-
-        {/* Questions Container */}
-        <div className="flex flex-col items-start gap-[25px] self-stretch">
-          {/* Name Input */}
-          <div className="w-full">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="What should we call you?"
-                value={formData.name}
-                onChange={handleNameChange}
-                className={`w-full border-b-2 pb-2 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] placeholder-gray-400 bg-transparent focus:outline-none transition-colors ${
-                  errors.name 
-                    ? 'border-red-500 text-red-600' 
-                    : formData.name.trim() 
-                      ? 'border-black text-black' 
-                      : 'border-gray-300 text-gray-700 focus:border-gray-500'
-                }`}
-              />
-              {errors.name && (
-                <p className="text-red-500 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] mt-2">{errors.name}</p>
-              )}
-            </div>
+      {/* Questions Container */}
+      <div className="flex flex-col items-start gap-[25px] self-stretch">
+        {/* Name Input */}
+        <div className="w-full">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="What should we call you?"
+              value={formData.name}
+              onChange={handleNameChange}
+              className={`w-full border-b-2 pb-2 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] placeholder-gray-400 bg-transparent focus:outline-none transition-colors ${
+                errors.name 
+                  ? 'border-red-500 text-red-600' 
+                  : formData.name.trim() 
+                    ? 'border-black text-black' 
+                    : 'border-gray-300 text-gray-700 focus:border-gray-500'
+              }`}
+            />
+            {errors.name && (
+              <p className="text-red-500 text-[12px] font-[400] leading-[100%] tracking-[-0.02em] mt-1">{errors.name}</p>
+            )}
           </div>
+        </div>
 
           {/* Gender Selection */}
           <div className="w-full">
@@ -190,166 +187,147 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
             )}
           </div>
 
-          {/* Age Selection */}
-          <div className="w-full">
-            <h2 className="text-[18px] font-[600] leading-[100%] tracking-[-0.02em] text-black mb-4">Age</h2>
-            <div className="grid grid-cols-3 gap-[10px]">
-              <button
-                onClick={() => handleAgeSelect('<18')}
-                className={`
-                  h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
-                  ${formData.age === '<18' 
-                    ? 'border-black text-black' 
-                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                  }
-                `}
-              >
-                &lt;18
-              </button>
-              <button
-                onClick={() => handleAgeSelect('18-25')}
-                className={`
-                  h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
-                  ${formData.age === '18-25' 
-                    ? 'border-black text-black' 
-                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                  }
-                `}
-              >
-                18-25
-              </button>
-              <button
-                onClick={() => handleAgeSelect('26-35')}
-                className={`
-                  h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
-                  ${formData.age === '26-35' 
-                    ? 'border-black text-black' 
-                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                  }
-                `}
-              >
-                26-35
-              </button>
-              <button
-                onClick={() => handleAgeSelect('36-45')}
-                className={`
-                  h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
-                  ${formData.age === '36-45' 
-                    ? 'border-black text-black' 
-                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                  }
-                `}
-              >
-                36-45
-              </button>
-            </div>
-            {errors.age && (
-              <p className="text-red-500 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] mt-2">{errors.age}</p>
-            )}
+        {/* Age Selection */}
+        <div className="w-full">
+          <h2 className="text-[18px] font-[600] leading-[100%] tracking-[-0.02em] text-black mb-4">Age</h2>
+          <div className="grid grid-cols-3 gap-[10px]">
+            <button
+              onClick={() => handleAgeSelect('<18')}
+              className={`
+                h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
+                ${formData.age === '<18' 
+                  ? 'border-black text-black' 
+                  : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                }
+              `}
+            >
+              &lt;18
+            </button>
+            <button
+              onClick={() => handleAgeSelect('18-25')}
+              className={`
+                h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
+                ${formData.age === '18-25' 
+                  ? 'border-black text-black' 
+                  : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                }
+              `}
+            >
+              18-25
+            </button>
+            <button
+              onClick={() => handleAgeSelect('26-35')}
+              className={`
+                h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
+                ${formData.age === '26-35' 
+                  ? 'border-black text-black' 
+                  : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                }
+              `}
+            >
+              26-35
+            </button>
+            <button
+              onClick={() => handleAgeSelect('36-45')}
+              className={`
+                h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
+                ${formData.age === '36-45' 
+                  ? 'border-black text-black' 
+                  : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                }
+              `}
+            >
+              36-45
+            </button>
           </div>
+          {errors.age && (
+            <p className="text-red-500 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] mt-2">{errors.age}</p>
+          )}
+        </div>
 
-          {/* Occupation Selection */}
-          <div className="w-full">
-            <h2 className="text-[18px] font-[600] leading-[100%] tracking-[-0.02em] text-black mb-4">Occupation</h2>
-            <div className="flex flex-wrap gap-[10px]">
-              <button
-                onClick={() => handleOccupationSelect('Student')}
-                className={`
-                  h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
-                  ${formData.occupation === 'Student' 
-                    ? 'border-black text-black' 
-                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                  }
-                `}
-              >
-                Student
-              </button>
-              <button
-                onClick={() => handleOccupationSelect('Working Professional')}
-                className={`
-                  h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
-                  ${formData.occupation === 'Working Professional' 
-                    ? 'border-black text-black' 
-                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                  }
-                `}
-              >
-                Working Professional
-              </button>
-              <button
-                onClick={() => handleOccupationSelect('Creative')}
-                className={`
-                  h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
-                  ${formData.occupation === 'Creative' 
-                    ? 'border-black text-black' 
-                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                  }
-                `}
-              >
-                Creative
-              </button>
-              <button
-                onClick={() => handleOccupationSelect('Enterpreneur')}
-                className={`
-                  h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
-                  ${formData.occupation === 'Enterpreneur' 
-                    ? 'border-black text-black' 
-                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                  }
-                `}
-              >
-                Enterpreneur
-              </button>
-              <button
-                onClick={() => handleOccupationSelect('Athlete')}
-                className={`
-                  h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
-                  ${formData.occupation === 'Athlete' 
-                    ? 'border-black text-black' 
-                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                  }
-                `}
-              >
-                Athlete
-              </button>
-              <button
-                onClick={() => handleOccupationSelect('Other')}
-                className={`
-                  h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
-                  ${formData.occupation === 'Other' 
-                    ? 'border-black text-black' 
-                    : 'border-gray-300 text-gray-700 hover:border-gray-400'
-                  }
-                `}
-              >
-                Other
-              </button>
-            </div>
-            {errors.occupation && (
-              <p className="text-red-500 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] mt-2">{errors.occupation}</p>
-            )}
+        {/* Occupation Selection */}
+        <div className="w-full">
+          <h2 className="text-[18px] font-[600] leading-[100%] tracking-[-0.02em] text-black mb-4">Occupation</h2>
+          <div className="flex flex-wrap gap-[10px]">
+            <button
+              onClick={() => handleOccupationSelect('Student')}
+              className={`
+                h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
+                ${formData.occupation === 'Student' 
+                  ? 'border-black text-black' 
+                  : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                }
+              `}
+            >
+              Student
+            </button>
+            <button
+              onClick={() => handleOccupationSelect('Working Professional')}
+              className={`
+                h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
+                ${formData.occupation === 'Working Professional' 
+                  ? 'border-black text-black' 
+                  : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                }
+              `}
+            >
+              Working Professional
+            </button>
+            <button
+              onClick={() => handleOccupationSelect('Creative')}
+              className={`
+                h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
+                ${formData.occupation === 'Creative' 
+                  ? 'border-black text-black' 
+                  : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                }
+              `}
+            >
+              Creative
+            </button>
+            <button
+              onClick={() => handleOccupationSelect('Enterpreneur')}
+              className={`
+                h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
+                ${formData.occupation === 'Enterpreneur' 
+                  ? 'border-black text-black' 
+                  : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                }
+              `}
+            >
+              Enterpreneur
+            </button>
+            <button
+              onClick={() => handleOccupationSelect('Athlete')}
+              className={`
+                h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
+                ${formData.occupation === 'Athlete' 
+                  ? 'border-black text-black' 
+                  : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                }
+              `}
+            >
+              Athlete
+            </button>
+            <button
+              onClick={() => handleOccupationSelect('Other')}
+              className={`
+                h-[30px] px-[10px] border rounded-[5px] transition-all duration-200 text-[14px] font-[600] leading-[100%] tracking-[-0.02em] text-center
+                ${formData.occupation === 'Other' 
+                  ? 'border-black text-black' 
+                  : 'border-gray-300 text-gray-700 hover:border-gray-400'
+                }
+              `}
+            >
+              Other
+            </button>
           </div>
+          {errors.occupation && (
+            <p className="text-red-500 text-[14px] font-[400] leading-[100%] tracking-[-0.02em] mt-2">{errors.occupation}</p>
+          )}
         </div>
       </div>
-
-      {/* Footer with Continue Button */}
-      <div className="px-6 pb-8 flex justify-center">
-        <QuizButton
-          variant="primary"
-          size="lg"
-          onClick={handleContinue}
-          disabled={!isFormValid}
-          className="w-full max-w-md"
-        >
-          Continue
-        </QuizButton>
-      </div>
-
-      {/* Bottom Indicator */}
-      <div className="pb-4 flex justify-center">
-        <div className="w-32 h-1 bg-black rounded-full"></div>
-      </div>
-    </div>
+    </SingleViewportLayout>
   );
 };
 

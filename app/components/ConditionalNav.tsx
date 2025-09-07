@@ -14,8 +14,8 @@ const ConditionalNav = () => {
   const [isLoading, setIsLoading] = useState(true)
   const pathname = usePathname()
 
-  // Don't show navigation on style-quiz-latest page
-  if (pathname === '/style-quiz-latest') {
+  // Don't show navigation on style-quiz pages
+  if (pathname === '/style-quiz-latest' || pathname === '/style-quiz') {
     return null
   }
 

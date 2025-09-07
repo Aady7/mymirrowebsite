@@ -17,7 +17,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
 
   return (
     <div className={`w-full ${className}`}>
-      <div className="flex w-full h-2 gap-1">
+      <div className="flex w-full h-3 gap-2">
         {Array.from({ length: totalSegments }, (_, index) => (
           <div 
             key={index}
