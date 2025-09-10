@@ -1,5 +1,6 @@
 "use client"
 import Image from "next/image";
+import { motion } from "framer-motion";
 import { StyleQuizData, UserTagsData, ColorAnalysis } from "@/lib/hooks/useStyleQuizData";
 
 interface ColorInfo {
@@ -53,81 +54,143 @@ const Stylist: React.FC<StylistProps> = ({ quizData, colorAnalysis }) => {
   // Component now receives data as props, so no need for loading/error states
   
   return (
-    <div className="px-4 mb-8 w-full max-w-[480px] mx-auto md:max-w-[768px] lg:max-w-[1024px] xl:max-w-[1280px]">
+    <motion.div 
+      className="relative"
+      initial={{ opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: "easeOut" }}
+    >
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 via-transparent to-gray-100/30"></div>
+      
       {/*stylist section*/}
-      <div className="p-4 md:p-6 lg:p-8">
-        <div className="p-0">
-          {/* Text + Image */}
-          <div className="flex flex-col items-center justify-between md:max-w-[80%] lg:max-w-[70%] mx-auto">
-            <p className="font-[Boston] text-[10px] md:text-[14px] lg:text-[16px] not-italic font-normal leading-normal text-center">
-              <span className="font-semibold">{quizData?.name || 'Ahan'}</span>, your style journey
-              starts with your
-              <span className="font-semibold"> quiz</span> answers, layered
-              <br className="hidden md:block"/> with <span className="font-semibold">AI </span>
-              insights and<span className="font-semibold"> stylist </span>
-              expertise, all working together to{" "}
-              <span className="flex items-center justify-center">
-                tailor every look just for you.
-              </span>
-            </p>
+      <motion.div 
+        className="relative z-10 p-10 md:p-16"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
+        {/* Section Header */}
+        <div className="text-center mb-16">
+          <motion.div
+            className="inline-flex items-center px-6 py-3 bg-gray-900/5 border border-gray-200 rounded-full mb-6"
+            whileHover={{ scale: 1.05 }}
+          >
+            <span className="text-sm font-medium text-gray-700 tracking-wide">AI-POWERED INSIGHTS</span>
+          </motion.div>
+          <h2 className="text-4xl md:text-5xl font-light text-gray-900 mb-6 tracking-tight">
+            Your Style Journey
+          </h2>
+          <p className="text-lg text-gray-500 max-w-3xl mx-auto font-light leading-relaxed">
+            Personalized recommendations crafted through the perfect blend of your preferences, AI intelligence, and expert styling
+          </p>
+        </div>
 
-            <div className="flex flex-row items-center overflow-x-auto mt-6 px-4 gap-0 md:gap-4 lg:gap-8 md:justify-center md:overflow-visible">
-              <div className="flex flex-col items-center w-[90px] md:w-[120px] lg:w-[150px]">
-                <Image
-                  src="/assets/quiz.svg"
-                  alt="quiz photo"
-                  width={80}
-                  height={70}
-                  className="object-contain shrink-0 md:w-[100px] md:h-[90px] lg:w-[120px] lg:h-[110px]"
-                />
-                <span className="font-light text-black text-[10px] md:text-[12px] lg:text-[14px] text-center">
-                  QUIZ
-                </span>
+        <div className="max-w-6xl mx-auto">
+          {/* Main Content Card */}
+          <div className="bg-white border border-gray-200/60 rounded-2xl p-10 md:p-14 shadow-xl shadow-gray-900/5">
+            {/* Personalized Message */}
+            <motion.div 
+              className="text-center mb-16"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+            >
+              <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl p-8 border border-gray-200/60">
+                <p className="text-xl md:text-2xl text-gray-700 leading-relaxed font-light">
+                  <span className="font-medium text-gray-900">{quizData?.name || 'Ahan'}</span>, your style journey
+                  starts with your <span className="font-medium text-gray-900">quiz</span> answers, layered
+                  with <span className="font-medium text-gray-900">AI insights</span> and 
+                  <span className="font-medium text-gray-900"> stylist expertise</span>, 
+                  all working together to tailor every look just for you.
+                </p>
               </div>
+            </motion.div>
 
-              <p className="text-xs font-light md:text-base lg:text-lg">+</p>
+            {/* Process Flow */}
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.6 }}
+            >
+              {/* Quiz Card */}
+              <motion.div 
+                className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center border border-gray-200/60 shadow-lg shadow-gray-900/5"
+                whileHover={{ y: -8, scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="bg-white rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg border border-gray-200/60">
+                  <Image
+                    src="/assets/quiz.svg"
+                    alt="quiz photo"
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
+                </div>
+                <h3 className="text-xl font-medium text-gray-900 mb-3 tracking-wide">QUIZ</h3>
+                <p className="text-sm text-gray-600 font-light leading-relaxed">Your personal style preferences and lifestyle choices</p>
+              </motion.div>
 
-              <div className="flex flex-col items-center w-[90px] md:w-[120px] lg:w-[150px]">
-                <Image
-                  src="/assets/ai.svg"
-                  alt="ai photo"
-                  width={80}
-                  height={70}
-                  className="object-contain shrink-0 md:w-[100px] md:h-[90px] lg:w-[120px] lg:h-[110px]"
-                />
-                <span className="font-light text-black text-[10px] md:text-[12px] lg:text-[14px] text-center">
-                  AI
-                </span>
-              </div>
+              {/* AI Card */}
+              <motion.div 
+                className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center border border-gray-200/60 shadow-lg shadow-gray-900/5"
+                whileHover={{ y: -8, scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="bg-white rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg border border-gray-200/60">
+                  <Image
+                    src="/assets/ai.svg"
+                    alt="ai photo"
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
+                </div>
+                <h3 className="text-xl font-medium text-gray-900 mb-3 tracking-wide">AI</h3>
+                <p className="text-sm text-gray-600 font-light leading-relaxed">Advanced algorithms analyze trends and perfect matches</p>
+              </motion.div>
 
-              <p className="text-xs font-light md:text-base lg:text-lg">+</p>
-
-              <div className="flex flex-col items-center w-[90px] md:w-[120px] lg:w-[150px]">
-                <Image
-                  src="/assets/stylist.svg"
-                  alt="stylist photo"
-                  width={80}
-                  height={70}
-                  className="object-contain shrink-0 md:w-[100px] md:h-[90px] lg:w-[120px] lg:h-[110px]"
-                />
-                <span className="font-light text-black text-[10px] md:text-[12px] lg:text-[14px] text-center">
-                  STYLIST
-                </span>
-              </div>
-            </div>
+              {/* Stylist Card */}
+              <motion.div 
+                className="bg-gradient-to-br from-gray-50 to-white rounded-2xl p-8 text-center border border-gray-200/60 shadow-lg shadow-gray-900/5"
+                whileHover={{ y: -8, scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="bg-white rounded-full w-20 h-20 mx-auto mb-6 flex items-center justify-center shadow-lg border border-gray-200/60">
+                  <Image
+                    src="/assets/stylist.svg"
+                    alt="stylist photo"
+                    width={40}
+                    height={40}
+                    className="object-contain"
+                  />
+                </div>
+                <h3 className="text-xl font-medium text-gray-900 mb-3 tracking-wide">STYLIST</h3>
+                <p className="text-sm text-gray-600 font-light leading-relaxed">Professional expertise and fashion industry insights</p>
+              </motion.div>
+            </motion.div>
           </div>
 
-          {/* White horizontal line */}
-          <hr className="w-full border-t border-gray-400 mt-4 md:mt-6 lg:mt-8" />
-
-          {/* Heading and Paragraph */}
-          <div className="flex flex-row justify-between items-start mt-4 gap-6 md:gap-4 md:mt-6 lg:mt-8 md:max-w-[90%] lg:max-w-[80%] mx-auto">
-            {/* Left Section: Heading + Paragraph */}
-            <div className="w-2/3 md:w-3/5">
-              <h1 className="text-[11px] md:text-[13px] lg:text-[15px] tracking-normal font-semibold mt-2">
-                YOUR COLOR ANALYSIS
-              </h1>
-              <p className="mt-2 font-[Boston] text-[12px] md:text-[14px] lg:text-[16px] not-italic font-light leading-normal">
+          {/* Color Analysis Section */}
+          <motion.div 
+            className="bg-gradient-to-br from-gray-50 to-gray-100/50 border border-gray-200/60 rounded-2xl p-10 mt-12"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.9, duration: 0.6 }}
+          >
+            <div className="text-center mb-12">
+              <motion.div
+                className="inline-flex items-center px-6 py-3 bg-gray-900/5 border border-gray-200 rounded-full mb-6"
+                whileHover={{ scale: 1.05 }}
+              >
+                <span className="text-sm font-medium text-gray-700 tracking-wide">COLOR ANALYSIS</span>
+              </motion.div>
+              <h3 className="text-3xl md:text-4xl font-light text-gray-900 mb-6 tracking-tight">
+                YOUR PERFECT PALETTE
+              </h3>
+              <p className="text-lg text-gray-500 max-w-3xl mx-auto leading-relaxed font-light">
                 {colorAnalysis ? 
                   `With your ${colorAnalysis?.undertone} undertones, these harmonious colors will enhance your natural style and create a balanced, sophisticated look.` :
                   'With your soft undertones and calm personality, light earthy tones and minimal pieces enhance your natural ease and elegance.'
@@ -135,32 +198,37 @@ const Stylist: React.FC<StylistProps> = ({ quizData, colorAnalysis }) => {
               </p>
             </div>
 
-            {/* Right Section: Color Boxes in Column */}
-            <div className="flex flex-col gap-2 md:gap-3 lg:gap-4 w-1/2 md:w-2/5 items-end">
+            {/* Color Palette Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               {colors.map((color, index) => (
-                <div key={index} className="relative">
-                  <div
-                    className="w-[140px] md:w-[200px] lg:w-[250px] h-[23px] md:h-[40px] lg:h-[50px]"
-                    style={{ backgroundColor: color.hex }}
-                  ></div>
-                  <span className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-[9px] md:text-[12px] lg:text-[14px] font-[Boston p-2] ${
-                    color.hex.toLowerCase() === '#ffffff' || 
-                    color.hex.toLowerCase() === '#fdf6ec' || 
-                    color.hex.toLowerCase() === '#ffe5b4' || 
-                    color.hex.toLowerCase() === '#f5f5dc'
-                      ? 'text-[#8B7355]' 
-                      : 'text-[#F5F1EA]'
-                  }`}>
-                    {color.name}
-                  </span>
-                </div>
+                <motion.div 
+                  key={index} 
+                  className="group cursor-pointer"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1 + index * 0.1, duration: 0.4 }}
+                  whileHover={{ y: -8, scale: 1.02 }}
+                >
+                  <div className="bg-white rounded-2xl p-6 border border-gray-200/60 shadow-lg shadow-gray-900/5 group-hover:shadow-xl transition-all duration-300">
+                    <div
+                      className="w-full h-24 rounded-xl mb-4 border border-gray-200/60"
+                      style={{ backgroundColor: color.hex }}
+                    ></div>
+                    <h4 className="text-sm font-medium text-gray-900 text-center mb-1">
+                      {color.name}
+                    </h4>
+                    <p className="text-xs text-gray-500 text-center font-mono">
+                      {color.hex.toUpperCase()}
+                    </p>
+                  </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 

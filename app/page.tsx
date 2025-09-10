@@ -1,11 +1,14 @@
+"use client";
+
 import HomeHeroSection from "@/app/components/home/HomeHeroSection";
 import HomeFeatureSection from "@/app/components/home/HomeFeatureSection";
 import HomeQuizCTA from "@/app/components/home/HomeQuizCTA";
 import HomeStylistSection from "@/app/components/home/HomeStylistSection";
 import HomeTestimonials from "@/app/components/home/HomeTestimonials";
 import Script from 'next/script';
+import { motion } from 'framer-motion';
 
-const page = async () => {
+const page = () => {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -95,15 +98,51 @@ const page = async () => {
           __html: JSON.stringify(structuredData)
         }}
       />
-      <div>
+      <motion.div 
+        className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100/50"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+      >
         <HomeHeroSection />
-        <HomeFeatureSection />
-        <HomeQuizCTA />
-        <div className="mb-10">
+        
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
+        >
+          <HomeFeatureSection />
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          viewport={{ once: true }}
+        >
+          <HomeQuizCTA />
+        </motion.div>
+        
+        <motion.div
+          className="mb-10"
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          viewport={{ once: true }}
+        >
           <HomeStylistSection />
-        </div>
-        <HomeTestimonials />
-      </div>
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <HomeTestimonials />
+        </motion.div>
+      </motion.div>
     </>
   );
 };

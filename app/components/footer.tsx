@@ -2,6 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { BsInstagram } from "react-icons/bs";
 import { DiCreativecommons } from "react-icons/di";
 import { FaFacebook } from "react-icons/fa";
@@ -11,133 +12,231 @@ import { MdCall } from "react-icons/md";
 const Footer = () => {
   const [user, setUser] = useState({ email: "" });
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.6 }
+    }
+  };
+
   return (
-    <footer className="bg-black text-white py-10 pb-2 ">
-      <div className="max-w-10xl mx-auto px-6 sm:px-4 lg:px-8">
-        {/* Top Section */}
-        <div className="flex flex-col lg:flex-row lg:justify-between lg:gap-[10rem] gap-10 mb-10">
-          {/* Left Column: Logo + Contact */}
-          <div className="flex flex-col gap-6 lg:gap-25 lg:max-w-[400px]">
-            {/* Logo + Paragraph */}
-            <div className="max-w-full lg:max-w-[300px]">
-              <div className="mb-8">
+    <footer className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+        }} />
+      </div>
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          {/* Top Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 mb-16">
+            {/* Brand Section */}
+            <motion.div
+              className="lg:col-span-1 space-y-6"
+              variants={itemVariants}
+            >
+              <div className="space-y-4">
                 <Image
                   src="/assets/logoAtFooter.svg"
-                  alt="logo"
-                  width={200}
-                  height={100}
+                  alt="MyMirro Logo"
+                  width={180}
+                  height={80}
+                  className="filter brightness-0 invert"
                 />
+                <p className="text-gray-300 text-lg leading-relaxed max-w-sm">
+                  Helping you discover your style, effortlessly and personally.
+                </p>
               </div>
-              <p className="text-sm text-[14px] not-italic font-light leading-normal">
-                Helping you discover your style, effortlessly<br /> and personally.
-              </p>
-            </div>
 
-            {/* Contact */}
-            <div className="max-w-full lg:max-w-[200px] mt-5">
-              <h1 className="text-[20px] sm:text-[25px] leading-[100%] tracking-[1] mb-5">
-                Contact Us
-              </h1>
-              <p className="flex items-center gap-4 text-sm font-[Boston] tracking-wide text-[14px] not-italic font-light leading-normal">
-                <MdCall className="text-xl" /> 9560661809
-              </p>
-              <p className="flex items-center mt-4 gap-4 text-sm font-[Boston] text-[14px] not-italic font-light tracking-wide leading-normal">
-                <IoMdMail className="text-xl" /> info@mymirro.in
-              </p>
-            </div>
-          </div>
+              {/* Contact Info */}
+              <div className="space-y-4">
+                <h3 className="text-white text-xl font-light tracking-wide">Contact Us</h3>
+                <div className="space-y-3">
+                  <motion.div
+                    className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors duration-300"
+                    whileHover={{ x: 5 }}
+                  >
+                    <MdCall className="text-xl" />
+                    <span className="text-lg">9560661809</span>
+                  </motion.div>
+                  <motion.div
+                    className="flex items-center gap-3 text-gray-300 hover:text-white transition-colors duration-300"
+                    whileHover={{ x: 5 }}
+                  >
+                    <IoMdMail className="text-xl" />
+                    <span className="text-lg">info@mymirro.in</span>
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
 
-          {/* Right Column */}
-          <div className="flex flex-col lg:flex-row lg:gap-[10rem] gap-10 flex-1 mt-10 lg:mt-[4rem]">
-            {/* Information */}
-            <div className="flex-1 max-w-full lg:max-w-[200px] mb-6 lg:mb-0">
-              <h1 className="text-[20px] sm:text-[25px] leading-[100%] tracking-[1] mb-4">
-                Information
-              </h1>
-              <ul className="space-y-3 text-sm">
-                <Link href="/aboutpage">
-                  <li className="mb-2 text-[14px] not-italic font-light leading-normal hover:underline">
-                    About Us
-                  </li>
-                </Link>
-                <li className="text-[14px] not-italic font-light leading-normal hover:underline">
-                  More Search
-                </li>
-                <li className="text-[14px] not-italic font-light leading-normal hover:underline">
-                  Blog
-                </li>
-                <li className="text-[14px] not-italic font-light leading-normal hover:underline">
-                  Testimonials
-                </li>
+            {/* Information Links */}
+            <motion.div
+              className="space-y-6"
+              variants={itemVariants}
+            >
+              <h3 className="text-white text-xl font-light tracking-wide">Information</h3>
+              <ul className="space-y-4">
+                {[
+                  { href: "/aboutpage", label: "About Us" },
+                  { href: "#", label: "More Search" },
+                  { href: "#", label: "Blog" },
+                  { href: "#", label: "Testimonials" }
+                ].map((link, index) => (
+                  <motion.li
+                    key={index}
+                    whileHover={{ x: 5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Link
+                      href={link.href}
+                      className="text-gray-300 hover:text-white transition-colors duration-300 text-lg"
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.li>
+                ))}
               </ul>
-            </div>
+            </motion.div>
 
             {/* Helpful Links */}
-            <div className="flex-1 max-w-full lg:max-w-[200px] mb-6 lg:mb-0">
-              <h1 className="text-[20px] sm:text-[25px] leading-[100%] tracking-[1] mb-4">
-                Helpful Links
-              </h1>
-              <ul className="space-y-3 text-sm">
-                <li className="font-[Boston] text-[14px] not-italic font-normal leading-normal hover:underline">
-                  Services
-                </li>
-                <li className="font-[Boston] text-[14px] not-italic font-normal leading-normal hover:underline">
-                  Support
-                </li>
-                <li className="font-[Boston] text-[14px] not-italic font-normal leading-normal hover:underline">
-                  Terms & Conditions
-                </li>
+            <motion.div
+              className="space-y-6"
+              variants={itemVariants}
+            >
+              <h3 className="text-white text-xl font-light tracking-wide">Helpful Links</h3>
+              <ul className="space-y-4">
+                {[
+                  { href: "#", label: "Services" },
+                  { href: "#", label: "Support" },
+                  { href: "#", label: "Terms & Conditions" }
+                ].map((link, index) => (
+                  <motion.li
+                    key={index}
+                    whileHover={{ x: 5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Link
+                      href={link.href}
+                      className="text-gray-300 hover:text-white transition-colors duration-300 text-lg"
+                    >
+                      {link.label}
+                    </Link>
+                  </motion.li>
+                ))}
               </ul>
-            </div>
+            </motion.div>
 
             {/* Newsletter */}
-            <div className="flex-1 max-w-full lg:max-w-[300px]">
-              <h1 className="text-[20px] sm:text-[25px] leading-[100%] tracking-[0] mb-4">
-                Newsletter
-              </h1>
-              <input
-                type="email"
-                name="email"
-                placeholder="Enter your email address"
-                className="w-[80%] px-4 py-2 text-black bg-white border border-gray-300 mb-3"
-                value={user.email}
-                onChange={(e) => setUser({ ...user, email: e.target.value })}
-                required
-              />
-              <button className="bg-[#212121] text-white py-2 px-4 w-fit sm:w-auto text-[12px] tracking-[1]   hover:bg-gray-300 transition">
-                Join our newsletter
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Horizontal line */}
-        <hr className="w-[95%] border-t border-white mt-5 my-6" />
-
-        {/* Bottom Section */}
-        <div className="flex flex-col items-center">
-          {/* Social Icons */}
-          <div className="flex justify-center space-x-4 text-white text-2xl mb-4">
-            <Link
-              href="https://www.facebook.com/profile.php?id=61573340280599"
-              target="_blank"
+            <motion.div
+              className="space-y-6"
+              variants={itemVariants}
             >
-              <FaFacebook className="hover:text-gray-400 cursor-pointer" />
-            </Link>
-            <Link
-              href="https://www.instagram.com/my_mirro_?igsh=cnU0ZzNibWxncXY3"
-              target="_blank"
-            >
-              <BsInstagram className="hover:text-gray-400 cursor-pointer" />
-            </Link>
+              <h3 className="text-white text-xl font-light tracking-wide">Newsletter</h3>
+              <p className="text-gray-300 text-lg leading-relaxed">
+                Stay updated with the latest fashion trends and style tips.
+              </p>
+              <div className="space-y-4">
+                <motion.input
+                  type="email"
+                  name="email"
+                  placeholder="Enter your email address"
+                  className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-white/40 focus:bg-white/15 transition-all duration-300"
+                  value={user.email}
+                  onChange={(e) => setUser({ ...user, email: e.target.value })}
+                  whileFocus={{ scale: 1.02 }}
+                />
+                <motion.button
+                  className="w-full bg-white text-gray-900 py-3 px-6 rounded-xl font-medium tracking-wide hover:bg-gray-100 transition-all duration-300"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  Join our newsletter
+                </motion.button>
+              </div>
+            </motion.div>
           </div>
 
-          {/* Copyright */}
-          <div className="text-center text-sm text-white flex flex-wrap justify-center items-center gap-2 mt-10 lg:mt-1">
-            <DiCreativecommons />
-            <span>2025. All rights reserved.</span>
-          </div>
-        </div>
+          {/* Divider */}
+          <motion.div
+            className="w-full h-px bg-gradient-to-r from-transparent via-white/20 to-transparent mb-12"
+            initial={{ width: 0 }}
+            whileInView={{ width: "100%" }}
+            transition={{ duration: 1, delay: 0.3 }}
+            viewport={{ once: true }}
+          />
+
+          {/* Bottom Section */}
+          <motion.div
+            className="flex flex-col lg:flex-row items-center justify-between gap-8"
+            variants={itemVariants}
+          >
+            {/* Social Icons */}
+            <motion.div
+              className="flex items-center gap-6"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <motion.div
+                whileHover={{ scale: 1.2, rotate: 5 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Link
+                  href="https://www.facebook.com/profile.php?id=61573340280599"
+                  target="_blank"
+                  className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300"
+                >
+                  <FaFacebook className="text-xl" />
+                </Link>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.2, rotate: -5 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                <Link
+                  href="https://www.instagram.com/my_mirro_?igsh=cnU0ZzNibWxncXY3"
+                  target="_blank"
+                  className="w-12 h-12 bg-white/10 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all duration-300"
+                >
+                  <BsInstagram className="text-xl" />
+                </Link>
+              </motion.div>
+            </motion.div>
+
+            {/* Copyright */}
+            <motion.div
+              className="flex items-center gap-2 text-gray-400 text-lg"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              viewport={{ once: true }}
+            >
+              <DiCreativecommons className="text-2xl" />
+              <span>2025. All rights reserved.</span>
+            </motion.div>
+          </motion.div>
+        </motion.div>
       </div>
     </footer>
   );

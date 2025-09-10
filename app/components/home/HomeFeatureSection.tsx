@@ -1,3 +1,6 @@
+import { motion } from "framer-motion";
+import Image from "next/image";
+
 const features = [
   {
     title: "Fashion Made Effortless",
@@ -15,47 +18,113 @@ const features = [
   },
   {
     title: "Not sure what's trending or what suits you?",
-    text: "Our fashion experts handpick stylesn,\n tailored to you",
+    text: "Our fashion experts handpick styles,\n tailored to you",
     image: "/assets/home3.jpeg",
     imageAlt: "Feature 3",
     textAlign: "left",
   },
 ];
 
-const HomeFeatureSection = () => (
-  <section className="py-14 bg-white w-full p-4">
-    <div className="max-w-7xl mx-auto px-2">
-      <h2 className="text-3xl font-bold text-center mb-6" aria-label="Features"></h2>
-      {features.map((feature, idx) => (
-        <div
-          key={idx}
-          className={`flex flex-col md:flex-row items-center mb-10 gap-8 md:gap-15 px-3 ${
-            idx % 2 === 1 ? "md:flex-row-reverse" : ""
-          }`}
+const HomeFeatureSection = () => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.3
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.8, ease: "easeOut" }
+    }
+  };
+
+  return (
+    <section className="py-20 bg-gradient-to-br from-white via-gray-50/30 to-gray-100/50 w-full">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          viewport={{ once: true }}
         >
-          {/* Text Column */}
-          <div
-            className={`md:w-3/5 mt-2 md:mt-0 space-y-2 ${
-              feature.textAlign === "right"
-                ? "md:pr-12 flex flex-col items-end text-right"
-                : "md:pl-15 text-left"
-            }`}
+          <motion.div
+            className="inline-flex items-center px-6 py-3 bg-gray-900/5 border border-gray-200 rounded-full mb-6"
+            whileHover={{ scale: 1.05 }}
           >
-            <h3 className={`text-4xl md:text-6xl font-bold hover:text-gray-700 transition-colors duration-300`}>{feature.title}</h3>
-            <p className="font-light text-sm whitespace-pre-line">{feature.text}</p>
-          </div>
-          {/* Image Column */}
-          <div className="w-full md:w-2/5">
-            <img
-              src={feature.image}
-              alt={feature.imageAlt}
-              className="w-full h-[350px] md:h-[500px] object-cover rounded-lg transition-transform duration-300 hover:scale-[1.02]"
-            />
-          </div>
-        </div>
-      ))}
-    </div>
-  </section>
-);
+            <span className="text-sm font-medium text-gray-700 tracking-wide">WHY CHOOSE MYMIRRO</span>
+          </motion.div>
+          
+          <h2 className="text-4xl md:text-5xl font-light text-gray-900 tracking-tight">
+            Fashion Made Simple
+          </h2>
+        </motion.div>
+
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          {features.map((feature, idx) => (
+            <motion.div
+              key={idx}
+              variants={itemVariants}
+              className={`flex flex-col lg:flex-row items-center mb-20 gap-12 ${
+                idx % 2 === 1 ? "lg:flex-row-reverse" : ""
+              }`}
+            >
+              {/* Text Column */}
+              <motion.div
+                className={`lg:w-3/5 space-y-6 ${
+                  feature.textAlign === "right"
+                    ? "lg:pr-12 flex flex-col items-end text-right"
+                    : "lg:pl-12 text-left"
+                }`}
+                whileHover={{ scale: 1.02 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-lg shadow-gray-900/5 border border-gray-200/60">
+                  <h3 className="text-3xl md:text-5xl font-light text-gray-900 leading-tight mb-4">
+                    {feature.title}
+                  </h3>
+                  <p className="text-lg text-gray-600 leading-relaxed whitespace-pre-line">
+                    {feature.text}
+                  </p>
+                </div>
+              </motion.div>
+
+              {/* Image Column */}
+              <motion.div
+                className="w-full lg:w-2/5"
+                whileHover={{ scale: 1.05, rotate: 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="relative overflow-hidden rounded-2xl shadow-2xl shadow-gray-900/10">
+                  <Image
+                    src={feature.image}
+                    alt={feature.imageAlt}
+                    width={600}
+                    height={500}
+                    className="w-full h-[400px] md:h-[500px] object-cover transition-transform duration-500 hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/20 to-transparent" />
+                </div>
+              </motion.div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  );
+};
 
 export default HomeFeatureSection; 

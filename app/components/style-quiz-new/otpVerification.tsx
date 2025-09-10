@@ -200,7 +200,7 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
       onNext?.(verificationData);
 
       // Redirect to recommendations page
-      router.push('/recommendations');
+      router.push('/dashboard');
 
     } catch (error) {
       console.error('OTP verification failed:', error);

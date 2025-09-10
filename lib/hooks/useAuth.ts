@@ -23,7 +23,7 @@ export const useAuth = () => {
       console.log('Sign in successful:', data)
 
       // Manually redirect after successful mobile-sign-in
-      router.push('/recommendations');
+      router.push('/dashboard');
       return { data, error: null }
       
     } catch (error) {

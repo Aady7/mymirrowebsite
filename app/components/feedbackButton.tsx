@@ -15,7 +15,7 @@ const FeedbackButton = ({ productId }: FeedbackButtonProps) => {
          <div className="flex justify-center items-center w-full">
             <Button
                 onClick={() => setShowFeedback(true)}
-                className="rounded text-sm bg-[#007e90] hover:bg-[#006d7d] text-white px-6 py-3 whitespace-nowrap transition-colors"
+                className="rounded-xl text-sm bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white px-6 py-3 whitespace-nowrap transition-all duration-300 font-medium tracking-wide"
             >
                 Give Feedback
             </Button>

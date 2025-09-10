@@ -153,7 +153,9 @@ export const useStyleQuizData = () => {
           const processedData = { ...data };
           
           // Parse user_tags and create usertags for compatibility
+          // In the new schema, user_tags data is embedded in personality_ques
           if (data.user_tags) {
+            // Old schema compatibility
             try {
               if (typeof data.user_tags === 'string') {
                 processedData.usertags = JSON.parse(data.user_tags);
@@ -166,8 +168,37 @@ export const useStyleQuizData = () => {
               setError("Error parsing user_tags data");
               return;
             }
+          } else if (data.personality_ques) {
+            // New schema: extract from personality_ques
+            try {
+              const personalityData = typeof data.personality_ques === 'string' 
+                ? JSON.parse(data.personality_ques) 
+                : data.personality_ques;
+              
+              // Create mock user_tags from the personality data for compatibility
+              const mockUserTags = [{
+                personality_tags: [personalityData.personality_tag_1, personalityData.personality_tag_2].filter(Boolean),
+                fit_tags_upper: personalityData.upper_fit || [],
+                fit_tags_lower: personalityData.lower_fit || [],
+                fit_tags_full: personalityData.full_body_fit || [],
+                print_type_tags: personalityData.print_type || [],
+                print_scale_tags: personalityData.print_scale || [],
+                print_density_tags: personalityData.print_density || [],
+                pattern_placement_tags: personalityData.pattern_placement || [],
+                surface_texture_tags: personalityData.surface_texture || []
+              }];
+              
+              processedData.usertags = mockUserTags;
+              console.log("Successfully created usertags from personality_ques:", processedData.usertags);
+            } catch (e) {
+              console.error("Error parsing personality_ques:", e);
+              // Set empty usertags as fallback
+              processedData.usertags = [];
+            }
           } else {
             console.log("No user_tags found in data, available keys:", Object.keys(data));
+            // Set empty usertags as fallback
+            processedData.usertags = [];
           }
           
           const finalProcessedData = processedData as StyleQuizData & { usertags: UserTagsData[] };
@@ -175,9 +206,36 @@ export const useStyleQuizData = () => {
           
           // Parse all color data if it exists
           let colorData: ColorAnalysis | null = null;
-          if (data.color_analysis && data.color_family && data.hex_codes) {
+          
+          // For new schema, color data might be in personality_ques
+          let colorAnalysisSource = data.color_analysis;
+          let colorFamilySource = data.color_family;
+          let hexCodesSource = data.hex_codes;
+          
+          // Check if color data is in personality_ques (new schema)
+          if (!colorAnalysisSource && data.personality_ques) {
             try {
-              colorData = parseColorData(data);
+              const personalityData = typeof data.personality_ques === 'string' 
+                ? JSON.parse(data.personality_ques) 
+                : data.personality_ques;
+              
+              colorAnalysisSource = personalityData.color_analysis;
+              colorFamilySource = personalityData.color_family;
+              hexCodesSource = personalityData.hex_codes;
+            } catch (e) {
+              console.error("Error extracting color data from personality_ques:", e);
+            }
+          }
+          
+          if (colorAnalysisSource && colorFamilySource && hexCodesSource) {
+            try {
+              // Create a temporary data object for parsing
+              const tempData = {
+                color_analysis: colorAnalysisSource,
+                color_family: colorFamilySource,
+                hex_codes: hexCodesSource
+              };
+              colorData = parseColorData(tempData);
               setColorAnalysis(colorData);
             } catch (e) {
               console.error("Error parsing color data:", e);
@@ -249,7 +307,9 @@ export const useStyleQuizData = () => {
         if (data) {
           setQuizData(data);
           const processedData = { ...data };
+          // Parse user_tags for compatibility (same logic as above)
           if (data.user_tags) {
+            // Old schema compatibility
             try {
               if (typeof data.user_tags === 'string') {
                 processedData.usertags = JSON.parse(data.user_tags);
@@ -260,15 +320,69 @@ export const useStyleQuizData = () => {
               console.error("Error parsing user_tags:", e);
               throw new Error("Error parsing user_tags data");
             }
+          } else if (data.personality_ques) {
+            // New schema: extract from personality_ques
+            try {
+              const personalityData = typeof data.personality_ques === 'string' 
+                ? JSON.parse(data.personality_ques) 
+                : data.personality_ques;
+              
+              // Create mock user_tags from the personality data for compatibility
+              const mockUserTags = [{
+                personality_tags: [personalityData.personality_tag_1, personalityData.personality_tag_2].filter(Boolean),
+                fit_tags_upper: personalityData.upper_fit || [],
+                fit_tags_lower: personalityData.lower_fit || [],
+                fit_tags_full: personalityData.full_body_fit || [],
+                print_type_tags: personalityData.print_type || [],
+                print_scale_tags: personalityData.print_scale || [],
+                print_density_tags: personalityData.print_density || [],
+                pattern_placement_tags: personalityData.pattern_placement || [],
+                surface_texture_tags: personalityData.surface_texture || []
+              }];
+              
+              processedData.usertags = mockUserTags;
+            } catch (e) {
+              console.error("Error parsing personality_ques:", e);
+              processedData.usertags = [];
+            }
+          } else {
+            processedData.usertags = [];
           }
           
           const finalProcessedData = processedData as StyleQuizData & { usertags: UserTagsData[] };
           setParsedData(finalProcessedData);
           
           let colorData: ColorAnalysis | null = null;
-          if (data.color_analysis && data.color_family && data.hex_codes) {
+          
+          // For new schema, color data might be in personality_ques
+          let colorAnalysisSource = data.color_analysis;
+          let colorFamilySource = data.color_family;
+          let hexCodesSource = data.hex_codes;
+          
+          // Check if color data is in personality_ques (new schema)
+          if (!colorAnalysisSource && data.personality_ques) {
             try {
-              colorData = parseColorData(data);
+              const personalityData = typeof data.personality_ques === 'string' 
+                ? JSON.parse(data.personality_ques) 
+                : data.personality_ques;
+              
+              colorAnalysisSource = personalityData.color_analysis;
+              colorFamilySource = personalityData.color_family;
+              hexCodesSource = personalityData.hex_codes;
+            } catch (e) {
+              console.error("Error extracting color data from personality_ques:", e);
+            }
+          }
+          
+          if (colorAnalysisSource && colorFamilySource && hexCodesSource) {
+            try {
+              // Create a temporary data object for parsing
+              const tempData = {
+                color_analysis: colorAnalysisSource,
+                color_family: colorFamilySource,
+                hex_codes: hexCodesSource
+              };
+              colorData = parseColorData(tempData);
               setColorAnalysis(colorData);
             } catch (e) {
               console.error("Error parsing color data:", e);

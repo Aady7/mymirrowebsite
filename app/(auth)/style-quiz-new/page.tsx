@@ -756,8 +756,8 @@ export default function StyleQuizNew() {
         
         // Clear the submitting state before navigation
         setIsSubmitting(false);
-        console.log('✅ Quiz completed successfully, navigating to recommendations...');
-        router.push('/recommendations');
+        console.log('✅ Quiz completed successfully, navigating to dashboard...');
+        router.push('/dashboard');
         
       } catch (submitError) {
         console.error('Error during submission:', submitError);
@@ -949,71 +949,97 @@ export default function StyleQuizNew() {
         }
       }
 
-      const cleanedData: DynamicStyleQuizData = {
-        id: formData.styleQuizId || undefined,
+      // Create data structure for style-quiz-v2 table
+      const cleanedData = {
         name: formData.name.trim(),
-        phone_number: formData.phone?.replace(/\D/g, '') || '',
-        email_address: formData.email?.trim(), // Add email to cleaned data
         gender: formData.gender,
-        body_shape: formData.bodyType,
-        upper_size: formData.upperWear,
-        lower_waist_size: formData.waistSize,
-        outfit_adventurous: formData.outfitAdventurous || [],
-        minimalistic: formData.minimalistic,
-        fashion_style: formData.goToStyle || [],
-        feedback: formData.feedback?.trim(),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        user_tags: userTags,
-        weekend_preference: formData.weekendPreference,
-        shopping_style: formData.shoppingStyle,
-        workspace_style: formData.workspaceStyle,
-        friend_compliments: formData.friendCompliments,
-        work_outfit: formData.workOutfit,
-        wardrobe_content: formData.wardrobeContent,
-        color_analysis: colorAnalysisData,
-        personality_tag_1: personalityTags[0],
-        personality_tag_2: personalityTags[1],
-        print_type: printCharacteristics.printTypes,
-        print_scale: printCharacteristics.printScales,
-        print_density: printCharacteristics.printDensities,
-        pattern_placement: printCharacteristics.patternPlacements,
-        surface_texture: printCharacteristics.surfaceTextures,
-        upper_fit: fitTags.upperWear,
-        lower_fit: fitTags.lowerWear,
-        full_body_fit: fitTags.fullBody,
-        user_id,
-        upper_wear_caption: upperWearCaption,
-        lower_wear_caption: lowerWearCaption,
-        full_body_dress_caption: fullBodyCaption,
-        undertone:colorAnalysisData?.undertone,
-        contrast:colorAnalysisData?.contrast,
-        hex_codes:hexCodesMap,
-        color_family: colorNamesMap,
+        age: '', // Not collected in current form, can be added later
+        occupation: '', // Not collected in current form, can be added later
+        body_type: formData.bodyType,
+        skin_tone: colorAnalysisData?.undertone || '',
+        style_origin: 'style-quiz-new', // Identifier for the source
+        style_vibes: JSON.stringify(formData.goToStyle || []),
+        personality_ques: JSON.stringify({
+          weekend_preference: formData.weekendPreference,
+          shopping_style: formData.shoppingStyle,
+          workspace_style: formData.workspaceStyle,
+          friend_compliments: formData.friendCompliments,
+          work_outfit: formData.workOutfit,
+          wardrobe_content: formData.wardrobeContent,
+          minimalistic: formData.minimalistic,
+          outfit_adventurous: formData.outfitAdventurous,
+          feedback: formData.feedback?.trim(),
+          // Add sizing and fit information
+          upper_size: formData.upperWear,
+          lower_waist_size: formData.waistSize,
+          // Add personality tags
+          personality_tag_1: personalityTags[0],
+          personality_tag_2: personalityTags[1],
+          // Add style characteristics
+          print_type: printCharacteristics.printTypes,
+          print_scale: printCharacteristics.printScales,
+          print_density: printCharacteristics.printDensities,
+          pattern_placement: printCharacteristics.patternPlacements,
+          surface_texture: printCharacteristics.surfaceTextures,
+          upper_fit: fitTags.upperWear,
+          lower_fit: fitTags.lowerWear,
+          full_body_fit: fitTags.fullBody,
+          // Add color analysis
+          color_analysis: colorAnalysisData,
+          hex_codes: hexCodesMap,
+          color_family: colorNamesMap,
+          // Add captions
+          upper_wear_caption: upperWearCaption,
+          lower_wear_caption: lowerWearCaption,
+          full_body_dress_caption: fullBodyCaption,
+          // Add dynamic style preferences
+          ...dynamicSteps.reduce((acc, { style }) => {
+            const key = `preferred_${style.replace(/\s+/g, '_').toLowerCase()}`;
+            if (formData[key as keyof FormData]) {
+              acc[`apparel_pref_${style.replace(/\s+/g, '_')}`] = formData[key as keyof FormData];
+            }
+            return acc;
+          }, {} as Record<string, any>)
+        }),
+        outfit_swipe: JSON.stringify({
+          // This will be populated from the outfit swipe step when implemented
+          liked: [],
+          disliked: [],
+          superLiked: []
+        }),
+        phone_number: formData.phone?.replace(/\D/g, '') || '',
+        email: formData.email?.trim() || '',
+        user_id
       };
 
-      // Add dynamic style preferences
-      const validApparelKeys = ['athleisure', 'streetwear', 'business_casual'];
-      dynamicSteps.forEach(({ style }) => {
-        const key = `preferred_${style.replace(/\s+/g, '_').toLowerCase()}`;
-        const dbKey = `apparel_pref_${style.replace(/\s+/g, '_')}`;
-
-        if (validApparelKeys.includes(style.replace(/\s+/g, '_')) && formData[key as keyof FormData]) {
-          cleanedData[dbKey] = formData[key as keyof FormData];
-        }
-      });
 
       console.log("Sending data to Supabase:", cleanedData);
 
-      // Upsert data using styleQuizId
-      const { error: insertError } = await supabase
-        .from('style-quiz-updated')
-        .upsert([cleanedData], {
-          onConflict: 'id'
-        });
+      // Check if user already has quiz data and update or insert accordingly
+      const { data: existingData } = await supabase
+        .from('style-quiz-v2')
+        .select('id')
+        .eq('user_id', user_id)
+        .maybeSingle();
+
+      let insertError;
+      if (existingData) {
+        // Update existing record
+        const { error } = await supabase
+          .from('style-quiz-v2')
+          .update(cleanedData)
+          .eq('user_id', user_id);
+        insertError = error;
+      } else {
+        // Insert new record
+        const { error } = await supabase
+          .from('style-quiz-v2')
+          .insert([cleanedData]);
+        insertError = error;
+      }
 
       if (insertError) {
-        console.error('Error inserting style quiz data:', insertError);
+        console.error('Error saving style quiz data:', insertError);
         throw new Error(`Failed to save style quiz data: ${insertError.message}`);
       }
 
@@ -1666,7 +1692,7 @@ export default function StyleQuizNew() {
                     setIsSubmitting(true); // Ensure button shows loading state
                     try {
                       await submitFormData();
-                      router.push('/recommendations');
+                      router.push('/dashboard');
                     } catch (error) {
                       setIsSubmitting(false); // Reset if navigation fails
                       throw error;

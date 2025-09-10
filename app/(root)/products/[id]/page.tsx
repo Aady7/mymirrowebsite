@@ -23,6 +23,7 @@ import { trackEvent } from "@/lib/utils/analytics";
 import RobustImage from "@/app/components/common/RobustImage";
 //buy now button redirect link on it
 import { getAffiliate } from "@/app/utils/affiliateMap";
+import { motion, AnimatePresence } from 'framer-motion';
 interface Product {
   id: number;
   created_at: string;
@@ -198,23 +199,34 @@ export default function ProductPage() {
         currentProductId.current = String(id);
         console.log("🔍 Fetching product details for:", id);
 
-        const { data, error } = await supabase
-          .from("products")
-          .select(
-            `*,
-            tagged_products(
-              customer_short_description,
-              customer_long_recommendation
-            )`
-          )
+        // Always fetch from products_v2 table
+        console.log("🔍 Fetching from products_v2 table for product:", id);
+
+        let { data, error } = await supabase
+          .from("products_v2")
+          .select("*")
           .eq("id", id)
           .single();
+
+        // Also fetch tagged_products data separately
+        if (!error && data) {
+          const { data: taggedData, error: taggedError } = await supabase
+            .from("tagged_products")
+            .select("*")
+            .eq("product_id", id)
+            .single();
+          
+          if (!taggedError && taggedData) {
+            // Add tagged_products data to the main product data
+            data.tagged_products = [taggedData];
+          }
+        }
 
         if (error) throw error;
         if (!data) throw new Error("Product not found");
 
         setProduct(data as Product);
-        console.log("✅ Product details fetched successfully for:", id);
+        console.log("✅ Product details fetched successfully for:", id, "from products_v2 table");
 
         // Track product view
         trackEvent.viewProduct(String(id), data.title || data.name, "product");
@@ -601,15 +613,17 @@ export default function ProductPage() {
     } catch {
       return (
         product.sizesAvailable
-          .split(",")
-          .map((s) => {
-            // Extract only the size part for comma-separated format too
-            const sizeOnly = s.split(" Rs.")[0].split(" ₹")[0].trim();
-            return sizeOnly;
-          })
-          .filter((size) => size !== "" && isValidSize(size))
-          // Remove duplicates
-          .filter((size, index, self) => self.indexOf(size) === index)
+          ? product.sizesAvailable
+              .split(",")
+              .map((s) => {
+                // Extract only the size part for comma-separated format too
+                const sizeOnly = s.split(" Rs.")[0].split(" ₹")[0].trim();
+                return sizeOnly;
+              })
+              .filter((size) => size !== "" && isValidSize(size))
+              // Remove duplicates
+              .filter((size, index, self) => self.indexOf(size) === index)
+          : []
       );
     }
   })();
@@ -652,150 +666,194 @@ export default function ProductPage() {
   };
 
   return (
-    <div className="w-full px-[24px] py-1 max-w-md mx-auto font-['Boston']">
-      {/* Header */}
-      <div className="text-center mb-2">
-        <h1 className="" style={{ fontSize: "25px", fontWeight: 300 }}>
-          {product.title || ""}
-        </h1>
-      </div>
-
-      {/* Horizontal Line */}
-      <hr className="border border-black mb-4" />
-
-      {/* Image Section */}
-      <div className="relative w-70% h-[350px] mt-6">
-        {/* Main Image */}
-        <div
-          className="relative w-full h-full overflow-hidden "
-          onTouchStart={onTouchStart}
-          onTouchMove={onTouchMove}
-          onTouchEnd={onTouchEnd}
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100/50">
+      <motion.div 
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        {/* Premium Header */}
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
         >
-          <RobustImage
-            src={productImages[selectedImageIndex] || "/fallback.jpg"}
-            alt={product.name}
-            fill
-            className="object-contain "
+          <motion.div
+            className="inline-flex items-center px-6 py-3 bg-gray-900/5 border border-gray-200 rounded-full mb-6"
+            whileHover={{ scale: 1.05 }}
+          >
+            <span className="text-sm font-medium text-gray-700 tracking-wide">PREMIUM PRODUCT</span>
+          </motion.div>
+          
+          <motion.h1 
+            className="text-4xl md:text-5xl font-light text-gray-900 mb-4 tracking-tight"
+            whileHover={{ scale: 1.01 }}
+          >
+            {product.title || product.name || "Premium Product"}
+          </motion.h1>
+          
+          <motion.div 
+            className="w-24 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mx-auto"
+            initial={{ width: 0 }}
+            animate={{ width: 96 }}
+            transition={{ duration: 1, delay: 0.8 }}
           />
-        </div>
+        </motion.div>
 
-        {/* Navigation Arrows */}
-        {productImages.length > 1 && (
-          <>
-            {/* Left Arrow */}
-            <button
-              onClick={goToPrevious}
-              className="absolute left-1 top-1/2 transform -translate-y-1/2  hover:bg-white/90   transition-all duration-200 z-10"
-              aria-label="Previous image"
+        {/* Product Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+          {/* Image Section */}
+          <div className="relative w-full h-[500px]">
+            {/* Main Image */}
+            <div
+              className="relative w-full h-full overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-white border border-gray-200/60"
+              onTouchStart={onTouchStart}
+              onTouchMove={onTouchMove}
+              onTouchEnd={onTouchEnd}
             >
-              <IoChevronBack className="w-4 h-4 text-gray-700" />
-            </button>
-
-            {/* Right Arrow */}
-            <button
-              onClick={goToNext}
-              className="absolute right-1 top-1/2 transform -translate-y-1/2  hover:bg-white/90  transition-all duration-200 z-10"
-              aria-label="Next image"
-            >
-              <IoChevronForward className="w-4 h-4 text-gray-700" />
-            </button>
-          </>
-        )}
-
-        {/* Image Toggle Dots */}
-        {productImages.length > 1 && (
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 bg-white/80 p-2 rounded-lg">
-            {productImages.map((_: string, index: number) => (
-              <button
-                key={index}
-                onClick={() => setSelectedImageIndex(index)}
-                className={`w-2 h-2 rounded-full transition-colors duration-200 ${
-                  selectedImageIndex === index ? " bg-[#007e90]" : "bg-gray-300"
-                }`}
+              <RobustImage
+                src={productImages[selectedImageIndex] || "/fallback.jpg"}
+                alt={product.name}
+                fill
+                className="object-cover"
               />
-            ))}
-          </div>
-        )}
-      </div>
-      {/* brancd name and title section */}
-      <div className="flex flex-row items-center mt-8 w-full">
-        {product?.name && (
-          <span className="text-lg text-gray-900 font-bold whitespace-nowrap">
-            {product.name}
-          </span>
-        )}
-        {product?.title && (
-          <span className="text-lg text-gray-500 font-semibold whitespace-nowrap">
-            -{product.title}
-          </span>
-        )}
-      </div>
+            </div>
 
-      {/*Price section*/}
-      <div>
-        <div className="flex mt-4 items-center gap-1">
-          <FaIndianRupeeSign className="text-lg" />
-          <h1 className="text-2xl text-gray-500 font-bold line-through">
-            {product?.mrp}
-          </h1>
-          <h1 className="text-2xl font-bold">{product?.price}</h1>
+            {/* Navigation Arrows */}
+            {productImages.length > 1 && (
+              <>
+                {/* Left Arrow */}
+                <motion.button
+                  onClick={goToPrevious}
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-lg transition-all duration-200 z-10"
+                  aria-label="Previous image"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <IoChevronBack className="w-5 h-5 text-gray-800" />
+                </motion.button>
+
+                {/* Right Arrow */}
+                <motion.button
+                  onClick={goToNext}
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 hover:bg-white rounded-full p-3 shadow-lg transition-all duration-200 z-10"
+                  aria-label="Next image"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  <IoChevronForward className="w-5 h-5 text-gray-800" />
+                </motion.button>
+              </>
+            )}
+
+            {/* Image Toggle Dots */}
+            {productImages.length > 1 && (
+              <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 bg-white/90 backdrop-blur-sm p-3 rounded-full shadow-lg">
+                {productImages.map((_: string, index: number) => (
+                  <motion.button
+                    key={index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`w-3 h-3 rounded-full transition-all duration-200 ${
+                      selectedImageIndex === index ? "bg-gray-900 scale-110" : "bg-gray-400"
+                    }`}
+                    whileHover={{ scale: 1.2 }}
+                    whileTap={{ scale: 0.9 }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Product Details Section */}
+          <div className="space-y-6">
+            {/* Brand name and title section */}
+            <div className="flex flex-row items-center w-full">
+              {product?.name && (
+                <span className="text-lg text-gray-900 font-bold whitespace-nowrap">
+                  {product.name}
+                </span>
+              )}
+              {product?.title && (
+                <span className="text-lg text-gray-500 font-semibold whitespace-nowrap">
+                  -{product.title}
+                </span>
+              )}
+            </div>
+
+            {/*Price section*/}
+            <div>
+              <div className="flex mt-4 items-center gap-1">
+                <FaIndianRupeeSign className="text-lg" />
+                <h1 className="text-2xl text-gray-500 font-bold line-through">
+                  {product?.mrp}
+                </h1>
+                <h1 className="text-2xl font-bold">{product?.price}</h1>
+              </div>
+              <div className="w-full p-2 mt-[12px]">
+                <h6 className="text-left text-sm">SIZE</h6>
+                <div className="flex gap-3 mt-2 flex-wrap">
+                  {productSizes.map((size: string, index: number) => (
+                    <motion.button
+                      key={index}
+                      onClick={() => handleSizeSelect(size)}
+                      className={`px-4 py-2 text-sm rounded-lg font-medium transition-all duration-200 ${
+                        selectedSize === size
+                          ? "bg-gray-900 text-white border-2 border-gray-900"
+                          : "bg-white text-gray-900 border-2 border-gray-300 hover:border-gray-900"
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {size}
+                    </motion.button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Add to Cart Error/Success Messages */}
+              {addToCartError && (
+                <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-600 text-xs">
+                  {addToCartError}
+                </div>
+              )}
+              {addToCartSuccess && (
+                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-green-600 text-xs">
+                  Item added to cart successfully!
+                </div>
+              )}
+
+              {/* Buttons Section */}
+              <div className="w-full">
+                {/* Buttons Row */}
+                <div className="flex items-center gap-4 mt-5">
+                  <motion.button 
+                    onClick={handleBuyNow} 
+                    className="flex-[1] min-w-[100px] max-w-[160px] bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 rounded-xl text-white h-12 text-sm font-medium transition-all duration-300 tracking-wide"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    BUY NOW
+                  </motion.button>
+                  <motion.button
+                    onClick={handleAddToCart}
+                    disabled={!selectedSize || isAddingToCart}
+                    className={`flex-[2] min-w-[140px] max-w-[240px] rounded-xl h-12 text-sm font-medium transition-all duration-300 tracking-wide ${
+                      selectedSize
+                        ? "bg-white text-gray-900 border-2 border-gray-900 hover:bg-gray-900 hover:text-white"
+                        : "bg-gray-100 text-gray-500 border-2 border-gray-300 cursor-not-allowed opacity-75"
+                    }`}
+                    whileHover={selectedSize ? { scale: 1.02 } : {}}
+                    whileTap={selectedSize ? { scale: 0.98 } : {}}
+                  >
+                    {isAddingToCart ? "ADDING..." : "ADD TO CART"}
+                  </motion.button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="w-full p-2 mt-[12px]">
-          <h6 className="text-left text-sm">SIZE</h6>
-          <div className="flex gap-3 mt-2 flex-wrap">
-            {productSizes.map((size: string, index: number) => (
-              <Button
-                key={index}
-                onClick={() => handleSizeSelect(size)}
-                className={`text-xs rounded transition-all duration-200 ${
-                  selectedSize === size
-                    ? "bg-[#007e90] text-white border border-[#007e90]"
-                    : "bg-transparent text-black border border-black hover:border-[#007e90]"
-                }`}
-              >
-                {size}
-              </Button>
-            ))}
-          </div>
-        </div>
-
-        {/* Add to Cart Error/Success Messages */}
-        {addToCartError && (
-          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-600 text-xs">
-            {addToCartError}
-          </div>
-        )}
-        {addToCartSuccess && (
-          <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-green-600 text-xs">
-            Item added to cart successfully!
-          </div>
-        )}
-
-        {/* Buttons Section */}
-        <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8">
-          {/* Buttons Row */}
-          <div className="flex items-center gap-4 mt-5">
-            <Button onClick={handleBuyNow} className="flex-[1] min-w-[100px] max-w-[160px] bg-[#007e90] hover:bg-[#006d7d] rounded text-white h-10 text-xs transition-colors">
-              BUY NOW
-            </Button>
-            <Button
-              onClick={handleAddToCart}
-              disabled={!selectedSize || isAddingToCart}
-              className={`flex-[2] min-w-[140px] max-w-[240px] rounded h-10 text-xs transition-all duration-200 ${
-                selectedSize
-                  ? "bg-white text-[#007e90] border border-[#007e90] hover:bg-[#007e90] hover:text-white"
-                  : "bg-gray-100 text-gray-500 border border-gray-300 cursor-not-allowed opacity-75"
-              }`}
-            >
-              {isAddingToCart ? "ADDING..." : "ADD TO CART"}
-            </Button>
-          </div>
-
-          {/* Divider */}
-          <hr className="w-full border border-black mt-[30px]" />
-        </div>
-      </div>
 
       <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8">
         <div className="w-full mt-8">
@@ -927,9 +985,13 @@ export default function ProductPage() {
                       href={`/looks/${styleProduct.outfitId}`}
                       className="flex-1"
                     >
-                      <Button className="w-full h-9 bg-[#007e90] hover:bg-[#006d7d] text-white text-xs rounded transition-colors">
+                      <motion.button 
+                        className="w-full h-9 bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white text-xs rounded-lg font-medium transition-all duration-300 tracking-wide"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
                         VIEW OUTFIT
-                      </Button>
+                      </motion.button>
                     </Link>
                   </div>
                 </div>
@@ -980,212 +1042,20 @@ export default function ProductPage() {
           {/* View More Button */}
           <div className="flex justify-end mt-6 mb-8">
             <Link href={`/looks/${outfit.main_outfit_id}`}>
-              <button className="bg-[#007e90] hover:bg-[#006d7d] text-white px-6 py-2 text-sm transition-colors rounded">
-                View More
-              </button>
+              <motion.button 
+                className="bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white px-6 py-3 text-sm font-medium transition-all duration-300 rounded-lg tracking-wide"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                VIEW MORE
+              </motion.button>
             </Link>
           </div>
         </div>
       )}
 
-      {/*you may also like section*/}
-      <div className="w-full max-w-screen-lg mx-auto px-2 md:px-6 lg:px-8">
-        {/* Horizontal Line */}
-        <hr className="border border-black mt-4" />
-        <div className="text-center mt-8 mb-2">
-          <h1
-            className="font-medium"
-            style={{ fontSize: "20px", fontWeight: 500 }}
-          >
-            YOU MAY ALSO LIKE
-          </h1>
-        </div>
-
-        {/* Loading State */}
-        {isFetchingSimilar && (
-          <div className="flex justify-center items-center py-12">
-            <div className="flex flex-col items-center space-y-4">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007e90]"></div>
-              <p className="text-sm text-gray-600">
-                Loading similar products...
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* Error State */}
-        {!isFetchingSimilar && similarProductsError && (
-          <div className="flex flex-col items-center justify-center py-12">
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-4">
-                {similarProductsError}
-              </p>
-              <button
-                onClick={() => {
-                  setSimilarProductsError(null);
-                  hasFetchedSimilar.current = false;
-                  // Trigger refetch by calling the fetchSimilar function
-                  const fetchSimilar = async (
-                    retryCount = 0,
-                    maxRetries = 3
-                  ) => {
-                    if (isFetchingSimilar) return;
-
-                    try {
-                      setIsFetchingSimilar(true);
-                      setSimilarProductsError(null);
-
-                      const data = await getSimilarProducts({
-                        productId: String(id),
-                        count: 10,
-                        diverse: true,
-                        personalized: false,
-                        forceRefresh: true, // Always force refresh on manual retry
-                      });
-
-                      if (data?.similar_products) {
-                        console.log(
-                          "📊 Raw similar products data (retry):",
-                          data.similar_products
-                        );
-
-                        // Filter out products with null essential data
-                        const validProducts = data.similar_products.filter(
-                          (item: any) =>
-                            item.product_id && item.title && item.price
-                        );
-                        
-                        if (validProducts.length > 0) {
-                          // Get product IDs to fetch brand names from products table
-                          const productIds = validProducts.map((item: any) => item.product_id);
-                          
-                          // Fetch brand names from products table
-                          const { data: productsData, error: productsError } = await supabase
-                            .from('products')
-                            .select('id, name')
-                            .in('id', productIds);
-                          
-                          if (productsError) {
-                            console.error('Error fetching product brand names (retry):', productsError);
-                          }
-                          
-                          // Create a map of product_id to brand name for quick lookup
-                          const brandMap = new Map();
-                          if (productsData) {
-                            productsData.forEach((product: any) => {
-                              brandMap.set(String(product.id), product.name);
-                            });
-                          }
-                          
-                          // Format products with brand names
-                          const formattedProducts = validProducts.map((item: any) => ({
-                            id: item.product_id,
-                            title: item.title,
-                            name: brandMap.get(String(item.product_id)) || '', // Brand name from products table
-                            brandname: brandMap.get(String(item.product_id)) || '', // Alias for brand name
-                            price: item.price,
-                            productImages: item.image_url || "/fallback.jpg",
-                          }));
-
-                          console.log(
-                            "✅ Formatted products after filtering (retry):",
-                            formattedProducts.length
-                          );
-                          setSimilarProducts(formattedProducts);
-                        }
-                        hasFetchedSimilar.current = true;
-
-                        // If no valid products after filtering, show an appropriate message
-                        if (
-                          validProducts.length === 0 &&
-                          data.similar_products.length > 0
-                        ) {
-                          console.log(
-                            "⚠️ API returned similar products but all had null data (retry)"
-                          );
-                          setSimilarProductsError(
-                            "Similar products found but product details are not available."
-                          );
-                        }
-                      }
-                    } catch (err) {
-                      console.error("❌ Error fetching similar products:", err);
-                      setSimilarProductsError(
-                        "Failed to load similar products. Please try again later."
-                      );
-                    } finally {
-                      setIsFetchingSimilar(false);
-                    }
-                  };
-                  fetchSimilar();
-                }}
-                className="px-4 py-2 bg-[#007e90] hover:bg-[#006d7d] text-white text-xs rounded transition-colors"
-              >
-                Try Again
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Empty State */}
-        {!isFetchingSimilar &&
-          !similarProductsError &&
-          similarProducts.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <p className="text-sm text-gray-600">
-                No similar products found.
-              </p>
-            </div>
-          )}
-
-        {/* Products Grid - Only show when not loading, no error, and has products */}
-        {!isFetchingSimilar &&
-          !similarProductsError &&
-          similarProducts.length > 0 && (
-            <div className="grid grid-cols-2 gap-6 mt-6 mb-[30px]">
-              {similarProducts.map((similarProduct) => (
-                <div key={similarProduct.id} className="flex flex-col w-full">
-                  <Link
-                    href={`/products/${similarProduct.id}`}
-                    className="relative w-full h-48 mb-3 cursor-pointer"
-                  >
-                    <RobustImage
-                      src={similarProduct.productImages || "/fallback.jpg"}
-                      alt={similarProduct.name}
-                      fill
-                      className="object-cover rounded-md hover:opacity-90 transition-opacity"
-                    />
-                  </Link>
-                  <div className="flex flex-col flex-1 w-full">
-                    {/* Brand Name */}
-                    {similarProduct?.name && (
-                      <p className="text-xs font-bold text-left mb-1 text-gray-800 w-full">
-                        {similarProduct.name}
-                      </p>
-                    )}
-                    {/* Product Title */}
-                    <p className="text-sm font-medium text-left mb-2 line-clamp-2 leading-tight w-full">
-                      {similarProduct?.title}
-                    </p>
-                    <div className="flex items-center gap-1 mb-3 w-full">
-                      <span className="text-sm font-bold text-black">
-                        ₹{similarProduct.price}
-                      </span>
-                    </div>
-                    <Link
-                      href={`/products/${similarProduct.id}`}
-                      className="w-full mt-auto"
-                    >
-                      <Button className="w-full h-8 bg-[#007e90] hover:bg-[#006d7d] text-white text-xs rounded transition-colors">
-                        VIEW
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-      </div>
-    </div>
-  );
-}
+      {/* Similar products section hidden */}
+       </motion.div>
+     </div>
+   );
+ }

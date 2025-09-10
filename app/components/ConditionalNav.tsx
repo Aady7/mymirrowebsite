@@ -14,11 +14,6 @@ const ConditionalNav = () => {
   const [isLoading, setIsLoading] = useState(true)
   const pathname = usePathname()
 
-  // Don't show navigation on style-quiz pages
-  if (pathname === '/style-quiz-latest' || pathname === '/style-quiz') {
-    return null
-  }
-
   useEffect(() => {
     // Initial auth check
     const checkAuth = async () => {
@@ -58,6 +53,11 @@ const ConditionalNav = () => {
       subscription.unsubscribe()
     }
   }, [getSession])
+
+  // Don't show navigation on style-quiz pages
+  if (pathname === '/style-quiz-latest' || pathname === '/style-quiz') {
+    return null
+  }
 
   if (isLoading) {
     return <SmartLoader />

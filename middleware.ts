@@ -61,7 +61,7 @@ export async function middleware(request: NextRequest) {
 				path === "/mobile-sign-in") &&
 			session
 		) {
-			return NextResponse.redirect(new URL("/recommendations", request.url));
+			return NextResponse.redirect(new URL("/dashboard", request.url));
 		}
 
 		// If user is not logged in and trying to access a protected page, redirect to mobile-sign-in
@@ -89,6 +89,7 @@ export const config = {
 		"/mobile-sign-in",
 		"/style-quiz/:path*",
 		"/recommendations/:path*",
+		"/dashboard/:path*",
 		"/aboutpage/:path*",
 		"/api/:path*",
 		

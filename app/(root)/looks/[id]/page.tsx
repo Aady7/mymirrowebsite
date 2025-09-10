@@ -16,6 +16,7 @@ import { supabase } from '@/lib/supabase';
 import { CartContext } from '@/app/components/provider';
 import { useNotification } from '@/app/components/common/NotificationContext';
 import RobustImage from '@/app/components/common/RobustImage';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Product {
   id: number;
@@ -33,6 +34,23 @@ interface Product {
     customer_short_description: string;
     customer_long_recommendation: string;
     product_key_attributes: string;
+    // Enhanced fields from tagged_products
+    primary_fabric?: string;
+    fabric_texture?: string;
+    fabric_weight?: string;
+    fabric_care?: string;
+    primary_color?: string;
+    color_family?: string;
+    primary_occasion?: string;
+    formality_level?: string;
+    fit_type?: string;
+    style_category?: string;
+    seasonal_appropriateness?: string;
+    body_shape_compatibility?: string;
+    comfort_level?: string;
+    care_complexity?: string;
+    versatility_score?: number;
+    color_harmony?: string;
   };
 }
 
@@ -97,6 +115,7 @@ const LookPage = () => {
   const currentId = useRef<string>('');
   const [showLoader, setShowLoader] = useState(true);
   const [activeCarouselOutfitId, setActiveCarouselOutfitId] = useState<string | null>(null);
+  const [expandedRecommendations, setExpandedRecommendations] = useState<Record<number, boolean>>({});
   
   // Add ref to prevent duplicate API calls
   const hasFetchedOutfit = useRef(false);
@@ -193,7 +212,7 @@ const LookPage = () => {
           outfitData = similarData;
           outfitError = similarError;
         } else {
-          // Fetch from user_outfits table as before
+          // First try to fetch from user_outfits table
           const { data: userData, error: userError } = await supabase
             .from('user_outfits')
             .select(`
@@ -214,8 +233,109 @@ const LookPage = () => {
             .single();
 
           console.log('📋 User outfit query result:', { userData, userError });
-          outfitData = userData;
-          outfitError = userError;
+          
+          // If not found in user_outfits, try outfits_v2 table
+          if (userError && userError.code === 'PGRST116') {
+            console.log('🔍 Not found in user_outfits, trying outfits_v2...');
+            // First fetch outfit data
+            const { data: v2OutfitData, error: v2OutfitError } = await supabase
+              .from('outfits_v2')
+              .select('id, category, top_id, bottom_id')
+              .eq('id', id)
+              .single();
+
+            let v2Data = null;
+            let v2Error = v2OutfitError;
+
+            if (!v2OutfitError && v2OutfitData) {
+              // Fetch product details separately
+              const productIds = [v2OutfitData.top_id, v2OutfitData.bottom_id].filter(id => id !== 0);
+              const { data: productData, error: productError } = await supabase
+                .from('products_v2')
+                .select('id, title, name, price, product_images, specifications')
+                .in('id', productIds);
+
+              if (!productError && productData) {
+                const productMap = new Map();
+                productData.forEach(product => {
+                  productMap.set(product.id, product);
+                });
+
+                // Helper functions
+                const getProductImage = (product: any) => {
+                  if (!product?.product_images) return '/fallback.jpg';
+                  try {
+                    const images = Array.isArray(product.product_images) 
+                      ? product.product_images 
+                      : JSON.parse(product.product_images);
+                    return images && images.length > 0 ? images[0] : '/fallback.jpg';
+                  } catch (e) {
+                    return '/fallback.jpg';
+                  }
+                };
+
+                const getBrand = (product: any) => {
+                  if (!product?.specifications) return 'Unknown';
+                  try {
+                    const specs = typeof product.specifications === 'string' 
+                      ? JSON.parse(product.specifications) 
+                      : product.specifications;
+                    return specs?.brand || specs?.Brand || 'Unknown';
+                  } catch (e) {
+                    return 'Unknown';
+                  }
+                };
+
+                const topProduct = productMap.get(v2OutfitData.top_id);
+                const bottomProduct = v2OutfitData.bottom_id !== 0 ? productMap.get(v2OutfitData.bottom_id) : null;
+
+                v2Data = {
+                  ...v2OutfitData,
+                  top: topProduct ? {
+                    id: topProduct.id,
+                    title: topProduct.title || topProduct.name || 'Untitled Product',
+                    image: getProductImage(topProduct),
+                    price: topProduct.price || 0,
+                    brand: getBrand(topProduct)
+                  } : null,
+                  bottom: bottomProduct ? {
+                    id: bottomProduct.id,
+                    title: bottomProduct.title || bottomProduct.name || 'Untitled Product',
+                    image: getProductImage(bottomProduct),
+                    price: bottomProduct.price || 0,
+                    brand: getBrand(bottomProduct)
+                  } : null
+                };
+              }
+            }
+
+            console.log('📋 Outfits v2 query result:', { v2Data, v2Error });
+            
+            if (!v2Error && v2Data) {
+              // Transform v2 data to match expected format
+              outfitData = {
+                main_outfit_id: v2Data.id.toString(),
+                outfit_name: v2Data.category + ' Look',
+                outfit_description: `A curated ${v2Data.category.toLowerCase()} outfit handpicked just for you.`,
+                why_picked_explanation: `Style Match - This ${v2Data.category.toLowerCase()} look matches your style preferences | Curated Selection - Handpicked from our premium collection`,
+                top_id: v2Data.top_id,
+                bottom_id: v2Data.bottom_id,
+                top_image: Array.isArray(v2Data.top) ? v2Data.top[0]?.image : v2Data.top?.image,
+                bottom_image: Array.isArray(v2Data.bottom) ? v2Data.bottom[0]?.image : v2Data.bottom?.image,
+                top_style: v2Data.category,
+                bottom_style: v2Data.category,
+                top_title: Array.isArray(v2Data.top) ? v2Data.top[0]?.title : v2Data.top?.title,
+                bottom_title: Array.isArray(v2Data.bottom) ? v2Data.bottom[0]?.title : v2Data.bottom?.title,
+              };
+              outfitError = null;
+            } else {
+              outfitData = userData;
+              outfitError = userError;
+            }
+          } else {
+            outfitData = userData;
+            outfitError = userError;
+          }
         }
 
         if (outfitError) throw outfitError;
@@ -286,20 +406,179 @@ const LookPage = () => {
         console.log('🛒 Fetching products for IDs:', productIds);
         console.log('🔍 Outfit data check - bottom_id:', outfitData.bottom_id, 'is dress:', (String(outfitData.bottom_id) === "0000" || outfitData.bottom_id === 0));
         
-        const { data: productsData, error: productsError } = await supabase
-          .from('products')
+        // First try to fetch from tagged_products table with product_id matching
+        let { data: taggedProductsData, error: taggedError } = await supabase
+          .from('tagged_products')
           .select(`
             *,
-            tagged_products (
-              customer_short_description,
-              product_key_attributes,
-              customer_long_recommendation
+            products_v2 (
+              id,
+              created_at,
+              title,
+              name,
+              overall_rating,
+              price,
+              mrp,
+              discount,
+              sizes_available,
+              product_images,
+              specifications,
+              category,
+              url
             )
           `)
-          .in('id', productIds) as { 
-            data: Product[] | null; 
-            error: Error | null 
-          };
+          .in('product_id', productIds);
+
+        let productsData: Product[] | null = null;
+        let productsError: Error | null = null;
+
+        // Transform tagged_products data to match expected Product interface
+        if (!taggedError && taggedProductsData && taggedProductsData.length > 0) {
+          console.log('✅ Found products in tagged_products table:', taggedProductsData.length);
+          productsData = taggedProductsData
+            .filter(tp => tp.products_v2) // Only include items with valid product data
+            .map(tp => {
+              const p = tp.products_v2;
+              
+              // Helper to extract images
+              const getImages = () => {
+                if (!p.product_images) return ['/fallback.jpg'];
+                try {
+                  const images = Array.isArray(p.product_images) 
+                    ? p.product_images 
+                    : JSON.parse(p.product_images);
+                  return images && images.length > 0 ? images : ['/fallback.jpg'];
+                } catch (e) {
+                  return ['/fallback.jpg'];
+                }
+              };
+
+              const images = getImages();
+
+              return {
+                id: p.id,
+                created_at: p.created_at || new Date().toISOString(),
+                title: p.title || p.name || 'Untitled Product',
+                name: p.title || p.name || 'Untitled Product',
+                overallRating: p.overall_rating || 4.5,
+                price: p.price || 0,
+                mrp: p.mrp || p.price || 0,
+                discount: p.discount || '0%',
+                sizesAvailable: p.sizes_available || JSON.stringify(['S', 'M', 'L', 'XL']),
+                productImages: JSON.stringify(images),
+                specifications: JSON.stringify(p.specifications || {}),
+                tagged_products: {
+                  customer_short_description: tp.customer_short_description || '',
+                  customer_long_recommendation: tp.customer_long_recommendation || '',
+                  product_key_attributes: tp.product_key_attributes || '{}',
+                  // Enhanced fields from tagged_products
+                  primary_fabric: tp.primary_fabric,
+                  fabric_texture: tp.fabric_texture,
+                  fabric_weight: tp.fabric_weight,
+                  fabric_care: tp.fabric_care,
+                  primary_color: tp.primary_color,
+                  color_family: tp.color_family,
+                  primary_occasion: tp.primary_occasion,
+                  formality_level: tp.formality_level,
+                  fit_type: tp.fit_type,
+                  style_category: tp.style_category,
+                  seasonal_appropriateness: tp.seasonal_appropriateness,
+                  body_shape_compatibility: tp.body_shape_compatibility,
+                  comfort_level: tp.comfort_level,
+                  care_complexity: tp.care_complexity,
+                  versatility_score: tp.versatility_score,
+                  color_harmony: tp.color_harmony
+                }
+              };
+            });
+        } else {
+          console.log('⚠️ No products found in tagged_products table, trying products table...');
+          
+          // Fallback: try to fetch from products table with tagged_products join
+          const { data: fallbackProductsData, error: fallbackError } = await supabase
+            .from('products')
+            .select(`
+              *,
+              tagged_products (
+                customer_short_description,
+                product_key_attributes,
+                customer_long_recommendation
+              )
+            `)
+            .in('id', productIds) as { 
+              data: Product[] | null; 
+              error: Error | null 
+            };
+
+          productsData = fallbackProductsData;
+          productsError = fallbackError;
+        }
+
+        // If still no products found, try products_v2 table directly
+        if (!productsData || productsData.length === 0) {
+          console.log('🔍 No products found in products table, trying products_v2...');
+          const { data: v2ProductsData, error: v2ProductsError } = await supabase
+            .from('products_v2')
+            .select('*')
+            .in('id', productIds);
+
+          if (!v2ProductsError && v2ProductsData && v2ProductsData.length > 0) {
+            // Transform v2 products to match expected format
+            productsData = v2ProductsData.map(p => {
+              // Helper to extract brand from specifications
+              const getBrand = () => {
+                if (!p.specifications) return 'Unknown';
+                try {
+                  const specs = typeof p.specifications === 'string' 
+                    ? JSON.parse(p.specifications) 
+                    : p.specifications;
+                  return specs?.brand || specs?.Brand || 'Unknown';
+                } catch (e) {
+                  return 'Unknown';
+                }
+              };
+
+              // Helper to extract images
+              const getImages = () => {
+                if (!p.product_images) return ['/fallback.jpg'];
+                try {
+                  const images = Array.isArray(p.product_images) 
+                    ? p.product_images 
+                    : JSON.parse(p.product_images);
+                  return images && images.length > 0 ? images : ['/fallback.jpg'];
+                } catch (e) {
+                  return ['/fallback.jpg'];
+                }
+              };
+
+              const brand = getBrand();
+              const images = getImages();
+
+              return {
+                id: p.id,
+                created_at: p.created_at || new Date().toISOString(),
+                title: p.title || p.name || 'Untitled Product',
+                name: p.title || p.name || 'Untitled Product',
+                overallRating: p.overall_rating || 4.5,
+                price: p.price || 0,
+                mrp: p.mrp || p.price || 0,
+                discount: p.discount || '0%',
+                sizesAvailable: p.sizes_available || JSON.stringify(['S', 'M', 'L', 'XL']),
+                productImages: JSON.stringify(images),
+                specifications: JSON.stringify(p.specifications || {}),
+                tagged_products: {
+                  customer_short_description: brand,
+                  customer_long_recommendation: `Premium ${p.category || 'fashion'} item from ${brand}`,
+                  product_key_attributes: JSON.stringify({
+                    brand: brand,
+                    category: p.category || 'Fashion'
+                  })
+                }
+              };
+            });
+            productsError = null;
+          }
+        }
 
         console.log('📋 Products query result:', { productsCount: productsData?.length, productsError });
 
@@ -621,16 +900,48 @@ const LookPage = () => {
   };
 
   return (
-    <>
-      {/* Header */}
-      <div className="flex items-center justify-center mb-2">
-        <span className="text-[26px]">{outfitData?.outfit_name}</span>
-      </div>
-      <hr className="border-t-1 border-black w-[90%] mx-auto" />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100/50">
+      <motion.div 
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        {/* Premium Header */}
+        <motion.div 
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <motion.div
+            className="inline-flex items-center px-6 py-3 bg-gray-900/5 border border-gray-200 rounded-full mb-6"
+            whileHover={{ scale: 1.05 }}
+          >
+            <span className="text-sm font-medium text-gray-700 tracking-wide">YOUR CURATED LOOK</span>
+          </motion.div>
+          
+          <motion.h1 
+            className="text-4xl md:text-5xl font-light text-gray-900 mb-4 tracking-tight"
+            whileHover={{ scale: 1.01 }}
+          >
+            {outfitData?.outfit_name || 'Premium Look'}
+          </motion.h1>
+          
+          <motion.div 
+            className="w-24 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent mx-auto"
+            initial={{ width: 0 }}
+            animate={{ width: 96 }}
+            transition={{ duration: 1, delay: 0.8 }}
+          />
+        </motion.div>
 
-      {/* Products */}
-      {products.map((product, idx) => {
-        const sizes = parseSizes(product.sizesAvailable);
+        {/* Products Container */}
+        {products.length === 1 ? (
+          /* Single Product Layout (Dress/One-piece) */
+          <div className="space-y-12">
+            {products.map((product, idx) => {
+            const sizes = parseSizes(product.sizesAvailable);
         
         // Determine the correct image URL for this product
         let imageUrl: string | undefined;
@@ -663,199 +974,620 @@ const LookPage = () => {
         }
        
         
-        return (
-          <div key={product.id} className={`flex w-full mt-8 mb-6 gap-2 ${product.id == outfitData?.top.id ? 'flex-row-reverse' : ''}`}>            
-            <div className="relative w-[221px] h-[260.5px] overflow-hidden flex-shrink-0">
-              <Link  href={`/products/${product.id}`}> 
-              <RobustImage 
-                src={validImageUrl}
-                alt={product.name || 'Product Image'} 
-                fill 
-                className="object-cover"
-              />
-              </Link>
-            </div>
-            <div className="relative flex flex-col flex-1 max-w-[400px] min-h-[260.5px] pl-2 pr-2">
-              <h1 className="text-lg text-left mb-1 mt-0 text-[14px] font-bold">{product.name}</h1>
-              {KeyAttributes.color || KeyAttributes.fit || KeyAttributes.fabric || KeyAttributes.occasion ? (
-                <div className="text-xs text-gray-700 mb-2">
-                  {KeyAttributes.color && (
-                    <p className="mb-0.5">Color: {KeyAttributes.color}</p>
-                  )}
-                  {KeyAttributes.fit && (
-                    <p className="mb-0.5">Fit: {KeyAttributes.fit}</p>
-                  )}
-                  {KeyAttributes.fabric && (
-                    <p className="mb-0.5">Fabric: {KeyAttributes.fabric}</p>
-                  )}
-                  {KeyAttributes.occasion && (
-                    <p className="mb-0.5">Occasion: {KeyAttributes.occasion}</p>
-                  )}
-                  {Object.entries(KeyAttributes)
-                    .filter(([key]) => !['color', 'fit', 'fabric', 'occasion'].includes(key))
-                    .map(([key, value]) => (
-                      <p key={key} className="mb-0.5">
-                        {key.charAt(0).toUpperCase() + key.slice(1)}: {value}
-                      </p>
-                    ))}
-                </div>
-              ) : (
-                <p className="text-xs text-gray-400 mb-3 italic">No description available.</p>
-              )}
-              
-              {/* Flexible spacer to push sizes and price to bottom */}
-              <div className="flex-1"></div>
-              
-              <div className="flex flex-wrap gap-1 mb-2">
-                {parseSizes(product.sizesAvailable).map(({ size, price }) => (
-                  <button
-                    key={size}
-                    onClick={() => handleSizeSelect(product.id, size, price)}
-                    className={`w-8 h-8 flex items-center justify-center border text-xs rounded transition-colors ${
-                      selectedSizes[product.id] === size
-                        ? 'bg-[#007e90] text-white border-[#007e90]'
-                        : 'bg-white text-black border-gray-300 hover:border-[#007e90]'
-                    }`}
+            return (
+              <motion.div 
+                key={product.id} 
+                className="bg-white border border-gray-200/60 rounded-2xl shadow-xl shadow-gray-900/5 overflow-hidden"
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: idx * 0.2 }}
+                whileHover={{ y: -8, transition: { duration: 0.3 } }}
+              >
+                <div className={`flex flex-col lg:flex-row gap-8 p-8 ${product.id == outfitData?.top.id ? 'lg:flex-row-reverse' : ''}`}>            
+                  {/* Product Image */}
+                  <motion.div 
+                    className="relative w-full lg:w-[350px] h-[400px] overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-white border border-gray-200/60"
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    {size}
-                  </button>
-                ))}
-              </div>
-
-              {/* Price and buttons section - now at the bottom */}
-              <div className="mt-auto">
-                <h4 className="flex text-black font-[Boston] text-[20px] font-semibold [font-variant:all-small-caps] mb-2">
-                  <FaIndianRupeeSign className="h-4 mt-2" /><span className='line-through pr-2'>{product?.mrp}</span> {product.price}
-                </h4>
-
-                <div className="flex flex-row gap-2 items-center">
-                  <button
-                    onClick={() => handleAddProduct(product.id)}
-                    disabled={loading[product.id] || !selectedSizes[product.id]}
-                    className="flex items-center justify-center h-9 w-9 bg-[#007e90] text-white text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#006d7d] transition-colors rounded"
-                  >
-                    <FaCartArrowDown className="h-4 w-4" />
-                  </button>
-                  <Link href={`/products/${product.id}`} className="flex-1">
-                    <button
-                      className="w-full h-9 bg-white text-[#007e90] border border-[#007e90] text-xs font-medium rounded hover:bg-[#e6f7fa] transition-colors"
+                    <Link href={`/products/${product.id}`}> 
+                      <RobustImage 
+                        src={validImageUrl}
+                        alt={product.name || 'Product Image'} 
+                        fill 
+                        className="object-cover transition-transform duration-300 hover:scale-105"
+                      />
+                    </Link>
+                  </motion.div>
+                  
+                  {/* Product Details */}
+                  <div className="flex flex-col flex-1 space-y-6">
+                    {/* Product Title */}
+                    <motion.h2 
+                      className="text-2xl font-light text-gray-900 tracking-tight"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.6, delay: 0.3 }}
                     >
-                      VIEW
-                    </button>
-                  </Link>
+                      {product.name}
+                    </motion.h2>
+                    
+                    {/* Customer Short Description */}
+                    {taggedProductsArray.length > 0 && taggedProductsArray[0].customer_short_description && (
+                      <motion.div 
+                        className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl p-4 border border-gray-200/60"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.4 }}
+                      >
+                        <p className="text-sm text-gray-700 font-light leading-relaxed italic">
+                          {taggedProductsArray[0].customer_short_description}
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {/* Enhanced Product Details */}
+                    <motion.div 
+                      className="bg-white border border-gray-200/60 rounded-xl p-6"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.5 }}
+                    >
+                      <h3 className="text-sm font-medium text-gray-900 mb-4 tracking-wide">PRODUCT DETAILS</h3>
+                      {/* Primary details from enhanced tagged_products */}
+                      {taggedProductsArray.length > 0 && (
+                        <ul className="space-y-3">
+                          {taggedProductsArray[0].primary_color && (
+                            <li className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-gray-900 rounded-full flex-shrink-0"></div>
+                              <span className="font-medium text-gray-900 min-w-[60px]">Color:</span>
+                              <span className="text-gray-600">{taggedProductsArray[0].primary_color}</span>
+                              {taggedProductsArray[0].color_family && (
+                                <span className="text-gray-400 text-sm">({taggedProductsArray[0].color_family})</span>
+                              )}
+                            </li>
+                          )}
+                          
+                          {taggedProductsArray[0].primary_fabric && (
+                            <li className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-gray-900 rounded-full flex-shrink-0"></div>
+                              <span className="font-medium text-gray-900 min-w-[60px]">Fabric:</span>
+                              <span className="text-gray-600">{taggedProductsArray[0].primary_fabric}</span>
+                              {taggedProductsArray[0].fabric_texture && (
+                                <span className="text-gray-400 text-sm">({taggedProductsArray[0].fabric_texture})</span>
+                              )}
+                            </li>
+                          )}
+                          
+                          {taggedProductsArray[0].fit_type && (
+                            <li className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-gray-900 rounded-full flex-shrink-0"></div>
+                              <span className="font-medium text-gray-900 min-w-[60px]">Fit:</span>
+                              <span className="text-gray-600">{taggedProductsArray[0].fit_type}</span>
+                            </li>
+                          )}
+                          
+                          {taggedProductsArray[0].primary_occasion && (
+                            <li className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-gray-900 rounded-full flex-shrink-0"></div>
+                              <span className="font-medium text-gray-900 min-w-[60px]">Occasion:</span>
+                              <span className="text-gray-600">{taggedProductsArray[0].primary_occasion}</span>
+                            </li>
+                          )}
+                          
+                          {taggedProductsArray[0].seasonal_appropriateness && (
+                            <li className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-gray-900 rounded-full flex-shrink-0"></div>
+                              <span className="font-medium text-gray-900 min-w-[60px]">Season:</span>
+                              <span className="text-gray-600">{taggedProductsArray[0].seasonal_appropriateness}</span>
+                            </li>
+                          )}
+                          
+                          {taggedProductsArray[0].care_complexity && (
+                            <li className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-gray-900 rounded-full flex-shrink-0"></div>
+                              <span className="font-medium text-gray-900 min-w-[60px]">Care:</span>
+                              <span className="text-gray-600">{taggedProductsArray[0].care_complexity}</span>
+                            </li>
+                          )}
+                        </ul>
+                      )}
+                    </motion.div>
+
+                    {/* Fallback to legacy key attributes if enhanced data not available */}
+                    {(!taggedProductsArray.length || !taggedProductsArray[0].primary_color) && (KeyAttributes.color || KeyAttributes.fit || KeyAttributes.fabric || KeyAttributes.occasion) && (
+                      <div className="bg-white border border-gray-200/60 rounded-xl p-6 mt-6">
+                        <h3 className="text-sm font-medium text-gray-900 mb-4 tracking-wide">BASIC DETAILS</h3>
+                        <ul className="space-y-3">
+                          {KeyAttributes.color && (
+                            <li className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-gray-900 rounded-full flex-shrink-0"></div>
+                              <span className="font-medium text-gray-900 min-w-[60px]">Color:</span>
+                              <span className="text-gray-600">{KeyAttributes.color}</span>
+                            </li>
+                          )}
+                          {KeyAttributes.fit && (
+                            <li className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-gray-900 rounded-full flex-shrink-0"></div>
+                              <span className="font-medium text-gray-900 min-w-[60px]">Fit:</span>
+                              <span className="text-gray-600">{KeyAttributes.fit}</span>
+                            </li>
+                          )}
+                          {KeyAttributes.fabric && (
+                            <li className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-gray-900 rounded-full flex-shrink-0"></div>
+                              <span className="font-medium text-gray-900 min-w-[60px]">Fabric:</span>
+                              <span className="text-gray-600">{KeyAttributes.fabric}</span>
+                            </li>
+                          )}
+                          {KeyAttributes.occasion && (
+                            <li className="flex items-center gap-3">
+                              <div className="w-2 h-2 bg-gray-900 rounded-full flex-shrink-0"></div>
+                              <span className="font-medium text-gray-900 min-w-[60px]">Occasion:</span>
+                              <span className="text-gray-600">{KeyAttributes.occasion}</span>
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+
+                    {/* Customer Long Recommendation - Expandable */}
+                    {taggedProductsArray.length > 0 && taggedProductsArray[0].customer_long_recommendation && (
+                      <motion.div 
+                        className="mt-6 bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl p-4 border border-gray-200/60"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.6 }}
+                      >
+                        <button
+                          onClick={() => setExpandedRecommendations(prev => ({
+                            ...prev,
+                            [product.id]: !prev[product.id]
+                          }))}
+                          className="flex items-center gap-2 text-sm text-gray-700 hover:text-gray-900 font-medium mb-3"
+                        >
+                          <span>{expandedRecommendations[product.id] ? 'Hide' : 'Show'} Detailed Recommendation</span>
+                          <span className="text-xs">{expandedRecommendations[product.id] ? '▲' : '▼'}</span>
+                        </button>
+                        
+                        {expandedRecommendations[product.id] && (
+                          <motion.div 
+                            className="bg-white rounded-lg p-4 border border-gray-200/60"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <p className="text-sm text-gray-700 leading-relaxed mb-4">
+                              {taggedProductsArray[0].customer_long_recommendation}
+                            </p>
+                            
+                            {/* Additional metrics */}
+                            {(taggedProductsArray[0].versatility_score || taggedProductsArray[0].style_category || taggedProductsArray[0].formality_level) && (
+                              <div className="pt-3 border-t border-gray-200">
+                                <div className="grid grid-cols-2 gap-3 text-sm">
+                                  {taggedProductsArray[0].versatility_score && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-500">Versatility:</span>
+                                      <span className="font-medium">{Math.round(taggedProductsArray[0].versatility_score * 100)}%</span>
+                                    </div>
+                                  )}
+                                  {taggedProductsArray[0].style_category && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-500">Style:</span>
+                                      <span className="font-medium">{taggedProductsArray[0].style_category}</span>
+                                    </div>
+                                  )}
+                                  {taggedProductsArray[0].formality_level && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-500">Formality:</span>
+                                      <span className="font-medium">{taggedProductsArray[0].formality_level}</span>
+                                    </div>
+                                  )}
+                                  {taggedProductsArray[0].fabric_weight && (
+                                    <div className="flex justify-between">
+                                      <span className="text-gray-500">Weight:</span>
+                                      <span className="font-medium">{taggedProductsArray[0].fabric_weight}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </motion.div>
+                        )}
+                      </motion.div>
+                    )}
+
+                    {/* Size Selection and Purchase */}
+                    <div className="mt-8 space-y-4">
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900 mb-3 tracking-wide">SELECT SIZE</h4>
+                        <div className="flex flex-wrap gap-2">
+                          {parseSizes(product.sizesAvailable).map(({ size, price }) => (
+                            <motion.button
+                              key={size}
+                              onClick={() => handleSizeSelect(product.id, size, price)}
+                              className={`px-4 py-2 border text-sm rounded-lg transition-all duration-200 ${
+                                selectedSizes[product.id] === size
+                                  ? 'bg-gray-900 text-white border-gray-900'
+                                  : 'bg-white text-gray-900 border-gray-300 hover:border-gray-900'
+                              }`}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              {size}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Price Section */}
+                      <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl p-4 border border-gray-200/60">
+                        <div className="flex items-center gap-2 mb-4">
+                          <FaIndianRupeeSign className="text-gray-900" />
+                          <span className="text-2xl font-light text-gray-900">{product.price}</span>
+                          {product.mrp > product.price && (
+                            <span className="text-lg text-gray-500 line-through ml-2">{product.mrp}</span>
+                          )}
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-3">
+                          <motion.button
+                            onClick={() => handleAddProduct(product.id)}
+                            disabled={loading[product.id] || !selectedSizes[product.id]}
+                            className="flex items-center justify-center px-4 py-3 bg-gray-900 text-white font-medium rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <FaCartArrowDown className="mr-2" />
+                            ADD TO CART
+                          </motion.button>
+                          
+                          <Link href={`/products/${product.id}`} className="flex-1">
+                            <motion.button
+                              className="w-full py-3 bg-white text-gray-900 border border-gray-300 font-medium rounded-xl hover:bg-gray-50 transition-colors"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              VIEW DETAILS
+                            </motion.button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </motion.div>
+              );
+            })}
           </div>
-        );
-      })}
-
-      {/* Error Message */}
-      {error && (
-        <div className="mx-6 mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-          {error}
-          <button 
-            onClick={() => setError(null)} 
-            className="ml-2 text-red-900 hover:text-red-700"
+        ) : (
+          /* Two-piece Outfit Layout (Top + Bottom side by side) */
+          <motion.div 
+            className="bg-white border border-gray-200/60 rounded-2xl shadow-xl shadow-gray-900/5 overflow-hidden"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            whileHover={{ y: -8, transition: { duration: 0.3 } }}
           >
-            ×
-          </button>
-        </div>
-      )}
-
-      {/* Add All Button */}
-      <div className="px-6 py-4 mt-8">
-        <button
-          onClick={handleAddAll}
-          disabled={loading.all || products.some(product => !selectedSizes[product.id])}
-          className="w-full py-3 bg-[#007e90] text-white font-semibold rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[#006d7d]"
-        >
-          {loading.all 
-            ? (products.length === 1 ? 'Adding to Cart...' : 'Adding All...') 
-            : (products.length === 1 
-                ? `ADD TO CART - ₹${totalPrice}` 
-                : `ADD ALL TO CART - ₹${totalPrice}`
-              )
-          }
-        </button>
-      </div>
-
-      {/* Rating and Feedback */}
-      <div className="px-6 py-4">
-        {id && (
-          <>
-            <h1 className="font-[Boston] font-black text-[12px] text-left mb-2" style={{fontVariant:'small-caps'}}>
-              RATING
-            </h1>
-            <StarRating 
-              productId={String(id)} 
-              productType="look" 
-              topId={outfitData?.top.id.toString()}
-              bottomId={outfitData?.bottom.id.toString()}
-            />
-          </>
-        )}
-        <div className='mt-6 flex items-center justify-center px-[8rem]'>
-          {id && currentUser ? (
-            <LooksFeedback 
-              onClose={() => { }} 
-              userId={currentUser.id || ''}
-              lookId={id}
-              topId={outfitData?.top.id.toString()}
-              bottomId={outfitData?.bottom.id.toString()}
-            />
-          ) : (
-            <div className="text-sm text-gray-500">
-              {!id ? 'No outfit ID available' : !currentUser ? 'Please log in to give feedback' : ''}
+            {/* Outfit Header */}
+            <div className="p-8 pb-4 text-center border-b border-gray-200/60">
+              <h2 className="text-3xl font-light text-gray-900 tracking-tight mb-2">Complete Outfit</h2>
+              <p className="text-gray-600 font-light">Two pieces designed to work together</p>
             </div>
-          )}
-        </div>
-      </div>
-      {/*horizontal line added between the rating and the description section*/}
-      <hr className="border-t-1 border-black w-[90%] mx-auto mt-6 mb-6" />
 
-      {/* Description and Why Picked Section */}
-      <div className="px-6 py-4">
-        {/* Description */}
-        {outfitData?.outfit_description && (
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold mb-3">LOOK DESCRIPTION</h2>
-            <p className="text-gray-700 leading-relaxed">
-              {outfitData.outfit_description}
+            {/* Side by Side Products */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-gray-200/60">
+              {products.map((product, idx) => {
+                const sizes = parseSizes(product.sizesAvailable);
+                
+                // Determine the correct image URL for this product
+                let imageUrl: string | undefined;
+                if (product.id === outfitData?.top.id) {
+                  imageUrl = outfitData?.top.image;
+                } else if (product.id === outfitData?.bottom.id) {
+                  imageUrl = outfitData?.bottom.image;
+                } else {
+                  const productImages = parseImages(product.productImages);
+                  imageUrl = productImages.length > 0 ? productImages[0] : undefined;
+                }
+                
+                const validImageUrl = getValidImageUrl(imageUrl);
+                const taggedProductsArray = Array.isArray(product.tagged_products)
+                  ? product.tagged_products
+                  : product.tagged_products
+                    ? [product.tagged_products]
+                    : [];
+                
+                let KeyAttributes: KeyAttributes = {};
+                if (taggedProductsArray.length > 0) {
+                  KeyAttributes = parseKeyAttributes(taggedProductsArray[0].product_key_attributes);
+                }
+
+                const isTopWear = product.id === outfitData?.top.id;
+
+                return (
+                  <motion.div 
+                    key={product.id}
+                    className="p-8 space-y-6"
+                    initial={{ opacity: 0, x: isTopWear ? -20 : 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, delay: idx * 0.2 + 0.4 }}
+                  >
+                    {/* Product Type Badge */}
+                    <div className="text-center">
+                      <span className="inline-flex items-center px-4 py-2 bg-gray-900/5 border border-gray-200 rounded-full text-sm font-medium text-gray-700 tracking-wide">
+                        {isTopWear ? 'TOP WEAR' : 'BOTTOM WEAR'}
+                      </span>
+                    </div>
+
+                    {/* Product Image */}
+                    <motion.div 
+                      className="relative w-full h-[300px] overflow-hidden rounded-xl bg-gradient-to-br from-gray-50 to-white border border-gray-200/60 mx-auto max-w-[250px]"
+                      whileHover={{ scale: 1.02 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <Link href={`/products/${product.id}`}> 
+                        <RobustImage 
+                          src={validImageUrl}
+                          alt={product.name || 'Product Image'} 
+                          fill 
+                          className="object-cover transition-transform duration-300 hover:scale-105"
+                        />
+                      </Link>
+                    </motion.div>
+
+                    {/* Product Details */}
+                    <div className="text-center space-y-4">
+                      <h3 className="text-lg font-medium text-gray-900 tracking-tight">
+                        {product.name}
+                      </h3>
+                      
+                      {/* Short Description */}
+                      {taggedProductsArray.length > 0 && taggedProductsArray[0].customer_short_description && (
+                        <p className="text-sm text-gray-600 font-light leading-relaxed italic">
+                          {taggedProductsArray[0].customer_short_description}
+                        </p>
+                      )}
+
+                      {/* Key Details */}
+                      {taggedProductsArray.length > 0 && (
+                        <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-lg p-4 border border-gray-200/60">
+                          <div className="space-y-2 text-sm">
+                            {taggedProductsArray[0].primary_color && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Color:</span>
+                                <span className="font-medium text-gray-900">{taggedProductsArray[0].primary_color}</span>
+                              </div>
+                            )}
+                            {taggedProductsArray[0].primary_fabric && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Fabric:</span>
+                                <span className="font-medium text-gray-900">{taggedProductsArray[0].primary_fabric}</span>
+                              </div>
+                            )}
+                            {taggedProductsArray[0].fit_type && (
+                              <div className="flex justify-between">
+                                <span className="text-gray-600">Fit:</span>
+                                <span className="font-medium text-gray-900">{taggedProductsArray[0].fit_type}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Size Selection */}
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900 mb-3 tracking-wide">SELECT SIZE</h4>
+                        <div className="flex flex-wrap gap-2 justify-center">
+                          {parseSizes(product.sizesAvailable).map(({ size, price }) => (
+                            <motion.button
+                              key={size}
+                              onClick={() => handleSizeSelect(product.id, size, price)}
+                              className={`px-3 py-2 border text-sm rounded-lg transition-all duration-200 ${
+                                selectedSizes[product.id] === size
+                                  ? 'bg-gray-900 text-white border-gray-900'
+                                  : 'bg-white text-gray-900 border-gray-300 hover:border-gray-900'
+                              }`}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              {size}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Price and Action */}
+                      <div className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-lg p-4 border border-gray-200/60">
+                        <div className="flex items-center justify-center gap-2 mb-3">
+                          <FaIndianRupeeSign className="text-gray-900" />
+                          <span className="text-xl font-light text-gray-900">{product.price}</span>
+                          {product.mrp > product.price && (
+                            <span className="text-sm text-gray-500 line-through ml-2">{product.mrp}</span>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
+                          <motion.button
+                            onClick={() => handleAddProduct(product.id)}
+                            disabled={loading[product.id] || !selectedSizes[product.id]}
+                            className="w-full flex items-center justify-center px-4 py-2 bg-gray-900 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors text-sm"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            <FaCartArrowDown className="mr-2" />
+                            ADD TO CART
+                          </motion.button>
+                          
+                          <Link href={`/products/${product.id}`}>
+                            <motion.button
+                              className="w-full py-2 bg-white text-gray-900 border border-gray-300 font-medium rounded-lg hover:bg-gray-50 transition-colors text-sm"
+                              whileHover={{ scale: 1.02 }}
+                              whileTap={{ scale: 0.98 }}
+                            >
+                              VIEW DETAILS
+                            </motion.button>
+                          </Link>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Error Display */}
+        <AnimatePresence>
+          {error && (
+            <motion.div 
+              className="mt-8 p-6 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <span className="text-red-700">{error}</span>
+              <motion.button 
+                onClick={() => setError(null)} 
+                className="ml-4 text-red-600 hover:text-red-800 text-xl font-light"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+              >
+                ×
+              </motion.button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Premium Add All Button */}
+        <motion.div 
+          className="mt-12 bg-white border border-gray-200/60 rounded-2xl p-8 shadow-xl shadow-gray-900/5"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+        >
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Complete Your Look</h3>
+            <p className="text-sm text-gray-500 font-light">
+              {products.length === 1 ? 'Add this item to your cart' : 'Add all items to your cart'}
             </p>
           </div>
-        )}
+          
+          <motion.button
+            onClick={handleAddAll}
+            disabled={loading.all || products.some(product => !selectedSizes[product.id])}
+            className="w-full py-4 bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white font-medium rounded-xl shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed tracking-wide"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
+            {loading.all 
+              ? (products.length === 1 ? 'ADDING TO CART...' : 'ADDING ALL...') 
+              : (products.length === 1 
+                  ? `ADD TO CART - ₹${totalPrice}` 
+                  : `ADD ALL TO CART - ₹${totalPrice}`
+                )
+            }
+          </motion.button>
+        </motion.div>
 
-        {/* Why This Look Was Picked For You */}
-        {outfitData?.why_picked_explanation && (
-          <div className="mb-6">
-            <h2 className="text-lg font-semibold mb-4">WHY THIS LOOK WAS PICKED FOR YOU</h2>
-            <div className="space-y-4">
-              {parseWhyPickedExplanation(outfitData.why_picked_explanation).map((item, index) => (
-                <div key={index}>
-                  <h3 className="font-semibold text-gray-900 mb-1">
-                    {item.title}
-                  </h3>
-                  <p className="text-gray-700 leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
-              ))}
-            </div>
+        {/* Rating and Feedback */}
+        <motion.div 
+          className="mt-12 bg-white border border-gray-200/60 rounded-2xl p-8 shadow-xl shadow-gray-900/5"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 1.0 }}
+        >
+          {id && (
+            <>
+              <h3 className="text-lg font-medium text-gray-900 mb-6 tracking-wide">RATING & FEEDBACK</h3>
+              <StarRating 
+                productId={String(id)} 
+                productType="look" 
+                topId={outfitData?.top.id.toString()}
+                bottomId={outfitData?.bottom.id.toString()}
+              />
+            </>
+          )}
+          <div className='mt-8 flex items-center justify-center'>
+            {id && currentUser ? (
+              <LooksFeedback 
+                onClose={() => { }} 
+                userId={currentUser.id || ''}
+                lookId={id}
+                topId={outfitData?.top.id.toString()}
+                bottomId={outfitData?.bottom.id.toString()}
+              />
+            ) : (
+              <div className="text-sm text-gray-500 font-light">
+                {!id ? 'No outfit ID available' : !currentUser ? 'Please log in to give feedback' : ''}
+              </div>
+            )}
           </div>
-        )}
-      </div>
-       {/*horizontal line added between the dexcription and the you may also like section*/}
-      <hr className="border-t-1 border-black w-[90%] mx-auto mb-6 mt-6" />
+        </motion.div>
 
-      {/* Similar Outfits Section - Only show for normal outfits, not similar outfits */}
-      {!id?.startsWith('similar_main_') && (
-        <div className="px-6 py-8 mt-[-2rem]">
-          <h1 className="text-[22px] font-[Boston] font-medium mb-[-2rem]">YOU MAY ALSO LIKE</h1>
-          <SimilarOutfitsCarousel onActiveOutfitChange={handleActiveOutfitChange} />
-        </div>
-      )}
-    </>
+        {/* Description and Why Picked Section */}
+        {(outfitData?.outfit_description || outfitData?.why_picked_explanation) && (
+          <motion.div 
+            className="mt-12 bg-white border border-gray-200/60 rounded-2xl p-8 shadow-xl shadow-gray-900/5"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.2 }}
+          >
+            {/* Description */}
+            {outfitData?.outfit_description && (
+              <div className="mb-8">
+                <h3 className="text-lg font-medium text-gray-900 mb-4 tracking-wide">LOOK DESCRIPTION</h3>
+                <p className="text-gray-600 leading-relaxed font-light">
+                  {outfitData.outfit_description}
+                </p>
+              </div>
+            )}
+
+            {/* Why This Look Was Picked For You */}
+            {outfitData?.why_picked_explanation && (
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-6 tracking-wide">WHY THIS LOOK WAS PICKED FOR YOU</h3>
+                <div className="space-y-6">
+                  {parseWhyPickedExplanation(outfitData.why_picked_explanation).map((item, index) => (
+                    <motion.div 
+                      key={index}
+                      className="bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-xl p-6 border border-gray-200/60"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.6, delay: 1.4 + index * 0.1 }}
+                    >
+                      <h4 className="font-medium text-gray-900 mb-3 tracking-wide">
+                        {item.title}
+                      </h4>
+                      <p className="text-gray-600 leading-relaxed font-light">
+                        {item.description}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </motion.div>
+        )}
+
+        {/* Similar Outfits Section - Only show for normal outfits, not similar outfits */}
+        {/* Temporarily hidden - similar outfits causing 404 errors */}
+        {/* {!id?.startsWith('similar_main_') && (
+          <motion.div 
+            className="mt-12 bg-white border border-gray-200/60 rounded-2xl p-8 shadow-xl shadow-gray-900/5"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 1.4 }}
+          >
+            <h3 className="text-lg font-medium text-gray-900 mb-6 tracking-wide">YOU MAY ALSO LIKE</h3>
+            <SimilarOutfitsCarousel onActiveOutfitChange={handleActiveOutfitChange} />
+          </motion.div>
+        )} */}
+      </motion.div>
+    </div>
   );
 };
 

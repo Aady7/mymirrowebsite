@@ -325,9 +325,17 @@ const StyleQuizPages = () => {
           />
         );
       
-
-      } 
-    
+      default:
+        return (
+          <PersonalInfo
+            onNext={handlePersonalInfoNext}
+            onBack={handleBack}
+            initialData={quizState.personalInfo || undefined}
+            currentStep={quizState.currentStep}
+            totalSteps={totalSteps}
+          />
+        );
+    }
   };
 
   return (

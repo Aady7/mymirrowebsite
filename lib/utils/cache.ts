@@ -137,7 +137,8 @@ export const CACHE_KEYS = {
   SIMILAR_OUTFITS: 'similar_outfits',
   SIMILAR_PRODUCTS: 'similar_products',
   PRODUCT_DETAILS: 'product_details',
-  OUTFIT_DETAILS: 'outfit_details'
+  OUTFIT_DETAILS: 'outfit_details',
+  DASHBOARD_OUTFITS: 'dashboard_outfits'
 } as const;
 
 // Cache TTL constants (in milliseconds)

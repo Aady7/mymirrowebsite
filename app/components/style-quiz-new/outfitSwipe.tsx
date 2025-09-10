@@ -13,9 +13,9 @@ export interface OutfitData {
 }
 
 export interface SwipeResultData {
-  likedOutfits: OutfitData[]
-  dislikedOutfits: OutfitData[]
-  superLikedOutfits: OutfitData[]
+  liked: string[]
+  disliked: string[]
+  superLiked: string[]
 }
 
 interface OutfitSwipeProps {
@@ -148,9 +148,9 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
 
   const outfits = getOutfits()
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [likedOutfits, setLikedOutfits] = useState<OutfitData[]>([])
-  const [dislikedOutfits, setDislikedOutfits] = useState<OutfitData[]>([])
-  const [superLikedOutfits, setSuperLikedOutfits] = useState<OutfitData[]>([])
+  const [likedCategories, setLikedCategories] = useState<string[]>([])
+  const [dislikedCategories, setDislikedCategories] = useState<string[]>([])
+  const [superLikedCategories, setSuperLikedCategories] = useState<string[]>([])
   const [swipingDirection, setSwipingDirection] = useState<'left' | 'right' | 'up' | null>(null)
   const [isCardExiting, setIsCardExiting] = useState(false)
 
@@ -164,13 +164,13 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
     setSwipingDirection(direction)
     setIsCardExiting(true)
 
-    // Update the appropriate outfit array
+    // Update the appropriate category array
     if (direction === 'right') {
-      setLikedOutfits(prev => [...prev, currentOutfit])
+      setLikedCategories(prev => [...prev, currentOutfit.category])
     } else if (direction === 'left') {
-      setDislikedOutfits(prev => [...prev, currentOutfit])
+      setDislikedCategories(prev => [...prev, currentOutfit.category])
     } else if (direction === 'up') {
-      setSuperLikedOutfits(prev => [...prev, currentOutfit])
+      setSuperLikedCategories(prev => [...prev, currentOutfit.category])
     }
 
     // Wait for card to start exiting, then advance to next card
@@ -178,9 +178,9 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
       if (isLastOutfit) {
         // All outfits have been swiped, proceed to next step
         onNext({
-          likedOutfits: direction === 'right' ? [...likedOutfits, currentOutfit] : likedOutfits,
-          dislikedOutfits: direction === 'left' ? [...dislikedOutfits, currentOutfit] : dislikedOutfits,
-          superLikedOutfits: direction === 'up' ? [...superLikedOutfits, currentOutfit] : superLikedOutfits
+          liked: direction === 'right' ? [...likedCategories, currentOutfit.category] : likedCategories,
+          disliked: direction === 'left' ? [...dislikedCategories, currentOutfit.category] : dislikedCategories,
+          superLiked: direction === 'up' ? [...superLikedCategories, currentOutfit.category] : superLikedCategories
         })
       } else {
         // Move to next card and reset states
@@ -194,7 +194,7 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
   if (!currentOutfit) {
     return (
       <SingleViewportLayout
-        onNext={() => onNext({ likedOutfits, dislikedOutfits, superLikedOutfits })}
+        onNext={() => onNext({ liked: likedCategories, disliked: dislikedCategories, superLiked: superLikedCategories })}
         onBack={onBack}
         currentStep={currentStep}
         totalSteps={totalSteps}
@@ -218,7 +218,7 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
 
   return (
     <SingleViewportLayout
-      onNext={() => onNext({ likedOutfits, dislikedOutfits, superLikedOutfits })}
+      onNext={() => onNext({ liked: likedCategories, disliked: dislikedCategories, superLiked: superLikedCategories })}
       onBack={onBack}
       currentStep={currentStep}
       totalSteps={totalSteps}

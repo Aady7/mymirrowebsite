@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const AuthNav = () => {
     const router = useRouter()
@@ -21,49 +22,68 @@ const AuthNav = () => {
     }
 
     return (
-      <nav className="bg-white shadow-lg sticky top-0 z-50">
+      <motion.nav 
+        className="bg-white/95 backdrop-blur-sm border-b border-gray-200/60 sticky top-0 z-50 shadow-lg shadow-gray-900/5"
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-between h-16">
             {/* Logo */}
-            <div className="flex-shrink-0 flex items-center">
-              <Link href="/" onClick={handleLinkClick} className="text-xl font-bold text-indigo-600">
+            <motion.div 
+              className="flex-shrink-0 flex items-center"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              <Link href="/" onClick={handleLinkClick} className="text-xl font-bold">
                 <Image src="/assets/logo.png" alt='logo' width={150} height={75} />
               </Link>
-            </div>
+            </motion.div>
 
             {/* Centered Navigation Links */}
             <div className="hidden sm:flex flex-1 justify-center items-center">
               <div className="flex space-x-8">
-                <Link
-                  href="/"
-                  className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-gray-300"
-                >
-                  Home
-                </Link>
-                <Link
-                  href="/style-quiz-new"
-                  className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-gray-300"
-                >
-                  Style Quiz
-                </Link>
-                <Link
-                  href="/aboutpage"
-                  className="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-gray-300"
-                >
-                  AboutUs
-                </Link>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    href="/"
+                    className="text-gray-700 hover:text-gray-900 transition-all duration-300 font-medium tracking-wide relative group"
+                  >
+                    Home
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    href="/style-quiz"
+                    className="text-gray-700 hover:text-gray-900 transition-all duration-300 font-medium tracking-wide relative group"
+                  >
+                    Style Quiz
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
+                  </Link>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    href="/aboutpage"
+                    className="text-gray-700 hover:text-gray-900 transition-all duration-300 font-medium tracking-wide relative group"
+                  >
+                    AboutUs
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gray-900 transition-all duration-300 group-hover:w-full"></span>
+                  </Link>
+                </motion.div>
               </div>
             </div>
             
             {/* Desktop Sign In/Up Buttons */}
             <div className="hidden sm:flex items-center space-x-4">
-              <button
+              <motion.button
                 onClick={() => router.push('/mobile-sign-in')}
-                className="text-gray-500 hover:text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+                className="bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white px-6 py-2 rounded-xl text-sm font-medium transition-all duration-300 tracking-wide"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                Sign in
-              </button>
-             
+                Sign In
+              </motion.button>
             </div>
 
             {/* Mobile Menu Button */}
@@ -110,7 +130,7 @@ const AuthNav = () => {
                 Home
               </Link>
               <Link 
-                href="/style-quiz-new" 
+                href="/style-quiz" 
                 onClick={handleLinkClick}
                 className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
               >
@@ -135,8 +155,8 @@ const AuthNav = () => {
             </div>
           )}
         </div>
-      </nav>
+      </motion.nav>
     )
-}
+  }
 
 export default AuthNav

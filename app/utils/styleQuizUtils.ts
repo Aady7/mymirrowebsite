@@ -103,12 +103,14 @@ export const getStyleQuizData = async () => {
 
     console.log('Found style quiz ID:', userData.style_quiz_id);
 
-    // Fetch the style quiz data using styleQuizId
+    // Fetch the style quiz data using user_id
     const { data: quizData, error: quizError } = await supabase
-      .from('style-quiz-updated')
+      .from('style-quiz-v2')
       .select('*')
-      .eq('id', userData.style_quiz_id)
-      .single();
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     if (quizError) {
       console.error('Quiz data fetch error:', quizError);
@@ -368,9 +370,9 @@ export const transformQuizDataForV2 = (quizState: any): StyleQuizV2Data => {
     style_vibes: JSON.stringify(quizState.styleVibe?.styleVibes || []),
     personality_ques: JSON.stringify(quizState.ansQuestion?.answers || []),
     outfit_swipe: JSON.stringify({
-      liked: quizState.outfitSwipe?.likedOutfits || [],
-      disliked: quizState.outfitSwipe?.dislikedOutfits || [],
-      superLiked: quizState.outfitSwipe?.superLikedOutfits || []
+      liked: quizState.outfitSwipe?.liked || [],
+      disliked: quizState.outfitSwipe?.disliked || [],
+      superLiked: quizState.outfitSwipe?.superLiked || []
     }),
     phone_number: quizState.contactVerification?.phone || '',
     email: quizState.contactVerification?.email || ''
