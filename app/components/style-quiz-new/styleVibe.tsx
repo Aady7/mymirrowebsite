@@ -20,7 +20,7 @@ export interface StyleVibeData {
 const MALE_STYLE_VIBES = [
   {
     id: 'streetwear-casual',
-    name: 'Streetwear chic',
+    name: 'Streetwear Casual',
     image: '/assets/newstylequizimages/maleStyleVibe/streetwearcasual.svg',
   },
   {
@@ -171,6 +171,7 @@ const StyleVibe: React.FC<StyleVibeProps> = ({
                   fill
                   className="object-contain"
                   sizes="(max-width: 768px) 30vw, 120px"
+                  unoptimized={true}
                 />
               </div>
               

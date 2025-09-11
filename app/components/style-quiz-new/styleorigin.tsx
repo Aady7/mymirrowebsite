@@ -13,7 +13,7 @@ interface StyleOriginProps {
 }
 
 export interface StyleOriginData {
-  styleOrigin: string;
+  styleOrigin: string[];
 }
 
 // Define style origins for each gender
@@ -67,8 +67,8 @@ const StyleOrigin: React.FC<StyleOriginProps> = ({
   totalSteps = 8,
   gender = 'Male'
 }) => {
-  const [selectedStyle, setSelectedStyle] = useState<string>(
-    initialData?.styleOrigin || ''
+  const [selectedStyles, setSelectedStyles] = useState<string[]>(
+    initialData?.styleOrigin || []
   );
   const [error, setError] = useState<string>('');
 
@@ -85,20 +85,28 @@ const StyleOrigin: React.FC<StyleOriginProps> = ({
   const styles = getStyles();
 
   const handleStyleSelect = (styleId: string) => {
-    setSelectedStyle(styleId);
+    setSelectedStyles(prev => {
+      if (prev.includes(styleId)) {
+        // Remove if already selected
+        return prev.filter(id => id !== styleId);
+      } else {
+        // Add if not selected
+        return [...prev, styleId];
+      }
+    });
     if (error) {
       setError('');
     }
   };
 
   const handleContinue = () => {
-    if (!selectedStyle) {
-      setError('Please select your style origin');
+    if (selectedStyles.length === 0) {
+      setError('Please select at least one style origin');
       return;
     }
 
     const data: StyleOriginData = {
-      styleOrigin: selectedStyle
+      styleOrigin: selectedStyles
     };
 
     onNext?.(data);
@@ -110,7 +118,7 @@ const StyleOrigin: React.FC<StyleOriginProps> = ({
       onBack={onBack}
       currentStep={currentStep}
       totalSteps={totalSteps}
-      isFormValid={!!selectedStyle}
+      isFormValid={selectedStyles.length > 0}
       nextButtonText="Continue"
       showBackButton={currentStep > 1}
     >
@@ -131,7 +139,7 @@ const StyleOrigin: React.FC<StyleOriginProps> = ({
               className={`
                 w-full p-3 border-2 rounded-2xl transition-all duration-200 
                 flex flex-col items-center text-center
-                ${selectedStyle === style.id 
+                ${selectedStyles.includes(style.id) 
                   ? 'border-black bg-gray-50' 
                   : 'border-gray-300 hover:border-gray-400'
                 }
@@ -145,11 +153,12 @@ const StyleOrigin: React.FC<StyleOriginProps> = ({
                   fill
                   className="object-contain"
                   sizes="(max-width: 768px) 30vw, 120px"
+                  unoptimized={true}
                 />
               </div>
               
               {/* Style Name */}
-              <h3 className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-black leading-tight">
+              <h3 className="text-[14px] font-[400] leading-tight tracking-[-0.02em] text-black">
                 {style.name}
               </h3>
             </button>

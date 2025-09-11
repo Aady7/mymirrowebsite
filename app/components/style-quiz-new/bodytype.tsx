@@ -20,7 +20,7 @@ export interface BodyTypeData {
 const MALE_BODY_TYPES = [
   {
     id: 'invertedtriangle',
-    name: 'Inverted Triangle',
+    name: 'V-Shape',
     unselectedImage: '/assets/newstylequizimages/maleBodyTypes/maleoptions/maleinvertedtriangle.svg',
     selectedImage: '/assets/newstylequizimages/maleBodyTypes/selectMale/selectmaleinvertedtriangle.svg',
     description: 'Broad shoulders, narrow waist'
@@ -172,8 +172,8 @@ const BodyType: React.FC<BodyTypeProps> = ({
                   key={bodyType.id}
                   onClick={() => handleBodyTypeSelect(bodyType.id)}
                   className={`
-                    w-full aspect-[3/4] border-2 rounded-2xl p-4 transition-all duration-200 
-                    flex flex-col items-center justify-center space-y-3
+                    aspect-[3/4] border-2 rounded-2xl p-2 transition-all duration-200 
+                    flex flex-col items-center justify-center space-y-3 max-h-[118px] w-[98px]
                     ${selectedBodyType === bodyType.id 
                       ? 'border-black bg-gray-50' 
                       : 'border-gray-300 hover:border-gray-400'
@@ -181,13 +181,14 @@ const BodyType: React.FC<BodyTypeProps> = ({
                   `}
                 >
                   {/* Body Type Image */}
-                  <div className="relative w-16 h-20 mb-2">
+                  <div className="relative w-[28.052px] max-h-[82px] mb-2 flex-grow">
                     <Image
                       src={selectedBodyType === bodyType.id ? bodyType.selectedImage : bodyType.unselectedImage}
                       alt={bodyType.name}
                       fill
                       className="object-contain"
                       sizes="64px"
+                      unoptimized={true}
                     />
                   </div>
                   
@@ -207,8 +208,8 @@ const BodyType: React.FC<BodyTypeProps> = ({
                     key={bodyType.id}
                     onClick={() => handleBodyTypeSelect(bodyType.id)}
                     className={`
-                      w-full aspect-[3/4] border-2 rounded-2xl p-4 transition-all duration-200 
-                      flex flex-col items-center justify-center space-y-3
+                      min-w-[98px] aspect-[3/4] border-2 rounded-2xl p-2 transition-all duration-200 
+                      flex flex-col items-center justify-center space-y-3 max-h-[118px]
                       ${selectedBodyType === bodyType.id 
                         ? 'border-black bg-gray-50' 
                         : 'border-gray-300 hover:border-gray-400'
@@ -216,13 +217,14 @@ const BodyType: React.FC<BodyTypeProps> = ({
                     `}
                   >
                     {/* Body Type Image */}
-                    <div className="relative w-16 h-20 mb-2">
+                    <div className="relative w-[28.052px] max-h-[82px] mb-1 flex-grow">
                       <Image
                         src={selectedBodyType === bodyType.id ? bodyType.selectedImage : bodyType.unselectedImage}
                         alt={bodyType.name}
                         fill
                         className="object-contain"
                         sizes="64px"
+                        unoptimized={true}
                       />
                     </div>
                     
@@ -243,8 +245,8 @@ const BodyType: React.FC<BodyTypeProps> = ({
                 key={bodyType.id}
                 onClick={() => handleBodyTypeSelect(bodyType.id)}
                 className={`
-                  w-full aspect-[3/4] border-2 rounded-2xl p-4 transition-all duration-200 
-                  flex flex-col items-center justify-center space-y-3
+                  w-full aspect-[3/4] border-2 rounded-2xl p-2 transition-all duration-200 
+                  flex flex-col items-center justify-center space-y-3 gap-[24px]  max-h-[118px]
                   ${selectedBodyType === bodyType.id 
                     ? 'border-black bg-gray-50' 
                     : 'border-gray-300 hover:border-gray-400'
@@ -252,18 +254,19 @@ const BodyType: React.FC<BodyTypeProps> = ({
                 `}
               >
                 {/* Body Type Image */}
-                <div className="relative w-16 h-20 mb-2">
+                <div className="relative w-[28.052px] max-h-[82px] mb-1 flex-grow">
                   <Image
                     src={selectedBodyType === bodyType.id ? bodyType.selectedImage : bodyType.unselectedImage}
                     alt={bodyType.name}
                     fill
                     className="object-contain"
                     sizes="64px"
+                    unoptimized={true}
                   />
                 </div>
                 
                 {/* Body Type Name */}
-                <span className="text-[14px] font-[400] leading-[100%] tracking-[-0.02em] text-black">
+                <span className="text-[10px] font-[400] leading-[100%] tracking-[-0.02em] text-black">
                   {bodyType.name}
                 </span>
               </button>

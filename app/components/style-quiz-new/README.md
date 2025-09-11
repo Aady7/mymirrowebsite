@@ -128,15 +128,21 @@ The style origin/preference step of the style quiz.
 **Data Interface:**
 ```tsx
 interface StyleOriginData {
-  styleOrigin: string;
+  styleOrigin: string[];
 }
 ```
+
+**Features:**
+- Multi-select functionality - users can select multiple style origins
+- Conditional flow logic based on selections:
+  - If user selects only "trend-focused": skips StyleVibe and AnsQuestion steps
+  - If user selects "inspired-by-vibe" or "self-expressive": shows all steps including StyleVibe and AnsQuestion
 
 **Usage:**
 ```tsx
 const handleNext = (data: StyleOriginData) => {
   console.log('Style origin:', data);
-  // Navigate to next step
+  // Navigate to next step based on conditional logic
 };
 
 <StyleOrigin

@@ -56,12 +56,24 @@ const StyleQuizPages = () => {
     }
   }, [quizState]);
 
-  // Calculate total steps based on whether user selected trend-focused
+  // Calculate total steps based on style origin selections
   const getTotalSteps = () => {
-    if (quizState.styleOrigin?.styleOrigin === 'trend-focused') {
+    if (!quizState.styleOrigin?.styleOrigin) {
+      return 9; // Default total steps
+    }
+    
+    const selectedStyles = quizState.styleOrigin.styleOrigin;
+    const hasInspiredByVibe = selectedStyles.includes('inspired-by-vibe');
+    const hasSelfExpressive = selectedStyles.includes('self-expressive');
+    const hasTrendFocused = selectedStyles.includes('trend-focused');
+    
+    // If user selected only trend-focused, skip styleVibe and ansQuestion steps
+    if (hasTrendFocused && !hasInspiredByVibe && !hasSelfExpressive) {
       return 7; // PersonalInfo(1) -> BodyType(2) -> ColorAnalysis(3) -> StyleOrigin(4) -> OutfitSwipe(5) -> ContactVerification(6) -> OtpVerification(7)
     }
-    return 9; // Include all steps including outfitSwipe
+    
+    // If user selected inspired-by-vibe or self-expressive (with or without trend-focused), show all steps
+    return 9; // Include all steps: PersonalInfo(1) -> BodyType(2) -> ColorAnalysis(3) -> StyleOrigin(4) -> StyleVibe(5) -> AnsQuestion(6) -> OutfitSwipe(7) -> ContactVerification(8) -> OtpVerification(9)
   };
 
   const totalSteps = getTotalSteps();
@@ -154,15 +166,24 @@ const StyleQuizPages = () => {
     setQuizState(prev => {
       let newStep = Math.max(1, prev.currentStep - 1);
       
-      // Handle back navigation for trend-focused users
-      if (prev.styleOrigin?.styleOrigin === 'trend-focused') {
-        if (prev.currentStep === 5) { // outfit swipe step
-          newStep = 4; // Go back to styleOrigin
-        } else if (prev.currentStep === 6) { // contact verification step
-          newStep = 5; // Go back to outfit swipe
-        } else if (prev.currentStep === 7) { // otp verification step
-          newStep = 6; // Go back to contact verification
+      // Handle back navigation based on style origin selections
+      if (prev.styleOrigin?.styleOrigin) {
+        const selectedStyles = prev.styleOrigin.styleOrigin;
+        const hasInspiredByVibe = selectedStyles.includes('inspired-by-vibe');
+        const hasSelfExpressive = selectedStyles.includes('self-expressive');
+        const hasTrendFocused = selectedStyles.includes('trend-focused');
+        
+        // If user selected only trend-focused, handle shorter flow
+        if (hasTrendFocused && !hasInspiredByVibe && !hasSelfExpressive) {
+          if (prev.currentStep === 5) { // outfit swipe step
+            newStep = 4; // Go back to styleOrigin
+          } else if (prev.currentStep === 6) { // contact verification step
+            newStep = 5; // Go back to outfit swipe
+          } else if (prev.currentStep === 7) { // otp verification step
+            newStep = 6; // Go back to contact verification
+          }
         }
+        // For users with inspired-by-vibe or self-expressive, use normal back navigation
       }
       
       return {
@@ -221,81 +242,108 @@ const StyleQuizPages = () => {
         );
       
       case 5:
-        // Check if trend-focused (outfit swipe) or styleVibe for regular flow
-        if (quizState.styleOrigin?.styleOrigin === 'trend-focused') {
-          return (
-            <OutfitSwipe
-              onNext={handleOutfitSwipeNext}
-              onBack={handleBack}
-              currentStep={quizState.currentStep}
-              totalSteps={totalSteps}
-              gender={quizState.personalInfo?.gender || 'Male'}
-            />
-          );
-        } else {
-          return (
-            <StyleVibe
-              onNext={handleStyleVibeNext}
-              onBack={handleBack}
-              initialData={quizState.styleVibe || undefined}
-              currentStep={quizState.currentStep}
-              totalSteps={totalSteps}
-              gender={quizState.personalInfo?.gender || ''}
-            />
-          );
+        // Check if user selected only trend-focused (outfit swipe) or styleVibe for regular flow
+        if (quizState.styleOrigin?.styleOrigin) {
+          const selectedStyles = quizState.styleOrigin.styleOrigin;
+          const hasInspiredByVibe = selectedStyles.includes('inspired-by-vibe');
+          const hasSelfExpressive = selectedStyles.includes('self-expressive');
+          const hasTrendFocused = selectedStyles.includes('trend-focused');
+          
+          // If user selected only trend-focused, skip to outfit swipe
+          if (hasTrendFocused && !hasInspiredByVibe && !hasSelfExpressive) {
+            return (
+              <OutfitSwipe
+                onNext={handleOutfitSwipeNext}
+                onBack={handleBack}
+                currentStep={quizState.currentStep}
+                totalSteps={totalSteps}
+                gender={quizState.personalInfo?.gender || 'Male'}
+              />
+            );
+          }
         }
+        
+        // Default to StyleVibe for users with inspired-by-vibe or self-expressive
+        return (
+          <StyleVibe
+            onNext={handleStyleVibeNext}
+            onBack={handleBack}
+            initialData={quizState.styleVibe || undefined}
+            currentStep={quizState.currentStep}
+            totalSteps={totalSteps}
+            gender={quizState.personalInfo?.gender || ''}
+          />
+        );
       
       case 6:
-        // Check if trend-focused (contact verification) or ansQuestion
-        if (quizState.styleOrigin?.styleOrigin === 'trend-focused') {
-          return (
-            <ContactVerification
-              onNext={handleContactVerificationNext}
-              onBack={handleBack}
-              initialData={quizState.contactVerification || undefined}
-              currentStep={quizState.currentStep}
-              totalSteps={totalSteps}
-            />
-          );
-        } else {
-          return (
-            <AnsQuestion
-              onNext={handleAnsQuestionNext}
-              onBack={handleBack}
-              initialData={quizState.ansQuestion || undefined}
-              currentStep={quizState.currentStep}
-              totalSteps={totalSteps}
-            />
-          );
+        // Check if user selected only trend-focused (contact verification) or ansQuestion
+        if (quizState.styleOrigin?.styleOrigin) {
+          const selectedStyles = quizState.styleOrigin.styleOrigin;
+          const hasInspiredByVibe = selectedStyles.includes('inspired-by-vibe');
+          const hasSelfExpressive = selectedStyles.includes('self-expressive');
+          const hasTrendFocused = selectedStyles.includes('trend-focused');
+          
+          // If user selected only trend-focused, skip to contact verification
+          if (hasTrendFocused && !hasInspiredByVibe && !hasSelfExpressive) {
+            return (
+              <ContactVerification
+                onNext={handleContactVerificationNext}
+                onBack={handleBack}
+                initialData={quizState.contactVerification || undefined}
+                currentStep={quizState.currentStep}
+                totalSteps={totalSteps}
+              />
+            );
+          }
         }
+        
+        // Default to AnsQuestion for users with inspired-by-vibe or self-expressive
+        return (
+          <AnsQuestion
+            onNext={handleAnsQuestionNext}
+            onBack={handleBack}
+            initialData={quizState.ansQuestion || undefined}
+            currentStep={quizState.currentStep}
+            totalSteps={totalSteps}
+          />
+        );
       
       case 7:
-        // Check if trend-focused (OTP verification) or outfit swipe
-        if (quizState.styleOrigin?.styleOrigin === 'trend-focused') {
-          return (
-            <OtpVerification
-              onNext={handleOtpVerificationNext}
-              onBack={handleBack}
-              initialData={quizState.otpVerification || undefined}
-              currentStep={quizState.currentStep}
-              totalSteps={totalSteps}
-              email={quizState.contactVerification?.email || ''}
-              phone={quizState.contactVerification?.phone || ''}
-              allQuizData={quizState}
-              isLatestVersion={true}
-            />
-          );
-        } else {
-          return (
-            <OutfitSwipe
-              onNext={handleOutfitSwipeNext}
-              onBack={handleBack}
-              currentStep={quizState.currentStep}
-              totalSteps={totalSteps}
-              gender={quizState.personalInfo?.gender || 'Male'}
-            />
-          );
+        // Check if user selected only trend-focused (OTP verification) or outfit swipe
+        if (quizState.styleOrigin?.styleOrigin) {
+          const selectedStyles = quizState.styleOrigin.styleOrigin;
+          const hasInspiredByVibe = selectedStyles.includes('inspired-by-vibe');
+          const hasSelfExpressive = selectedStyles.includes('self-expressive');
+          const hasTrendFocused = selectedStyles.includes('trend-focused');
+          
+          // If user selected only trend-focused, skip to OTP verification
+          if (hasTrendFocused && !hasInspiredByVibe && !hasSelfExpressive) {
+            return (
+              <OtpVerification
+                onNext={handleOtpVerificationNext}
+                onBack={handleBack}
+                initialData={quizState.otpVerification || undefined}
+                currentStep={quizState.currentStep}
+                totalSteps={totalSteps}
+                email={quizState.contactVerification?.email || ''}
+                phone={quizState.contactVerification?.phone || ''}
+                allQuizData={quizState}
+                isLatestVersion={true}
+              />
+            );
+          }
         }
+        
+        // Default to OutfitSwipe for users with inspired-by-vibe or self-expressive
+        return (
+          <OutfitSwipe
+            onNext={handleOutfitSwipeNext}
+            onBack={handleBack}
+            currentStep={quizState.currentStep}
+            totalSteps={totalSteps}
+            gender={quizState.personalInfo?.gender || 'Male'}
+          />
+        );
       
       case 8:
         // Contact Verification step (only for non-trend-focused users)
