@@ -2,8 +2,43 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { useState, useEffect } from "react";
 
 const HomeHeroSection = () => {
+  const [imageErrors, setImageErrors] = useState<{[key: string]: boolean}>({});
+  const [useFallbackImages, setUseFallbackImages] = useState<{[key: string]: boolean}>({});
+
+  const handleImageError = (imageName: string) => {
+    console.error(`Failed to load ${imageName}`, {
+      imageName,
+      timestamp: new Date().toISOString(),
+      userAgent: typeof window !== 'undefined' ? window.navigator.userAgent : 'server',
+      currentUrl: typeof window !== 'undefined' ? window.location.href : 'server'
+    });
+    
+    // Try fallback strategy first
+    if (!useFallbackImages[imageName]) {
+      console.log(`Trying fallback strategy for ${imageName}`);
+      setUseFallbackImages(prev => ({ ...prev, [imageName]: true }));
+    } else {
+      // If fallback also fails, show placeholder
+      setImageErrors(prev => ({ ...prev, [imageName]: true }));
+    }
+  };
+
+  useEffect(() => {
+    console.log('🏠 HomeHeroSection mounted', {
+      timestamp: new Date().toISOString(),
+      isClient: typeof window !== 'undefined',
+      currentUrl: typeof window !== 'undefined' ? window.location.href : 'server',
+      imagePaths: [
+        '/assets/model-1.png',
+        '/assets/model-2.png', 
+        '/assets/model-3.png'
+      ]
+    });
+  }, []);
+
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -150,13 +185,37 @@ const HomeHeroSection = () => {
                 className="relative w-64 h-80"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl shadow-2xl overflow-hidden">
-                  <Image
-                    src="/assets/model-1.png"
-                    alt="Fashion Model 1"
-                    fill
-                    className="object-cover rounded-2xl"
-                    priority
-                  />
+                  {!imageErrors['model-1'] ? (
+                    <div className="relative w-full h-full">
+                      {!useFallbackImages['model-1'] ? (
+                        <Image
+                          src="/assets/model-1.png"
+                          alt="Fashion Model 1"
+                          width={256}
+                          height={320}
+                          className="object-cover rounded-2xl w-full h-full"
+                          priority
+                          onError={() => handleImageError('model-1')}
+                          unoptimized={true}
+                          quality={90}
+                        />
+                      ) : (
+                        <img
+                          src="/assets/model-1.png"
+                          alt="Fashion Model 1"
+                          className="object-cover rounded-2xl w-full h-full"
+                          onError={() => handleImageError('model-1')}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl">
+                      <div className="text-center text-gray-600">
+                        <div className="text-4xl mb-2">👗</div>
+                        <div className="text-sm font-medium">Fashion Model 1</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 {/* Floating elements */}
                 <motion.div
@@ -195,12 +254,36 @@ const HomeHeroSection = () => {
                 }}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl shadow-xl overflow-hidden">
-                  <Image
-                    src="/assets/model-2.png"
-                    alt="Fashion Model 2"
-                    fill
-                    className="object-cover rounded-2xl"
-                  />
+                  {!imageErrors['model-2'] ? (
+                    <div className="relative w-full h-full">
+                      {!useFallbackImages['model-2'] ? (
+                        <Image
+                          src="/assets/model-2.png"
+                          alt="Fashion Model 2"
+                          width={192}
+                          height={256}
+                          className="object-cover rounded-2xl w-full h-full"
+                          onError={() => handleImageError('model-2')}
+                          unoptimized={true}
+                          quality={90}
+                        />
+                      ) : (
+                        <img
+                          src="/assets/model-2.png"
+                          alt="Fashion Model 2"
+                          className="object-cover rounded-2xl w-full h-full"
+                          onError={() => handleImageError('model-2')}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl">
+                      <div className="text-center text-gray-600">
+                        <div className="text-4xl mb-2">👔</div>
+                        <div className="text-sm font-medium">Fashion Model 2</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             </motion.div>
@@ -226,12 +309,36 @@ const HomeHeroSection = () => {
                 }}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-400 to-gray-500 rounded-2xl shadow-lg overflow-hidden">
-                  <Image
-                    src="/assets/model-3.png"
-                    alt="Fashion Model 3"
-                    fill
-                    className="object-cover rounded-2xl"
-                  />
+                  {!imageErrors['model-3'] ? (
+                    <div className="relative w-full h-full">
+                      {!useFallbackImages['model-3'] ? (
+                        <Image
+                          src="/assets/model-3.png"
+                          alt="Fashion Model 3"
+                          width={160}
+                          height={224}
+                          className="object-cover rounded-2xl w-full h-full"
+                          onError={() => handleImageError('model-3')}
+                          unoptimized={true}
+                          quality={90}
+                        />
+                      ) : (
+                        <img
+                          src="/assets/model-3.png"
+                          alt="Fashion Model 3"
+                          className="object-cover rounded-2xl w-full h-full"
+                          onError={() => handleImageError('model-3')}
+                        />
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-400 to-gray-500 rounded-2xl">
+                      <div className="text-center text-gray-600">
+                        <div className="text-4xl mb-2">👕</div>
+                        <div className="text-sm font-medium">Fashion Model 3</div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </motion.div>
             </motion.div>
