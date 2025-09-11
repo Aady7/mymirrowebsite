@@ -60,10 +60,10 @@ const HomeHeroSection = () => {
           >
             {/* Badge */}
             <motion.div
-              className="inline-flex items-center px-6 py-3 bg-gray-900/5 border border-gray-200 rounded-full"
+              className="inline-flex items-center px-4 py-2 bg-gray-900/5 border border-gray-200 rounded-full"
               variants={itemVariants}
             >
-              <span className="text-sm font-medium text-gray-700 tracking-wide">AI-POWERED FASHION STYLIST</span>
+              <span className="text-xs font-medium text-gray-700 tracking-wide">AI-POWERED FASHION STYLIST</span>
             </motion.div>
 
             {/* Main Heading */}
@@ -150,9 +150,13 @@ const HomeHeroSection = () => {
                 className="relative w-64 h-80"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-200 to-gray-300 rounded-2xl shadow-2xl overflow-hidden">
-                  <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                    <div className="text-6xl">👗</div>
-                  </div>
+                  <Image
+                    src="/assets/model-1.png"
+                    alt="Fashion Model 1"
+                    fill
+                    className="object-cover rounded-2xl"
+                    priority
+                  />
                 </div>
                 {/* Floating elements */}
                 <motion.div
@@ -174,7 +178,7 @@ const HomeHeroSection = () => {
             <motion.div
               className="absolute z-10 top-20 -right-8"
               initial={{ opacity: 0, scale: 0.8, rotate: 10 }}
-              animate={{ opacity: 0.7, scale: 1, rotate: 0 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
               transition={{ duration: 0.8, delay: 0.5 }}
               whileHover={{ scale: 1.05, rotate: -2 }}
             >
@@ -191,9 +195,12 @@ const HomeHeroSection = () => {
                 }}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-300 to-gray-400 rounded-2xl shadow-xl overflow-hidden">
-                  <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center">
-                    <div className="text-5xl">👔</div>
-                  </div>
+                  <Image
+                    src="/assets/model-2.png"
+                    alt="Fashion Model 2"
+                    fill
+                    className="object-cover rounded-2xl"
+                  />
                 </div>
               </motion.div>
             </motion.div>
@@ -202,7 +209,7 @@ const HomeHeroSection = () => {
             <motion.div
               className="absolute z-10 bottom-20 -left-8"
               initial={{ opacity: 0, scale: 0.8, rotate: -10 }}
-              animate={{ opacity: 0.6, scale: 1, rotate: 0 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
               transition={{ duration: 0.8, delay: 0.7 }}
               whileHover={{ scale: 1.05, rotate: 2 }}
             >
@@ -219,9 +226,12 @@ const HomeHeroSection = () => {
                 }}
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-gray-400 to-gray-500 rounded-2xl shadow-lg overflow-hidden">
-                  <div className="w-full h-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center">
-                    <div className="text-4xl">👕</div>
-                  </div>
+                  <Image
+                    src="/assets/model-3.png"
+                    alt="Fashion Model 3"
+                    fill
+                    className="object-cover rounded-2xl"
+                  />
                 </div>
               </motion.div>
             </motion.div>

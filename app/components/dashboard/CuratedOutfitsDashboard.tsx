@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import SectionLoader from "@/app/components/common/SectionLoader";
 import SectionError from "@/app/components/common/SectionError";
@@ -22,6 +22,65 @@ const CuratedOutfitsDashboard = ({ quizData }: CuratedOutfitsDashboardProps) => 
   // Get user's liked categories from quiz data
   const likedCategories = getUserLikedCategories(quizData);
   
+  // Get user's gender from quiz data and map to database format
+  const getGenderForDatabase = (gender: string) => {
+    if (!gender) return undefined;
+    const normalizedGender = gender.toLowerCase();
+    let result;
+    if (normalizedGender === 'male') result = 'MEN';
+    else if (normalizedGender === 'female') result = 'WOMEN';
+    else result = gender.toUpperCase(); // fallback
+    
+    console.log('🔍 Gender Mapping Debug:', {
+      input: gender,
+      normalized: normalizedGender,
+      output: result
+    });
+    
+    return result;
+  };
+  
+  const userGender = quizData?.gender ? getGenderForDatabase(quizData.gender) : undefined;
+
+  // Debug logging
+  console.log('🔍 CuratedOutfitsDashboard Debug:', {
+    quizData: quizData ? {
+      gender: quizData.gender,
+      outfit_swipe: quizData.outfit_swipe,
+      style_vibes: quizData.style_vibes,
+      fashion_style: quizData.fashion_style,
+      availableKeys: Object.keys(quizData)
+    } : null,
+    likedCategories,
+    userGender,
+    genderConversion: {
+      original: quizData?.gender,
+      converted: userGender,
+      mapping: `${quizData?.gender} → ${userGender}`
+    }
+  });
+
+  // Clear cache on component mount to ensure fresh data
+  useEffect(() => {
+    console.log('🔍 CuratedOutfitsDashboard Debug - Clearing cache and forcing fresh data fetch');
+    // Clear any existing cache for this combination
+    const cacheKey1 = `dashboard_outfits_${likedCategories.join(',')}_${userGender || 'all'}_6`;
+    const cacheKey2 = `dashboard_outfits_${likedCategories.join(',')}_${userGender || 'all'}_50`;
+    
+    console.log('🔍 CuratedOutfitsDashboard Debug - Cache keys to clear:', {
+      cacheKey1,
+      cacheKey2,
+      genderUsed: userGender
+    });
+    
+    // Import cache utility and clear
+    import('@/lib/utils/cache').then(({ cache }) => {
+      cache.remove(cacheKey1);
+      cache.remove(cacheKey2);
+      console.log('🔍 CuratedOutfitsDashboard Debug - Cache cleared for keys:', cacheKey1, cacheKey2);
+    });
+  }, [likedCategories.join(','), userGender]);
+  
   // Fetch initial limited outfits
   const { 
     outfits: limitedOutfits, 
@@ -30,7 +89,9 @@ const CuratedOutfitsDashboard = ({ quizData }: CuratedOutfitsDashboardProps) => 
     refetch 
   } = useDashboardOutfits({ 
     likedCategories, 
-    limit: 6 
+    gender: userGender,
+    limit: 6,
+    forceRefresh: true // Force refresh to bypass cache
   });
 
   // Fetch all outfits when needed
@@ -41,7 +102,9 @@ const CuratedOutfitsDashboard = ({ quizData }: CuratedOutfitsDashboardProps) => 
     refetch: refetchAll 
   } = useDashboardOutfits({ 
     likedCategories, 
-    limit: 50 // Higher limit for "view all"
+    gender: userGender,
+    limit: 50, // Higher limit for "view all"
+    forceRefresh: true // Force refresh to bypass cache
   });
 
   const handleRetry = () => {

@@ -96,8 +96,25 @@ export default function ProductPage() {
   const productImages = (() => {
     if (!product) return [];
     try {
-      return JSON.parse(product.productImages);
-    } catch {
+      // Try both field names for compatibility
+      const imageData = product.product_images || product.productImages;
+      console.log('🔍 Product image data:', {
+        product_images: product.product_images,
+        productImages: product.productImages,
+        imageData,
+        type: typeof imageData
+      });
+      
+      if (!imageData) {
+        console.log('⚠️ No image data found for product');
+        return [];
+      }
+      
+      const parsed = typeof imageData === 'string' ? JSON.parse(imageData) : imageData;
+      console.log('✅ Parsed product images:', parsed);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.error('❌ Error parsing product images:', error);
       return [];
     }
   })();
@@ -594,26 +611,43 @@ export default function ProductPage() {
       return validSizes.test(size.trim()) && !isDescriptive;
     };
 
+    // Try both field names for compatibility
+    const sizesData = product.sizes_available || product.sizesAvailable;
+    console.log('🔍 Product sizes data:', {
+      sizes_available: product.sizes_available,
+      sizesAvailable: product.sizesAvailable,
+      sizesData,
+      type: typeof sizesData
+    });
+
+    if (!sizesData) {
+      console.log('⚠️ No sizes data found for product');
+      return [];
+    }
+
     try {
-      const parsedSizes = JSON.parse(product.sizesAvailable);
+      const parsedSizes = typeof sizesData === 'string' ? JSON.parse(sizesData) : sizesData;
       if (Array.isArray(parsedSizes)) {
-        return (
-          parsedSizes
-            .map((size) => {
-              // Extract only the size part (before "Rs." or any price info)
-              const sizeOnly = size.split(" Rs.")[0].split(" ₹")[0].trim();
-              return sizeOnly;
-            })
-            .filter((size) => size !== "" && isValidSize(size))
-            // Remove duplicates
-            .filter((size, index, self) => self.indexOf(size) === index)
-        );
+        const filteredSizes = parsedSizes
+          .map((size) => {
+            // Extract only the size part (before "Rs." or any price info)
+            const sizeOnly = size.split(" Rs.")[0].split(" ₹")[0].trim();
+            return sizeOnly;
+          })
+          .filter((size) => size !== "" && isValidSize(size))
+          // Remove duplicates
+          .filter((size, index, self) => self.indexOf(size) === index);
+        
+        console.log('✅ Parsed and filtered sizes:', filteredSizes);
+        return filteredSizes;
       }
       return [];
-    } catch {
+    } catch (error) {
+      console.error('❌ Error parsing sizes:', error);
+      // Fallback to comma-separated string
       return (
-        product.sizesAvailable
-          ? product.sizesAvailable
+        typeof sizesData === 'string'
+          ? sizesData
               .split(",")
               .map((s) => {
                 // Extract only the size part for comma-separated format too
@@ -885,6 +919,148 @@ export default function ProductPage() {
             </p>
           )}
         </div>
+
+        {/* Enhanced Product Details from tagged_products */}
+        {taggedProductsArray.length > 0 && (
+          <div className="w-full mt-6">
+            <h1
+              className="font-[Boston] text-[14px] text-left font-black mb-4"
+              style={{ fontVariant: "small-caps" }}
+            >
+              PRODUCT DETAILS
+            </h1>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Style & Fit */}
+              <div className="space-y-3">
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <h3 className="text-xs font-semibold text-gray-900 mb-2">STYLE & FIT</h3>
+                  <div className="space-y-1 text-xs text-gray-700">
+                    {taggedProductsArray[0].fit_type && (
+                      <div className="flex justify-between">
+                        <span>Fit:</span>
+                        <span className="font-medium">{taggedProductsArray[0].fit_type}</span>
+                      </div>
+                    )}
+                    {taggedProductsArray[0].primary_style && (
+                      <div className="flex justify-between">
+                        <span>Style:</span>
+                        <span className="font-medium">{taggedProductsArray[0].primary_style}</span>
+                      </div>
+                    )}
+                    {taggedProductsArray[0].formality_level && (
+                      <div className="flex justify-between">
+                        <span>Formality:</span>
+                        <span className="font-medium">{taggedProductsArray[0].formality_level}</span>
+                      </div>
+                    )}
+                    {taggedProductsArray[0].primary_occasion && (
+                      <div className="flex justify-between">
+                        <span>Best For:</span>
+                        <span className="font-medium">{taggedProductsArray[0].primary_occasion}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Fabric & Care */}
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <h3 className="text-xs font-semibold text-gray-900 mb-2">FABRIC & CARE</h3>
+                  <div className="space-y-1 text-xs text-gray-700">
+                    {taggedProductsArray[0].primary_fabric && (
+                      <div className="flex justify-between">
+                        <span>Fabric:</span>
+                        <span className="font-medium">{taggedProductsArray[0].primary_fabric}</span>
+                      </div>
+                    )}
+                    {taggedProductsArray[0].fabric_texture && (
+                      <div className="flex justify-between">
+                        <span>Texture:</span>
+                        <span className="font-medium">{taggedProductsArray[0].fabric_texture}</span>
+                      </div>
+                    )}
+                    {taggedProductsArray[0].fabric_weight && (
+                      <div className="flex justify-between">
+                        <span>Weight:</span>
+                        <span className="font-medium">{taggedProductsArray[0].fabric_weight}</span>
+                      </div>
+                    )}
+                    {taggedProductsArray[0].care_complexity && (
+                      <div className="flex justify-between">
+                        <span>Care:</span>
+                        <span className="font-medium">{taggedProductsArray[0].care_complexity}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Color & Pattern */}
+              <div className="space-y-3">
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <h3 className="text-xs font-semibold text-gray-900 mb-2">COLOR & PATTERN</h3>
+                  <div className="space-y-1 text-xs text-gray-700">
+                    {taggedProductsArray[0].primary_color && (
+                      <div className="flex justify-between">
+                        <span>Color:</span>
+                        <span className="font-medium">{taggedProductsArray[0].primary_color}</span>
+                      </div>
+                    )}
+                    {taggedProductsArray[0].color_family && (
+                      <div className="flex justify-between">
+                        <span>Family:</span>
+                        <span className="font-medium">{taggedProductsArray[0].color_family}</span>
+                      </div>
+                    )}
+                    {taggedProductsArray[0].pattern_type && (
+                      <div className="flex justify-between">
+                        <span>Pattern:</span>
+                        <span className="font-medium">{taggedProductsArray[0].pattern_type}</span>
+                      </div>
+                    )}
+                    {taggedProductsArray[0].seasonal_appropriateness && (
+                      <div className="flex justify-between">
+                        <span>Season:</span>
+                        <span className="font-medium">{taggedProductsArray[0].seasonal_appropriateness}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Quality & Versatility */}
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <h3 className="text-xs font-semibold text-gray-900 mb-2">QUALITY & VERSATILITY</h3>
+                  <div className="space-y-1 text-xs text-gray-700">
+                    {taggedProductsArray[0].versatility_score && (
+                      <div className="flex justify-between">
+                        <span>Versatility:</span>
+                        <span className="font-medium">{Math.round(taggedProductsArray[0].versatility_score * 10)}/10</span>
+                      </div>
+                    )}
+                    {taggedProductsArray[0].longevity_score && (
+                      <div className="flex justify-between">
+                        <span>Longevity:</span>
+                        <span className="font-medium">{Math.round(taggedProductsArray[0].longevity_score * 10)}/10</span>
+                      </div>
+                    )}
+                    {taggedProductsArray[0].durability_level && (
+                      <div className="flex justify-between">
+                        <span>Durability:</span>
+                        <span className="font-medium">{taggedProductsArray[0].durability_level}</span>
+                      </div>
+                    )}
+                    {taggedProductsArray[0].investment_value && (
+                      <div className="flex justify-between">
+                        <span>Value:</span>
+                        <span className="font-medium">{taggedProductsArray[0].investment_value}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/*star rating section */}
         <div className="w-full mt-4 flex flex-col">

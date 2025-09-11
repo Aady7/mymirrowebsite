@@ -5,6 +5,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const categories = searchParams.get('categories')?.split(',') || [];
+    const gender = searchParams.get('gender');
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
 
@@ -17,6 +18,7 @@ export async function GET(request: NextRequest) {
         top_id,
         bottom_id,
         rank,
+        gender,
         top:products_v2!outfits_v2_top_id_fkey(
           id,
           title,
@@ -36,6 +38,11 @@ export async function GET(request: NextRequest) {
     // Filter by categories if provided
     if (categories.length > 0 && categories[0] !== '') {
       query = query.in('category', categories);
+    }
+
+    // Filter by gender if provided
+    if (gender) {
+      query = query.eq('gender', gender);
     }
 
     // Order by rank and apply pagination

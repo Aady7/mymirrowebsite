@@ -14,7 +14,7 @@ const features = [
     text: "We simplify style.\nGet personalized outfits without the stress.",
     image: "/assets/home2.jpeg",
     imageAlt: "Feature 2",
-    textAlign: "right",
+    textAlign: "left",
   },
   {
     title: "Not sure what's trending or what suits you?",

@@ -27,12 +27,14 @@ export interface DashboardOutfit {
 
 interface UseDashboardOutfitsProps {
   likedCategories?: string[];
+  gender?: string;
   limit?: number;
   forceRefresh?: boolean;
 }
 
 export const useDashboardOutfits = ({ 
   likedCategories = [], 
+  gender,
   limit = 6, 
   forceRefresh = false 
 }: UseDashboardOutfitsProps = {}) => {
@@ -42,21 +44,36 @@ export const useDashboardOutfits = ({
 
   // Ensure likedCategories is always an array
   const safeLikedCategories = Array.isArray(likedCategories) ? likedCategories : [];
-  const cacheKey = `${CACHE_KEYS.DASHBOARD_OUTFITS}_${safeLikedCategories.join(',')}_${limit}`;
+  const cacheKey = `${CACHE_KEYS.DASHBOARD_OUTFITS}_${safeLikedCategories.join(',')}_${gender || 'all'}_${limit}`;
 
   const fetchOutfits = async (useCache = true) => {
     try {
       setIsLoading(true);
       setError(null);
 
+      // Debug logging
+      console.log('🔍 useDashboardOutfits Debug - Fetching outfits:', {
+        likedCategories: safeLikedCategories,
+        gender,
+        limit,
+        cacheKey,
+        forceRefresh
+      });
+
       // Check cache first unless force refresh
       if (useCache && !forceRefresh) {
         const cached = cache.get(cacheKey);
         if (cached) {
+          console.log('🔍 useDashboardOutfits Debug - Using cached data:', cached);
+          console.log('🔍 useDashboardOutfits Debug - Cache key:', cacheKey);
           setOutfits(cached);
           setIsLoading(false);
           return;
+        } else {
+          console.log('🔍 useDashboardOutfits Debug - No cached data found, fetching fresh data');
         }
+      } else {
+        console.log('🔍 useDashboardOutfits Debug - Force refresh requested, bypassing cache');
       }
 
       // Build the query without relationships (fetch separately)
@@ -67,12 +84,20 @@ export const useDashboardOutfits = ({
           category,
           top_id,
           bottom_id,
-          rank
+          rank,
+          gender
         `);
 
       // Filter by liked categories if provided
       if (safeLikedCategories.length > 0) {
         query = query.in('category', safeLikedCategories);
+        console.log('🔍 useDashboardOutfits Debug - Added category filter:', safeLikedCategories);
+      }
+
+      // Filter by gender if provided
+      if (gender) {
+        query = query.eq('gender', gender);
+        console.log('🔍 useDashboardOutfits Debug - Added gender filter:', gender);
       }
 
       // Order by rank and limit
@@ -80,13 +105,42 @@ export const useDashboardOutfits = ({
         .order('rank', { ascending: true })
         .limit(limit);
 
+      console.log('🔍 useDashboardOutfits Debug - Final query filters:', {
+        categories: safeLikedCategories,
+        gender,
+        limit,
+        orderBy: 'rank (asc)'
+      });
+
       const { data: outfitData, error: fetchError } = await query;
 
+      console.log('🔍 useDashboardOutfits Debug - Query results:', {
+        outfitData,
+        fetchError,
+        queryFilters: {
+          categories: safeLikedCategories,
+          gender,
+          limit
+        },
+        rawQuery: {
+          table: 'outfits_v2',
+          select: 'id, category, top_id, bottom_id, rank, gender',
+          filters: {
+            category: safeLikedCategories.length > 0 ? `IN (${safeLikedCategories.map(c => `'${c}'`).join(', ')})` : 'none',
+            gender: gender ? `= '${gender}'` : 'none'
+          },
+          orderBy: 'rank ASC',
+          limit
+        }
+      });
+
       if (fetchError) {
+        console.error('🔍 useDashboardOutfits Debug - Query error:', fetchError);
         throw new Error(fetchError.message);
       }
 
       if (!outfitData || outfitData.length === 0) {
+        console.log('🔍 useDashboardOutfits Debug - No outfit data found');
         setOutfits([]);
         cache.set(cacheKey, [], 30 * 60 * 1000);
         return;
@@ -212,7 +266,7 @@ export const useDashboardOutfits = ({
 
   useEffect(() => {
     fetchOutfits();
-  }, [safeLikedCategories.join(','), limit]);
+  }, [safeLikedCategories.join(','), gender, limit]);
 
   return {
     outfits,
@@ -225,14 +279,36 @@ export const useDashboardOutfits = ({
 // Helper function to get user's liked categories from style quiz data
 export const getUserLikedCategories = (quizData: any): string[] => {
   try {
+    console.log('🔍 getUserLikedCategories Debug - Input quizData:', {
+      quizData: quizData ? {
+        outfit_swipe: quizData.outfit_swipe,
+        style_vibes: quizData.style_vibes,
+        fashion_style: quizData.fashion_style,
+        availableKeys: Object.keys(quizData)
+      } : null
+    });
+
     // Check if outfit_swipe exists and has liked categories
     if (quizData?.outfit_swipe) {
       const swipeData = typeof quizData.outfit_swipe === 'string' 
         ? JSON.parse(quizData.outfit_swipe) 
         : quizData.outfit_swipe;
       
-      const liked = swipeData?.liked;
-      return Array.isArray(liked) ? liked : [];
+      const liked = swipeData?.liked || [];
+      const superLiked = swipeData?.superLiked || [];
+      
+      // Combine liked and superLiked categories and convert to uppercase
+      const allCategories = [...(Array.isArray(liked) ? liked : []), ...(Array.isArray(superLiked) ? superLiked : [])];
+      const result = allCategories.map(category => category.toUpperCase());
+      
+      console.log('🔍 getUserLikedCategories Debug - From outfit_swipe:', { 
+        swipeData, 
+        liked, 
+        superLiked, 
+        allCategories, 
+        result 
+      });
+      return result;
     }
     
     // Fallback: use style_vibes from the new schema
@@ -240,14 +316,20 @@ export const getUserLikedCategories = (quizData: any): string[] => {
       const styleVibes = typeof quizData.style_vibes === 'string'
         ? JSON.parse(quizData.style_vibes)
         : quizData.style_vibes;
-      return Array.isArray(styleVibes) ? styleVibes : [];
+      const categories = Array.isArray(styleVibes) ? styleVibes : [];
+      const result = categories.map(category => category.toUpperCase());
+      console.log('🔍 getUserLikedCategories Debug - From style_vibes:', { styleVibes, categories, result });
+      return result;
     }
     
     // Additional fallback: use fashion_style if available (old schema)
     const fashionStyle = quizData?.fashion_style;
-    return Array.isArray(fashionStyle) ? fashionStyle : [];
+    const categories = Array.isArray(fashionStyle) ? fashionStyle : [];
+    const result = categories.map(category => category.toUpperCase());
+    console.log('🔍 getUserLikedCategories Debug - From fashion_style:', { fashionStyle, categories, result });
+    return result;
   } catch (error) {
-    console.error('Error parsing user liked categories:', error);
+    console.error('🔍 getUserLikedCategories Debug - Error parsing user liked categories:', error);
     return [];
   }
 };

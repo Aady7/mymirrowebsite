@@ -406,93 +406,93 @@ const LookPage = () => {
         console.log('🛒 Fetching products for IDs:', productIds);
         console.log('🔍 Outfit data check - bottom_id:', outfitData.bottom_id, 'is dress:', (String(outfitData.bottom_id) === "0000" || outfitData.bottom_id === 0));
         
-        // First try to fetch from tagged_products table with product_id matching
+        // First try to fetch from products_v2 table directly
+        let { data: productsV2Data, error: productsV2Error } = await supabase
+          .from('products_v2')
+          .select('*')
+          .in('id', productIds);
+
+        // Then fetch tagged_products data separately
         let { data: taggedProductsData, error: taggedError } = await supabase
           .from('tagged_products')
-          .select(`
-            *,
-            products_v2 (
-              id,
-              created_at,
-              title,
-              name,
-              overall_rating,
-              price,
-              mrp,
-              discount,
-              sizes_available,
-              product_images,
-              specifications,
-              category,
-              url
-            )
-          `)
+          .select('*')
           .in('product_id', productIds);
 
         let productsData: Product[] | null = null;
         let productsError: Error | null = null;
 
-        // Transform tagged_products data to match expected Product interface
-        if (!taggedError && taggedProductsData && taggedProductsData.length > 0) {
-          console.log('✅ Found products in tagged_products table:', taggedProductsData.length);
-          productsData = taggedProductsData
-            .filter(tp => tp.products_v2) // Only include items with valid product data
-            .map(tp => {
-              const p = tp.products_v2;
-              
-              // Helper to extract images
-              const getImages = () => {
-                if (!p.product_images) return ['/fallback.jpg'];
-                try {
-                  const images = Array.isArray(p.product_images) 
-                    ? p.product_images 
-                    : JSON.parse(p.product_images);
-                  return images && images.length > 0 ? images : ['/fallback.jpg'];
-                } catch (e) {
-                  return ['/fallback.jpg'];
-                }
-              };
-
-              const images = getImages();
-
-              return {
-                id: p.id,
-                created_at: p.created_at || new Date().toISOString(),
-                title: p.title || p.name || 'Untitled Product',
-                name: p.title || p.name || 'Untitled Product',
-                overallRating: p.overall_rating || 4.5,
-                price: p.price || 0,
-                mrp: p.mrp || p.price || 0,
-                discount: p.discount || '0%',
-                sizesAvailable: p.sizes_available || JSON.stringify(['S', 'M', 'L', 'XL']),
-                productImages: JSON.stringify(images),
-                specifications: JSON.stringify(p.specifications || {}),
-                tagged_products: {
-                  customer_short_description: tp.customer_short_description || '',
-                  customer_long_recommendation: tp.customer_long_recommendation || '',
-                  product_key_attributes: tp.product_key_attributes || '{}',
-                  // Enhanced fields from tagged_products
-                  primary_fabric: tp.primary_fabric,
-                  fabric_texture: tp.fabric_texture,
-                  fabric_weight: tp.fabric_weight,
-                  fabric_care: tp.fabric_care,
-                  primary_color: tp.primary_color,
-                  color_family: tp.color_family,
-                  primary_occasion: tp.primary_occasion,
-                  formality_level: tp.formality_level,
-                  fit_type: tp.fit_type,
-                  style_category: tp.style_category,
-                  seasonal_appropriateness: tp.seasonal_appropriateness,
-                  body_shape_compatibility: tp.body_shape_compatibility,
-                  comfort_level: tp.comfort_level,
-                  care_complexity: tp.care_complexity,
-                  versatility_score: tp.versatility_score,
-                  color_harmony: tp.color_harmony
-                }
-              };
+        // Transform products_v2 data to match expected Product interface
+        if (!productsV2Error && productsV2Data && productsV2Data.length > 0) {
+          console.log('✅ Found products in products_v2 table:', productsV2Data.length);
+          
+          // Create a map of tagged_products data for quick lookup
+          const taggedMap = new Map();
+          if (taggedProductsData) {
+            taggedProductsData.forEach(tp => {
+              taggedMap.set(tp.product_id, tp);
             });
+          }
+          
+          productsData = productsV2Data.map(p => {
+            const taggedData = taggedMap.get(p.id);
+            
+            // Helper to extract images
+            const getImages = () => {
+              if (!p.product_images) return ['/fallback.jpg'];
+              try {
+                const images = Array.isArray(p.product_images) 
+                  ? p.product_images 
+                  : JSON.parse(p.product_images);
+                return images && images.length > 0 ? images : ['/fallback.jpg'];
+              } catch (e) {
+                return ['/fallback.jpg'];
+              }
+            };
+
+            const images = getImages();
+
+            return {
+              id: p.id,
+              created_at: p.created_at || new Date().toISOString(),
+              title: p.title || p.name || 'Untitled Product',
+              name: p.title || p.name || 'Untitled Product',
+              overallRating: p.overall_rating || 4.5,
+              price: p.price || 0,
+              mrp: p.mrp || p.price || 0,
+              discount: p.discount || '0%',
+              sizesAvailable: p.sizes_available || JSON.stringify(['S', 'M', 'L', 'XL']),
+              productImages: JSON.stringify(images),
+              specifications: JSON.stringify(p.specifications || {}),
+              tagged_products: taggedData ? {
+                customer_short_description: taggedData.customer_short_description || '',
+                customer_long_recommendation: taggedData.customer_long_recommendation || '',
+                product_key_attributes: taggedData.product_key_attributes || '{}',
+                // Enhanced fields from tagged_products
+                primary_fabric: taggedData.primary_fabric,
+                fabric_texture: taggedData.fabric_texture,
+                fabric_weight: taggedData.fabric_weight,
+                fabric_care: taggedData.fabric_care,
+                primary_color: taggedData.primary_color,
+                color_family: taggedData.color_family,
+                primary_occasion: taggedData.primary_occasion,
+                formality_level: taggedData.formality_level,
+                fit_type: taggedData.fit_type,
+                style_category: taggedData.style_category,
+                seasonal_appropriateness: taggedData.seasonal_appropriateness,
+                body_shape_compatibility: taggedData.body_shape_compatibility,
+                comfort_level: taggedData.comfort_level,
+                care_complexity: taggedData.care_complexity,
+                versatility_score: taggedData.versatility_score,
+                color_harmony: taggedData.color_harmony
+              } : {
+                customer_short_description: '',
+                customer_long_recommendation: '',
+                product_key_attributes: '{}'
+              }
+            };
+          });
         } else {
-          console.log('⚠️ No products found in tagged_products table, trying products table...');
+          console.log('⚠️ No products found in products_v2 table, trying products table...');
           
           // Fallback: try to fetch from products table with tagged_products join
           const { data: fallbackProductsData, error: fallbackError } = await supabase
@@ -819,14 +819,15 @@ const LookPage = () => {
     }
   };
 
-  const parseSizes = (sizesStr: string): { size: string; price: number }[] => {
-    try {
-      const parsedSizes = JSON.parse(sizesStr);
-      if (!Array.isArray(parsedSizes)) {
-        return [];
-      }
-      
-      return parsedSizes.map(sizeStr => {
+  const parseSizes = (sizesStr: any): { size: string; price: number }[] => {
+    // Handle different input types
+    if (!sizesStr) {
+      return [];
+    }
+
+    // If it's already an array, process it directly
+    if (Array.isArray(sizesStr)) {
+      return sizesStr.map(sizeStr => {
         // Check if the size string contains price information
         if (typeof sizeStr === 'string' && sizeStr.includes('Rs.')) {
           const [size, priceStr] = sizeStr.split('Rs.');
@@ -838,15 +839,52 @@ const LookPage = () => {
         }
         // Handle regular size strings without price
         return {
-          size: sizeStr,
+          size: String(sizeStr),
           price: 0
         };
       });
-    } catch {
-      return sizesStr
+    }
+
+    // If it's a string, try to parse it
+    if (typeof sizesStr === 'string') {
+      try {
+        const parsedSizes = JSON.parse(sizesStr);
+        if (Array.isArray(parsedSizes)) {
+          return parsedSizes.map(sizeStr => {
+            // Check if the size string contains price information
+            if (typeof sizeStr === 'string' && sizeStr.includes('Rs.')) {
+              const [size, priceStr] = sizeStr.split('Rs.');
+              const price = parseInt(priceStr.trim(), 10);
+              return {
+                size: size.trim(),
+                price: isNaN(price) ? 0 : price
+              };
+            }
+            // Handle regular size strings without price
+            return {
+              size: String(sizeStr),
+              price: 0
+            };
+          });
+        }
+      } catch {
+        // Fallback: treat as comma-separated string
+        return sizesStr
+          .split(',')
+          .map(s => ({ size: s.trim(), price: 0 }))
+          .filter(s => s.size !== '');
+      }
+    }
+
+    // If it's an object or other type, try to convert to string
+    try {
+      const stringValue = String(sizesStr);
+      return stringValue
         .split(',')
         .map(s => ({ size: s.trim(), price: 0 }))
         .filter(s => s.size !== '');
+    } catch {
+      return [];
     }
   };
 

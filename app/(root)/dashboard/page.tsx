@@ -35,6 +35,24 @@ const Dashboard = () => {
     }
   }, [isLoading, error, quizData]);
 
+  // Debug logging for style quiz data
+  useEffect(() => {
+    console.log('🔍 Dashboard Debug - Style Quiz Data:', {
+      isLoading,
+      error,
+      quizData: quizData ? {
+        gender: quizData.gender,
+        outfit_swipe: quizData.outfit_swipe,
+        style_vibes: quizData.style_vibes,
+        fashion_style: quizData.fashion_style,
+        personality_ques: quizData.personality_ques,
+        // Log all available keys
+        availableKeys: Object.keys(quizData)
+      } : null,
+      colorAnalysis
+    });
+  }, [isLoading, error, quizData, colorAnalysis]);
+
   // Show initial loader for minimum time to provide smooth UX
   if (showInitialLoader) {
     return (
@@ -133,14 +151,14 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100/50">
       <motion.div 
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+        className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
         {/* Hero Header Section */}
         <motion.div 
-          className="relative pt-16 pb-12 text-center"
+          className="relative pt-8 sm:pt-16 pb-8 sm:pb-12 text-center"
           variants={headingVariants}
         >
           {/* Background decoration */}
@@ -155,7 +173,7 @@ const Dashboard = () => {
             </motion.div>
             
             <motion.h1 
-              className="text-5xl sm:text-6xl lg:text-7xl font-light text-gray-900 mb-6 tracking-tight"
+              className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-light text-gray-900 mb-4 sm:mb-6 tracking-tight"
               whileHover={{ 
                 scale: 1.01,
                 transition: { duration: 0.3 }
@@ -169,7 +187,7 @@ const Dashboard = () => {
             </motion.h1>
             
             <motion.p 
-              className="text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed font-light"
+              className="text-lg sm:text-xl text-gray-500 max-w-2xl mx-auto leading-relaxed font-light px-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.6 }}
@@ -180,7 +198,7 @@ const Dashboard = () => {
         </motion.div>
 
         {/* Sections Container */}
-        <div className="space-y-16 pb-24">
+        <div className="space-y-8 sm:space-y-16 pb-12 sm:pb-24">
           {/* AI-Powered Style Advice section */}
           <motion.div 
             variants={sectionVariants}
