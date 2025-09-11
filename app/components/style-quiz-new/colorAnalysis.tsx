@@ -8,6 +8,7 @@ interface ColorAnalysisProps {
   initialData?: Partial<ColorAnalysisData>;
   currentStep?: number;
   totalSteps?: number;
+  hasExtendedFlow?: boolean;
 }
 
 export interface ColorAnalysisData {
@@ -33,6 +34,7 @@ const ColorAnalysis: React.FC<ColorAnalysisProps> = ({
   initialData,
   currentStep = 3,
   totalSteps = 8,
+  hasExtendedFlow = false
 }) => {
   const [selectedTone, setSelectedTone] = useState<string>(
     initialData?.selectedTone || ''
@@ -75,6 +77,7 @@ const ColorAnalysis: React.FC<ColorAnalysisProps> = ({
       isFormValid={!!selectedTone}
       nextButtonText="Continue"
       showBackButton={currentStep > 1}
+      hasExtendedFlow={hasExtendedFlow}
     >
       {/* Header */}
       <div className="mb-6">

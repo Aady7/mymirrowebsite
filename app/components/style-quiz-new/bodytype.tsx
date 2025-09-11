@@ -10,6 +10,7 @@ interface BodyTypeProps {
   currentStep?: number;
   totalSteps?: number;
   gender?: 'Female' | 'Male' | 'Other' | '';
+  hasExtendedFlow?: boolean;
 }
 
 export interface BodyTypeData {
@@ -99,7 +100,8 @@ const BodyType: React.FC<BodyTypeProps> = ({
   initialData,
   currentStep = 2,
   totalSteps = 8,
-  gender = 'Male'
+  gender = 'Male',
+  hasExtendedFlow = false
 }) => {
   const [selectedBodyType, setSelectedBodyType] = useState<string>(
     initialData?.bodyType || ''
@@ -149,6 +151,7 @@ const BodyType: React.FC<BodyTypeProps> = ({
       isFormValid={!!selectedBodyType}
       nextButtonText="Continue"
       showBackButton={currentStep > 1}
+      hasExtendedFlow={hasExtendedFlow}
     >
       {/* Header */}
       <div className="mb-6">

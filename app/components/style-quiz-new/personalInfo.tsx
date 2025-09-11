@@ -8,6 +8,7 @@ interface PersonalInfoProps {
   initialData?: Partial<PersonalInfoData>;
   currentStep?: number;
   totalSteps?: number;
+  hasExtendedFlow?: boolean;
 }
 
 export interface PersonalInfoData {
@@ -22,7 +23,8 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
   onBack,
   initialData,
   currentStep = 1,
-  totalSteps = 8
+  totalSteps = 8,
+  hasExtendedFlow = false
 }) => {
   const [formData, setFormData] = useState<PersonalInfoData>({
     name: initialData?.name || '',
@@ -106,6 +108,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
       isFormValid={isFormValid}
       nextButtonText="Continue"
       showBackButton={currentStep > 1}
+      hasExtendedFlow={hasExtendedFlow}
     >
       {/* Header */}
       <div className="mb-6">

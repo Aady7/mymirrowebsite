@@ -13,6 +13,7 @@ interface SingleViewportLayoutProps {
   isLoading?: boolean;
   nextButtonText?: string;
   showBackButton?: boolean;
+  hasExtendedFlow?: boolean; // For users with inspired-by-vibe or self-expressive
 }
 
 const SingleViewportLayout: React.FC<SingleViewportLayoutProps> = ({
@@ -24,7 +25,8 @@ const SingleViewportLayout: React.FC<SingleViewportLayoutProps> = ({
   isFormValid = true,
   isLoading = false,
   nextButtonText = "Continue",
-  showBackButton = true
+  showBackButton = true,
+  hasExtendedFlow = false
 }) => {
   return (
     <div className="min-h-screen bg-white flex flex-col" style={{ minHeight: '100dvh' }}>
@@ -33,6 +35,7 @@ const SingleViewportLayout: React.FC<SingleViewportLayoutProps> = ({
         <ProgressBar 
           currentStep={currentStep} 
           totalSteps={totalSteps}
+          hasExtendedFlow={hasExtendedFlow}
         />
       </div>
 

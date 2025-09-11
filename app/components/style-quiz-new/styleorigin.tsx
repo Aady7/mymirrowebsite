@@ -10,6 +10,7 @@ interface StyleOriginProps {
   currentStep?: number;
   totalSteps?: number;
   gender?: 'Female' | 'Male' | 'Other' | '';
+  hasExtendedFlow?: boolean;
 }
 
 export interface StyleOriginData {
@@ -65,7 +66,8 @@ const StyleOrigin: React.FC<StyleOriginProps> = ({
   initialData,
   currentStep = 4,
   totalSteps = 8,
-  gender = 'Male'
+  gender = 'Male',
+  hasExtendedFlow = false
 }) => {
   const [selectedStyles, setSelectedStyles] = useState<string[]>(
     initialData?.styleOrigin || []
@@ -121,6 +123,7 @@ const StyleOrigin: React.FC<StyleOriginProps> = ({
       isFormValid={selectedStyles.length > 0}
       nextButtonText="Continue"
       showBackButton={currentStep > 1}
+      hasExtendedFlow={hasExtendedFlow}
     >
       {/* Header */}
       <div className="mb-6">

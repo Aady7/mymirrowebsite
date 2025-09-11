@@ -13,6 +13,7 @@ interface AnsQuestionProps {
   initialData?: AnsQuestionData
   currentStep: number
   totalSteps: number
+  hasExtendedFlow?: boolean
 }
 
 const AnsQuestion: React.FC<AnsQuestionProps> = ({
@@ -20,7 +21,8 @@ const AnsQuestion: React.FC<AnsQuestionProps> = ({
   onBack,
   initialData,
   currentStep,
-  totalSteps
+  totalSteps,
+  hasExtendedFlow = false
 }) => {
   const [selectedAnswers, setSelectedAnswers] = useState<string[]>(initialData?.answers || [])
   const [error, setError] = useState<string>('')
@@ -65,6 +67,7 @@ const AnsQuestion: React.FC<AnsQuestionProps> = ({
       isFormValid={selectedAnswers.length > 0}
       nextButtonText="Continue"
       showBackButton={currentStep > 1}
+      hasExtendedFlow={hasExtendedFlow}
     >
       {/* Header */}
       <div className="mb-6">

@@ -56,7 +56,7 @@ const StyleQuizPages = () => {
     }
   }, [quizState]);
 
-  // Calculate total steps based on style origin selections
+  // Calculate total steps and flow type based on style origin selections
   const getTotalSteps = () => {
     if (!quizState.styleOrigin?.styleOrigin) {
       return 9; // Default total steps
@@ -74,6 +74,19 @@ const StyleQuizPages = () => {
     
     // If user selected inspired-by-vibe or self-expressive (with or without trend-focused), show all steps
     return 9; // Include all steps: PersonalInfo(1) -> BodyType(2) -> ColorAnalysis(3) -> StyleOrigin(4) -> StyleVibe(5) -> AnsQuestion(6) -> OutfitSwipe(7) -> ContactVerification(8) -> OtpVerification(9)
+  };
+
+  // Determine if user has extended flow (inspired-by-vibe or self-expressive)
+  const hasExtendedFlow = () => {
+    if (!quizState.styleOrigin?.styleOrigin) {
+      return false;
+    }
+    
+    const selectedStyles = quizState.styleOrigin.styleOrigin;
+    const hasInspiredByVibe = selectedStyles.includes('inspired-by-vibe');
+    const hasSelfExpressive = selectedStyles.includes('self-expressive');
+    
+    return hasInspiredByVibe || hasSelfExpressive;
   };
 
   const totalSteps = getTotalSteps();
@@ -203,6 +216,7 @@ const StyleQuizPages = () => {
             initialData={quizState.personalInfo || undefined}
             currentStep={quizState.currentStep}
             totalSteps={totalSteps}
+            hasExtendedFlow={hasExtendedFlow()}
           />
         );
       
@@ -215,6 +229,7 @@ const StyleQuizPages = () => {
             currentStep={quizState.currentStep}
             totalSteps={totalSteps}
             gender={quizState.personalInfo?.gender || ''}
+            hasExtendedFlow={hasExtendedFlow()}
           />
         );
       
@@ -226,6 +241,7 @@ const StyleQuizPages = () => {
             initialData={quizState.colorAnalysis || undefined}
             currentStep={quizState.currentStep}
             totalSteps={totalSteps}
+            hasExtendedFlow={hasExtendedFlow()}
           />
         );
       
@@ -238,6 +254,7 @@ const StyleQuizPages = () => {
             currentStep={quizState.currentStep}
             totalSteps={totalSteps}
             gender={quizState.personalInfo?.gender || ''}
+            hasExtendedFlow={hasExtendedFlow()}
           />
         );
       
@@ -272,6 +289,7 @@ const StyleQuizPages = () => {
             currentStep={quizState.currentStep}
             totalSteps={totalSteps}
             gender={quizState.personalInfo?.gender || ''}
+            hasExtendedFlow={hasExtendedFlow()}
           />
         );
       
@@ -305,6 +323,7 @@ const StyleQuizPages = () => {
             initialData={quizState.ansQuestion || undefined}
             currentStep={quizState.currentStep}
             totalSteps={totalSteps}
+            hasExtendedFlow={hasExtendedFlow()}
           />
         );
       

@@ -10,6 +10,7 @@ interface StyleVibeProps {
   currentStep?: number;
   totalSteps?: number;
   gender?: 'Female' | 'Male' | 'Other' | '';
+  hasExtendedFlow?: boolean;
 }
 
 export interface StyleVibeData {
@@ -79,7 +80,8 @@ const StyleVibe: React.FC<StyleVibeProps> = ({
   initialData,
   currentStep = 5,
   totalSteps = 8,
-  gender = 'Male'
+  gender = 'Male',
+  hasExtendedFlow = false
 }) => {
   const [selectedVibes, setSelectedVibes] = useState<string[]>(
     initialData?.styleVibes || []
@@ -135,6 +137,7 @@ const StyleVibe: React.FC<StyleVibeProps> = ({
       isFormValid={selectedVibes.length > 0}
       nextButtonText="Continue"
       showBackButton={currentStep > 1}
+      hasExtendedFlow={hasExtendedFlow}
     >
       {/* Header */}
       <div className="mb-6">
