@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { getStyleQuizData } from '@/app/utils/styleQuizUtils';
+import { getStyleQuizData, syncQuizDataWithUser } from '@/app/utils/styleQuizUtils';
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/utils/cache';
 
 
@@ -142,7 +142,19 @@ export const useStyleQuizData = () => {
         }
         
         console.log("Fetching style quiz data from API...");
-        const { data, error } = await getStyleQuizData();
+        let { data, error } = await getStyleQuizData();
+        
+        // If initial fetch fails, try to sync existing quiz data
+        if (error && error.includes('No style quiz found')) {
+          console.log("Attempting to sync existing quiz data...");
+          const syncResult = await syncQuizDataWithUser();
+          if (syncResult.success) {
+            console.log("Quiz data synced, retrying fetch...");
+            const retryResult = await getStyleQuizData();
+            data = retryResult.data;
+            error = retryResult.error;
+          }
+        }
         
         if (error) throw error;
 
@@ -300,7 +312,19 @@ export const useStyleQuizData = () => {
         }
         
         console.log("Refetching style quiz data from API...");
-        const { data, error } = await getStyleQuizData();
+        let { data, error } = await getStyleQuizData();
+        
+        // If refetch fails, try to sync existing quiz data
+        if (error && error.includes('No style quiz found')) {
+          console.log("Attempting to sync existing quiz data on refetch...");
+          const syncResult = await syncQuizDataWithUser();
+          if (syncResult.success) {
+            console.log("Quiz data synced, retrying refetch...");
+            const retryResult = await getStyleQuizData();
+            data = retryResult.data;
+            error = retryResult.error;
+          }
+        }
         
         if (error) throw new Error(error as string);
         

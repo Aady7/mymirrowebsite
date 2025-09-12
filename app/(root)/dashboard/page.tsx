@@ -8,12 +8,14 @@ import CuratedOutfitsDashboard from "@/app/components/dashboard/CuratedOutfitsDa
 import { useStyleQuizData } from "@/lib/hooks/useStyleQuizData";
 import SectionLoader from "@/app/components/common/SectionLoader";
 import { trackEvent } from "@/lib/utils/analytics";
+import { syncQuizDataWithUser } from "@/app/utils/styleQuizUtils";
 
 import SmartLoader from "@/app/components/loader/SmartLoader";
 
 const Dashboard = () => {
   const { quizData, colorAnalysis, isLoading, error, refetch } = useStyleQuizData();
   const [showInitialLoader, setShowInitialLoader] = useState(true);
+  const [isForceRefreshing, setIsForceRefreshing] = useState(false);
 
   useEffect(() => {
     let timer: NodeJS.Timeout | null = null;
@@ -52,6 +54,27 @@ const Dashboard = () => {
       colorAnalysis
     });
   }, [isLoading, error, quizData, colorAnalysis]);
+
+  // Handle force refresh with sync
+  const handleForceRefresh = async () => {
+    setIsForceRefreshing(true);
+    try {
+      console.log("Attempting to sync quiz data...");
+      const syncResult = await syncQuizDataWithUser();
+      if (syncResult.success) {
+        console.log("Quiz data synced successfully, refreshing...");
+        await refetch(true);
+      } else {
+        console.log("Sync failed, attempting regular refresh...");
+        await refetch(true);
+      }
+    } catch (error) {
+      console.error("Force refresh failed:", error);
+      await refetch(true);
+    } finally {
+      setIsForceRefreshing(false);
+    }
+  };
 
   // Show initial loader for minimum time to provide smooth UX
   if (showInitialLoader) {
@@ -92,10 +115,11 @@ const Dashboard = () => {
                 Try Again
               </button>
               <button
-                onClick={() => refetch(true)}
-                className="px-4 py-2 bg-[#007e90] text-white rounded-lg hover:bg-[#006d7d] transition-colors text-sm"
+                onClick={handleForceRefresh}
+                disabled={isForceRefreshing}
+                className="px-4 py-2 bg-[#007e90] text-white rounded-lg hover:bg-[#006d7d] transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Force Refresh
+                {isForceRefreshing ? 'Syncing...' : 'Force Refresh'}
               </button>
             </div>
           </div>

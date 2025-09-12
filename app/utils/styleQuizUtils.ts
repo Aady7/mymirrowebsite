@@ -85,25 +85,7 @@ export const getStyleQuizData = async () => {
 
     console.log('Fetching style quiz data for user:', session.user.id);
 
-    // Get the user's styleQuizId from users table with better error handling
-    const { data: userData, error: userError } = await supabase
-      .from('users_updated')
-      .select('style_quiz_id')
-      .eq('user_id', session.user.id)
-      .maybeSingle(); // Use maybeSingle to avoid throwing on no rows
-
-    if (userError) {
-      console.error('User data fetch error:', userError);
-      throw new Error(`Failed to fetch user data: ${userError.message}`);
-    }
-    
-    if (!userData?.style_quiz_id) {
-      throw new Error('No style quiz found for this user. Please complete the style quiz first.');
-    }
-
-    console.log('Found style quiz ID:', userData.style_quiz_id);
-
-    // Fetch the style quiz data using user_id
+    // First, try to fetch the style quiz data directly from style-quiz-v2 table
     const { data: quizData, error: quizError } = await supabase
       .from('style-quiz-v2')
       .select('*')
@@ -117,8 +99,53 @@ export const getStyleQuizData = async () => {
       throw new Error(`Error fetching style quiz data: ${quizError.message}`);
     }
 
-    console.log('Successfully fetched quiz data');
-    return { data: quizData, error: null };
+    // If we found quiz data, return it
+    if (quizData) {
+      console.log('Successfully fetched quiz data from style-quiz-v2');
+      
+      // Also update the users_updated table if it's missing the style_quiz_id
+      const { data: userData, error: userError } = await supabase
+        .from('users_updated')
+        .select('style_quiz_id')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (!userError && (!userData?.style_quiz_id || userData.style_quiz_id !== quizData.id)) {
+        console.log('Updating users_updated table with style_quiz_id');
+        await supabase
+          .from('users_updated')
+          .upsert([{
+            user_id: session.user.id,
+            style_quiz_id: quizData.id,
+            quiz_completed: true,
+            quiz_completed_at: quizData.created_at,
+            updated_at: new Date().toISOString()
+          }], {
+            onConflict: 'user_id'
+          });
+      }
+      
+      return { data: quizData, error: null };
+    }
+
+    // If no quiz data found, check if user has a style_quiz_id in users_updated (legacy check)
+    const { data: userData, error: userError } = await supabase
+      .from('users_updated')
+      .select('style_quiz_id')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+
+    if (userError) {
+      console.error('User data fetch error:', userError);
+      throw new Error(`Failed to fetch user data: ${userError.message}`);
+    }
+    
+    if (!userData?.style_quiz_id) {
+      throw new Error('No style quiz found for this user. Please complete the style quiz first.');
+    }
+
+    console.log('Found style quiz ID in users_updated:', userData.style_quiz_id);
+    throw new Error('No style quiz found for this user. Please complete the style quiz first.');
   } catch (error) {
     console.error('Error in getStyleQuizData:', error);
     return { 
@@ -389,8 +416,10 @@ export const storeQuizDataInSupabase = async (quizData: StyleQuizV2Data) => {
       throw new Error('No authenticated user found');
     }
 
+    console.log('Storing quiz data for user:', session.user.id);
+
     // Insert data into style-quiz-v2 table
-    const { data, error } = await supabase
+    const { data: quizInsertData, error: quizError } = await supabase
       .from('style-quiz-v2')
       .insert([{
         ...quizData,
@@ -400,17 +429,101 @@ export const storeQuizDataInSupabase = async (quizData: StyleQuizV2Data) => {
       .select()
       .single();
 
-    if (error) {
-      throw error;
+    if (quizError) {
+      console.error('Error inserting quiz data:', quizError);
+      throw quizError;
     }
 
-    console.log('Quiz data successfully stored in Supabase:', data);
-    return { data, error: null };
+    console.log('Quiz data successfully stored in style-quiz-v2:', quizInsertData);
+
+    // Update users_updated table to mark quiz as completed
+    const { data: userUpdateData, error: userUpdateError } = await supabase
+      .from('users_updated')
+      .upsert([{
+        user_id: session.user.id,
+        style_quiz_id: quizInsertData.id, // Link to the quiz data
+        quiz_completed: true,
+        quiz_completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }], {
+        onConflict: 'user_id'
+      })
+      .select()
+      .single();
+
+    if (userUpdateError) {
+      console.error('Error updating users_updated table:', userUpdateError);
+      // Don't throw here - quiz data is already stored, just log the error
+      console.warn('Quiz data stored but failed to update user record:', userUpdateError.message);
+    } else {
+      console.log('User record successfully updated:', userUpdateData);
+    }
+
+    return { data: quizInsertData, error: null };
   } catch (error) {
     console.error('Error storing quiz data in Supabase:', error);
     return { 
       data: null, 
       error: error instanceof Error ? error.message : 'Failed to store quiz data' 
+    };
+  }
+};
+
+// Utility function to sync existing quiz data with users_updated table
+export const syncQuizDataWithUser = async () => {
+  try {
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError || !session?.user) {
+      return { success: false, error: 'No authenticated user found' };
+    }
+
+    // Check if user has quiz data but missing in users_updated
+    const { data: quizData, error: quizError } = await supabase
+      .from('style-quiz-v2')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (quizError || !quizData) {
+      return { success: false, error: 'No quiz data found' };
+    }
+
+    // Check if users_updated has the correct style_quiz_id
+    const { data: userData, error: userError } = await supabase
+      .from('users_updated')
+      .select('style_quiz_id')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+
+    if (!userError && (!userData?.style_quiz_id || userData.style_quiz_id !== quizData.id)) {
+      // Update users_updated table
+      const { error: updateError } = await supabase
+        .from('users_updated')
+        .upsert([{
+          user_id: session.user.id,
+          style_quiz_id: quizData.id,
+          quiz_completed: true,
+          quiz_completed_at: quizData.created_at,
+          updated_at: new Date().toISOString()
+        }], {
+          onConflict: 'user_id'
+        });
+
+      if (updateError) {
+        return { success: false, error: updateError.message };
+      }
+
+      return { success: true, message: 'Quiz data synced successfully' };
+    }
+
+    return { success: true, message: 'Quiz data already synced' };
+  } catch (error) {
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Failed to sync quiz data' 
     };
   }
 }; 
