@@ -21,7 +21,7 @@ export default function Navigation() {
       setIsLoading(true)
       setIsOpen(false) // Close menu when signing out
       await signOut()
-      router.push('/mobile-sign-in')
+      router.push('/sign-in')
     } catch (error) {
       console.error('Error signing out:', error)
     } finally {
@@ -87,7 +87,7 @@ export default function Navigation() {
             </motion.div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
-                href="/aboutpage"
+                href="/about"
                 className="text-gray-700 hover:text-gray-900 transition-all duration-300 font-medium tracking-wide relative group"
               >
                 AboutUs
@@ -96,27 +96,29 @@ export default function Navigation() {
             </motion.div>
           </div>
 
-          {/* Desktop Sign Out Button */}
+          {/* Desktop LookBook and Sign Out Button */}
           <div className="hidden sm:flex items-center space-x-6">
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Link href="/cart" className="relative focus:outline-none" tabIndex={0} aria-label="Cart">
-                <Image 
-                  src="/assets/cartIcon.svg" 
-                  alt="Cart" 
-                  width={24} 
-                  height={24}
+              <Link href="/lookbook" className="relative focus:outline-none group" tabIndex={0} aria-label="LookBook">
+                <svg 
+                  width="24" 
+                  height="24" 
+                  viewBox="0 0 24 24" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  strokeWidth="2" 
+                  strokeLinecap="round" 
+                  strokeLinejoin="round"
                   className="w-6 h-6 text-gray-600 hover:text-gray-900 transition-colors"
-                />
-                {cartCount > 0 && (
-                  <motion.span 
-                    className="absolute -top-2 -right-2 bg-gray-900 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 border-2 border-white z-10"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                  >
-                    {cartCount}
-                  </motion.span>
-                )}
+                >
+                  <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+                  <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+                </svg>
+                {/* Tooltip */}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                  LookBook
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-b-4 border-transparent border-b-gray-900"></div>
+                </div>
               </Link>
             </motion.div>
             <motion.button
@@ -132,30 +134,6 @@ export default function Navigation() {
 
           {/*Mobile Menu Button */}
           <div className='sm:hidden flex items-center space-x-4'>
-            {/* Cart Icon for Mobile */}
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Link href="/cart" onClick={handleLinkClick} className="relative">
-                <button className='text-gray-700 focus:outline-none p-1'>
-                  <Image 
-                    src="/assets/cartIcon.svg" 
-                    alt="Cart" 
-                    width={24} 
-                    height={24}
-                    className="w-6 h-6 text-gray-600 hover:text-gray-900 transition-colors"
-                  />
-                  {cartCount > 0 && (
-                    <motion.span 
-                      className="absolute -top-2 -right-2 bg-gray-900 text-white text-[10px] font-bold rounded-full px-1.5 py-0.5 border-2 border-white z-10"
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    >
-                      {cartCount}
-                    </motion.span>
-                  )}
-                </button>
-              </Link>
-            </motion.div>
             
             {/* Hamburger Menu Button */}
             <motion.button 
@@ -224,15 +202,8 @@ export default function Navigation() {
             >
               LookBook
             </Link>
-            <Link 
-              href="/cart" 
-              onClick={handleLinkClick}
-              className="block text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-lg transition-all duration-200 font-medium"
-            >
-              Cart
-            </Link>
             <Link
-              href="/aboutpage"
+              href="/about"
               onClick={handleLinkClick}
               className="block text-gray-700 hover:text-gray-900 hover:bg-gray-50 px-4 py-3 rounded-lg transition-all duration-200 font-medium"
             >

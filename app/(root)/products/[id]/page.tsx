@@ -10,8 +10,7 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { User } from "@supabase/supabase-js";
 import { useAuth } from "@/lib/hooks/useAuth";
-import { addToCart } from "@/lib/utils/cart";
-import { CartContext } from "@/app/components/provider";
+import AddToLookbookButton from "@/app/components/lookbook/AddToLookbookButton";
 import { useNotification } from "@/app/components/common/NotificationContext";
 
 import SmartLoader from "@/app/components/loader/SmartLoader";
@@ -65,7 +64,6 @@ export default function ProductPage() {
   const searchParams = useSearchParams();
   const outfitId = searchParams.get("outfitId");
   const { getSession } = useAuth();
-  const { refreshCart } = useContext(CartContext);
   const { showNotification } = useNotification();
 
   // State
@@ -77,9 +75,6 @@ export default function ProductPage() {
   const [similarProducts, setSimilarProducts] = useState<SimilarProduct[]>([]);
   const [outfit, setOutfit] = useState<any | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
-  const [addToCartError, setAddToCartError] = useState<string | null>(null);
-  const [addToCartSuccess, setAddToCartSuccess] = useState(false);
   const [isFetchingSimilar, setIsFetchingSimilar] = useState(false);
   const [similarProductsError, setSimilarProductsError] = useState<
     string | null
@@ -512,65 +507,8 @@ export default function ProductPage() {
 
   const handleSizeSelect = (size: string) => {
     setSelectedSize(size);
-    setAddToCartError(null);
-    setAddToCartSuccess(false);
   };
 
-  const handleAddToCart = async () => {
-    if (!selectedSize) {
-      setAddToCartError("Please select a size first");
-      return;
-    }
-
-    setIsAddingToCart(true);
-    setAddToCartError(null);
-    setAddToCartSuccess(false);
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        setAddToCartError("Please sign in to add items to cart");
-        return;
-      }
-
-      const { success, error } = await addToCart(
-        session.user.id,
-        product?.id as number,
-        selectedSize
-      );
-
-      if (success) {
-        console.log(
-          "✅ Item added to cart successfully, refreshing cart count"
-        );
-        setAddToCartSuccess(true);
-
-        // Track add to cart event
-        trackEvent.addToCart({
-          item_id: String(product?.id),
-          item_name: product?.name || "Unknown Product",
-          price: product?.price || 0,
-          category: "product",
-        });
-
-        // Refresh cart count in header
-        await refreshCart();
-        // Show notification
-        showNotification(
-          `${product?.name || "Item"} added to cart!`,
-          "success"
-        );
-        setTimeout(() => setAddToCartSuccess(false), 3000);
-      } else {
-        setAddToCartError(error || "Failed to add item to cart");
-      }
-    } catch (err) {
-      setAddToCartError("Failed to add item to cart. Please try again.");
-    } finally {
-      setIsAddingToCart(false);
-    }
-  };
 
   // Utility function for style-with products
   const getProductDescription = (productDetail: Product): string => {
@@ -846,17 +784,6 @@ export default function ProductPage() {
                 </div>
               </div>
 
-              {/* Add to Cart Error/Success Messages */}
-              {addToCartError && (
-                <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-red-600 text-xs">
-                  {addToCartError}
-                </div>
-              )}
-              {addToCartSuccess && (
-                <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded text-green-600 text-xs">
-                  Item added to cart successfully!
-                </div>
-              )}
 
               {/* Buttons Section */}
               <div className="w-full">
@@ -870,19 +797,11 @@ export default function ProductPage() {
                   >
                     BUY NOW
                   </motion.button>
-                  <motion.button
-                    onClick={handleAddToCart}
-                    disabled={!selectedSize || isAddingToCart}
-                    className={`flex-[2] min-w-[140px] max-w-[240px] rounded-xl h-12 text-sm font-medium transition-all duration-300 tracking-wide ${
-                      selectedSize
-                        ? "bg-white text-gray-900 border-2 border-gray-900 hover:bg-gray-900 hover:text-white"
-                        : "bg-gray-100 text-gray-500 border-2 border-gray-300 cursor-not-allowed opacity-75"
-                    }`}
-                    whileHover={selectedSize ? { scale: 1.02 } : {}}
-                    whileTap={selectedSize ? { scale: 0.98 } : {}}
-                  >
-                    {isAddingToCart ? "ADDING..." : "ADD TO CART"}
-                  </motion.button>
+                  <AddToLookbookButton
+                    itemId={String(product?.id)}
+                    itemType="product"
+                    className="flex-[2] min-w-[140px] max-w-[240px] h-12"
+                  />
                 </div>
               </div>
             </div>

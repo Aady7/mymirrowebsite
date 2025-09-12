@@ -2,6 +2,7 @@
 
 import LookBookBanner from "./lookbookbanner";
 import { useEffect, useState, useRef } from "react";
+import { motion } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { StyleQuizData } from "@/lib/hooks/useStyleQuizData";
 import { User } from "@supabase/supabase-js";
@@ -29,7 +30,9 @@ const LookBook = () => {
   const [showEditLookBook, setShowEditLookBook] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [expandedCardId, setExpandedCardId] = useState<string | null>(null);
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   
   // Fetch existing lookbooks from Supabase
   const fetchLookbooks = async (userId: string) => {
@@ -198,13 +201,93 @@ const LookBook = () => {
     }
   };
 
-  //to handle card expansion/collapse
-  const handleCardClick = (cardId: string) => {
-    if (expandedCardId === cardId) {
-      setExpandedCardId(null); // Collapse if already expanded
-    } else {
-      setExpandedCardId(cardId); // Expand the clicked card
+  // Handle card navigation
+  const goToNextCard = () => {
+    if (currentCardIndex < lookbook.length - 1) {
+      setCurrentCardIndex(currentCardIndex + 1);
     }
+  };
+
+  const goToPrevCard = () => {
+    if (currentCardIndex > 0) {
+      setCurrentCardIndex(currentCardIndex - 1);
+    }
+  };
+
+  const goToCard = (index: number) => {
+    setCurrentCardIndex(index);
+  };
+
+  const handleViewLookbook = (lookbookId: string) => {
+    router.push(`/lookbook/${lookbookId}`);
+  };
+
+  // Handle drag/swipe events
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true);
+    setDragStart({ x: e.clientX, y: e.clientY });
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    
+    const deltaX = e.clientX - dragStart.x;
+    const deltaY = e.clientY - dragStart.y;
+    const threshold = 50;
+
+    // Determine swipe direction
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      // Horizontal swipe
+      if (deltaX > threshold) {
+        goToPrevCard();
+      } else if (deltaX < -threshold) {
+        goToNextCard();
+      }
+    } else {
+      // Vertical swipe
+      if (deltaY > threshold) {
+        goToPrevCard();
+      } else if (deltaY < -threshold) {
+        goToNextCard();
+      }
+    }
+    
+    setIsDragging(false);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setIsDragging(true);
+    setDragStart({ 
+      x: e.touches[0].clientX, 
+      y: e.touches[0].clientY 
+    });
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    
+    const deltaX = e.changedTouches[0].clientX - dragStart.x;
+    const deltaY = e.changedTouches[0].clientY - dragStart.y;
+    const threshold = 50;
+
+    // Determine swipe direction
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      // Horizontal swipe
+      if (deltaX > threshold) {
+        goToPrevCard();
+      } else if (deltaX < -threshold) {
+        goToNextCard();
+      }
+    } else {
+      // Vertical swipe
+      if (deltaY > threshold) {
+        goToPrevCard();
+      } else if (deltaY < -threshold) {
+        goToNextCard();
+      }
+    }
+    
+    setIsDragging(false);
   };
 
   //to update lookbook data
@@ -264,13 +347,17 @@ const LookBook = () => {
   }
 
   return (
-    <>
+    <div className="min-h-screen bg-white">
       <LookBookBanner />
 
       {/* Error display */}
       {error && (
-        <div className="px-5 mt-[-45px] mb-4">
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="px-4 md:px-6 lg:px-8 mt-4 mb-4"
+        >
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl relative">
             <strong className="font-bold">Error: </strong>
             <span className="block sm:inline">{error}</span>
             <button
@@ -280,137 +367,284 @@ const LookBook = () => {
               ✕
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
 
       {/* Loading indicator */}
       {isLoading && (
-        <div className="px-5 mt-[-45px] mb-4">
-          <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="px-4 md:px-6 lg:px-8 mt-4 mb-4"
+        >
+          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-xl">
             <span className="block sm:inline">Loading...</span>
           </div>
-        </div>
+        </motion.div>
       )}
 
-             {/* card section */}
-       <div 
-         className="px-5 mt-[-45px]"
-         style={{
-           marginBottom: lookbook.length > 0 ? `${Math.max(8, 40 - lookbook.length * 4)}px` : '32px'
-         }}
-       >
-        {/* Heading */}
-        <h1 className="text-[25px] text-black font-bold tracking-wider uppercase">
-          Your Lookbook
-        </h1>
+      {/* Main Content */}
+      <div className="px-4 md:px-6 lg:px-8 mt-4 mb-8">
+        {/* Heading with Add Button */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.1 }}
+          className="mb-4 flex items-center justify-between relative z-10"
+        >
+          <div>
+            <h1 className="text-2xl md:text-3xl text-gray-900 font-bold tracking-wide">
+              Your Lookbook
+            </h1>
+            <p className="text-gray-600 mt-2">
+              {lookbook.length > 0 
+                ? `${lookbook.length} look${lookbook.length === 1 ? '' : 's'} saved`
+                : 'Create your first look to get started'
+              }
+            </p>
+          </div>
+          
+          {/* Add New Card Button */}
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            onClick={() => setPopup(true)}
+            className="w-12 h-12 md:w-14 md:h-14 bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white rounded-full shadow-lg flex items-center justify-center text-xl md:text-2xl font-bold transition-all duration-300"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            +
+          </motion.button>
+        </motion.div>
 
-                 {/* Card Container (Stack) */}
-         <div 
-           className="relative mt-20"
-           style={{
-             // Calculate height dynamically based on expanded state
-             minHeight: lookbook.length > 0 
-               ? expandedCardId 
-                 ? `${520 + (lookbook.length - 1) * 100}px` // More space when expanded
-                 : `${420 + (lookbook.length - 1) * 160}px` // Normal stacking
-               : 'auto'
-           }}
-         >
+        {/* Card Container - Stacked Carousel */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="relative"
+        >
           {lookbook.length === 0 ? (
-            <div className="px-4 mt-10 flex flex-col items-center justify-center">
-              <Image
-                src="/assets/lookbookEmpty.svg"
-                alt="Empty"
-                width={100}
-                height={100}
-                className="w-full h-full"
-              />
-              <h1 className="mt-10 pl-2 text-center align-center uppercase text-black text-md font-semibold">
-                Looks like your Lookbook’s on vacation 👀 Time to add some fire
-                fits!
-              </h1>
-            </div>
-          ) : null}
-                                          {lookbook.map((card, idx) => {
-            const isExpanded = expandedCardId === card.id;
-            const isOtherExpanded = expandedCardId !== null && expandedCardId !== card.id;
-            
-            return (
-              <div
-                key={card.id}
-                className={`relative transition-all duration-500 ease-in-out cursor-pointer hover:shadow-2xl`}
-                style={{
-                  marginTop: isExpanded 
-                    ? 0 // Expanded card moves to natural position
-                    : isOtherExpanded 
-                      ? (idx === 0 ? 0 : -280) // Other cards become more hidden when one is expanded
-                      : (idx === 0 ? 0 : -220), // Normal stacking
-                  zIndex: isExpanded 
-                    ? 1000 // Expanded card goes to top
-                    : isOtherExpanded 
-                      ? idx // Other cards maintain their order but lower z-index
-                      : idx + 1, // Normal z-index
-                  transform: isExpanded 
-                    ? `translateY(0px) scale(1.02)` // Expanded card: no offset, slightly larger
-                    : isOtherExpanded
-                      ? `translateY(${idx * 8}px) scale(0.95)` // Other cards: smaller and more compressed
-                      : `translateY(${idx * 12}px)`, // Normal offset
-                  opacity: isOtherExpanded ? 0.6 : 1, // Dim other cards when one is expanded
-                }}
-                onClick={() => handleCardClick(card.id)}
-              >
-                <LookBookCard
-                  imageUrl={card.characterImage}
-                  heading={card.title}
-                  backgroundColor={card.color || getColorByIndex(idx)}
-                  avatarSticker={card.avatarStickerUrl}
-                  onEdit={() => handleEdit(idx)}
-                  onShare={() => handleShare(card)}
-                  onDelete={() => {
-                    setDeleteTarget(card);
-                    setShowDeleteModal(true);
-                  }}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-col items-center justify-center py-12 md:py-16"
+            >
+              <div className="w-24 h-24 md:w-32 md:h-32 mb-6">
+                <Image
+                  src="/assets/lookbookEmpty.svg"
+                  alt="Empty Lookbook"
+                  width={128}
+                  height={128}
+                  className="w-full h-full object-contain"
                 />
               </div>
-            );
-          })}
+              <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-2 text-center">
+                Your Lookbook is Empty
+              </h2>
+              <p className="text-gray-600 text-center max-w-md px-4">
+                Looks like your Lookbook's on vacation 👀 Time to add some fire fits!
+              </p>
+            </motion.div>
+          ) : (
+            <div className="relative">
+              {/* Desktop: Horizontal Stacked Carousel */}
+              <div className="hidden md:block">
+                <div 
+                  className="relative flex justify-center items-center h-96 cursor-grab select-none overflow-visible"
+                  onMouseDown={handleMouseDown}
+                  onMouseUp={handleMouseUp}
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  <div className="relative w-80 h-full">
+                    {lookbook.map((card, idx) => {
+                      const isActive = idx === currentCardIndex;
+                      const offset = idx - currentCardIndex;
+                      
+                      return (
+                        <motion.div
+                          key={card.id}
+                          className="absolute inset-0 cursor-pointer"
+                          style={{
+                            zIndex: lookbook.length - Math.abs(offset),
+                          }}
+                          animate={{
+                            x: offset * 80, // Increased horizontal offset - show more of left cards
+                            y: Math.abs(offset) * 8, // Reduced vertical offset
+                            scale: isActive ? 1 : 0.85 - Math.abs(offset) * 0.03, // Less scale reduction
+                            opacity: Math.abs(offset) > 3 ? 0 : 1 - Math.abs(offset) * 0.15, // Show more cards
+                          }}
+                          transition={{ 
+                            type: "spring", 
+                            stiffness: 300, 
+                            damping: 30 
+                          }}
+                          onClick={() => {
+                            if (!isActive) {
+                              goToCard(idx);
+                            }
+                          }}
+                        >
+                          <LookBookCard
+                            imageUrl={card.characterImage}
+                            heading={card.title}
+                            backgroundColor={card.color || getColorByIndex(idx)}
+                            avatarSticker={card.avatarStickerUrl}
+                            onView={() => handleViewLookbook(card.id)}
+                            onEdit={() => handleEdit(idx)}
+                            onShare={() => handleShare(card)}
+                            onDelete={() => {
+                              setDeleteTarget(card);
+                              setShowDeleteModal(true);
+                            }}
+                          />
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Navigation arrows */}
+                  {currentCardIndex > 0 && (
+                    <button
+                      onClick={goToPrevCard}
+                      className="absolute left-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full shadow-lg flex items-center justify-center hover:bg-white transition-colors z-50"
+                    >
+                      ←
+                    </button>
+                  )}
+                  {currentCardIndex < lookbook.length - 1 && (
+                    <button
+                      onClick={goToNextCard}
+                      className="absolute right-4 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-white/80 rounded-full shadow-lg flex items-center justify-center hover:bg-white transition-colors z-50"
+                    >
+                      →
+                    </button>
+                  )}
+                </div>
+              </div>
 
-                     {/* Add New Card Button - positioned beneath the newest card */}
-           <div
-             className="relative"
-             style={{
-               marginTop: lookbook.length > 0 
-                 ? expandedCardId 
-                   ? -30 // Less margin when expanded
-                   : -50 // Normal margin
-                 : 0,
-               zIndex: lookbook.length + 10, // Higher than all cards
-               width: "100%",
-               height: "80px",
-             }}
-           >
-             <button
-               onClick={() => setPopup(true)}
-               className="absolute bottom-2 right-4 w-16 h-16 bg-white rounded-full border-2 border-gray-400 shadow-xl flex items-center justify-center text-3xl font-bold hover:scale-105 transition pointer-events-auto"
-             >
-               +
-             </button>
-           </div>
-        </div>
+              {/* Mobile: Horizontal Stacked Carousel (Same as Desktop) */}
+              <div className="md:hidden">
+                <div 
+                  className="relative flex justify-center items-center h-80 cursor-grab select-none overflow-hidden -mt-4"
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  <div className="relative w-72 h-full">
+                    {lookbook.map((card, idx) => {
+                      const isActive = idx === currentCardIndex;
+                      const offset = idx - currentCardIndex;
+                      
+                      return (
+                        <motion.div
+                          key={card.id}
+                          className="absolute inset-0 cursor-pointer"
+                          style={{
+                            zIndex: lookbook.length - Math.abs(offset),
+                          }}
+                          animate={{
+                            x: offset * 60, // Horizontal offset for mobile (slightly less than desktop)
+                            y: Math.abs(offset) * 6, // Slight vertical offset
+                            scale: isActive ? 1 : 0.85 - Math.abs(offset) * 0.03, // Same scaling as desktop
+                            opacity: Math.abs(offset) > 3 ? 0 : 1 - Math.abs(offset) * 0.15, // Show up to 3 cards
+                          }}
+                          transition={{ 
+                            type: "spring", 
+                            stiffness: 300, 
+                            damping: 30 
+                          }}
+                          onClick={() => {
+                            if (!isActive) {
+                              goToCard(idx);
+                            }
+                          }}
+                        >
+                          <LookBookCard
+                            imageUrl={card.characterImage}
+                            heading={card.title}
+                            backgroundColor={card.color || getColorByIndex(idx)}
+                            avatarSticker={card.avatarStickerUrl}
+                            onView={() => handleViewLookbook(card.id)}
+                            onEdit={() => handleEdit(idx)}
+                            onShare={() => handleShare(card)}
+                            onDelete={() => {
+                              setDeleteTarget(card);
+                              setShowDeleteModal(true);
+                            }}
+                          />
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Navigation indicators */}
+                  <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                    {lookbook.map((_, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => goToCard(idx)}
+                        className={`w-2 h-2 rounded-full transition-colors ${
+                          idx === currentCardIndex ? 'bg-gray-900' : 'bg-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Touch Navigation Areas (Invisible) */}
+                  {currentCardIndex > 0 && (
+                    <div
+                      className="absolute left-0 top-0 bottom-0 w-16 cursor-pointer"
+                      onClick={goToPrevCard}
+                    />
+                  )}
+                  {currentCardIndex < lookbook.length - 1 && (
+                    <div
+                      className="absolute right-0 top-0 bottom-0 w-16 cursor-pointer"
+                      onClick={goToNextCard}
+                    />
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
       </div>
 
-      {/* to the slide up popup menu for adding the cards */}
+      {/* Add New Lookbook Popup */}
       {showPopup && (
-        <div className="fixed inset-0  bg-opacity-60 z-50 flex items-end justify-center">
-          <div className="bg-black w-full max-w-md rounded-t-2xl p-6 text-white animate-slide-up">
-            <button
-              className="text-white text-3xl mb-2"
-              onClick={() => setPopup(false)}
-            >
-              &times;
-            </button>
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/60 z-50 flex items-end justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setPopup(false);
+            }
+          }}
+        >
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="bg-white w-full max-w-md rounded-t-2xl p-6 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Create New Lookbook</h2>
+              <button
+                className="text-gray-500 hover:text-gray-700 text-2xl"
+                onClick={() => setPopup(false)}
+              >
+                &times;
+              </button>
+            </div>
 
-            <div className="px-4 w-full h-50 bg-black rounded-xl mb-6">
+            <div className="px-4 w-full h-50 bg-gray-100 rounded-xl mb-6">
               <div 
                 className="relative border-8 shadow-xl rounded-xl w-full h-[200px] overflow-hidden"
                 style={{ backgroundColor: getColorByIndex(lookbook.length) }}
@@ -472,58 +706,56 @@ const LookBook = () => {
               </div>
             </div>
 
-            <p className="text-xs text-gray-300 mb-6 px-8">
+            <p className="text-sm text-gray-600 mb-6 text-center">
               Here's how your cover looks right now. Wanna make it so you?
             </p>
-            <div className="flex items-center justify-center">
-                             <Button className="text-sm bg-gray-100 text-black rounded-md px-4 py-2 mb-6"
-                 onClick={async () => {
-                   // First create the lookbook, then open edit
-                   const currentLength = lookbook.length;
-                   await handleAddNewCard();
-                   // The new card will be at index = currentLength (since we add to end)
-                   setEditIndex(currentLength);
-                   setShowEditLookBook(true);
-                 }}
-                 disabled={!name.trim()}
-               >
+            
+            <div className="flex items-center justify-center mb-6">
+              <Button 
+                className="bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white px-6 py-2 rounded-xl text-sm font-medium transition-all duration-300 tracking-wide"
+                onClick={async () => {
+                  const currentLength = lookbook.length;
+                  await handleAddNewCard();
+                  setEditIndex(currentLength);
+                  setShowEditLookBook(true);
+                }}
+                disabled={!name.trim()}
+              >
                 Create Your Own Cover
               </Button>
             </div>
 
-            <div className="mb-4 mt-6 px-8">
-              <label className="text-sm font-semibold">
+            <div className="mb-6">
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
                 Name Your Lookbook
               </label>
-              <p className="text-[10px] text-gray-400 mb-3">
+              <p className="text-xs text-gray-500 mb-3">
                 Give your Lookbook a name that screams your vibe.
               </p>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full bg-black border-b border-white focus:outline-none py-2 text-white"
-                placeholder=""
+                className="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all duration-200"
+                placeholder="Enter lookbook name..."
               />
             </div>
 
-            <div className="flex items-center justify-center mt-10 ">
+            <div className="flex items-center justify-center">
               <Button
                 onClick={handleAddNewCard}
                 disabled={isLoading || !name.trim()}
-                className={`text-sm uppercase bg-gray-100 text-black rounded-md px-4 py-2 mb-2 w-25 ${
-                  isLoading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                className="bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white px-8 py-3 rounded-xl text-sm font-medium transition-all duration-300 tracking-wide disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading ? 'Saving...' : 'save'}
+                {isLoading ? 'Saving...' : 'Save Lookbook'}
               </Button>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       )}
-      {showEditLookBook && editIndex !== null && lookbook[editIndex] && (
+      {showEditLookBook && editIndex !== null && lookbook[editIndex!] && (
         <EditLookBook 
-          item={lookbook[editIndex]} 
+          item={lookbook[editIndex!]!} 
           onClose={() => {
             setShowEditLookBook(false);
             setEditIndex(null);
@@ -538,7 +770,7 @@ const LookBook = () => {
             <h2 className="text-lg font-bold text-white mb-2">Delete lookbook?</h2>
             <p className="text-sm text-gray-200 mb-6">
               Are you sure you want to delete <br />
-              <span className="font-semibold">{deleteTarget.title}?</span>
+              <span className="font-semibold">{deleteTarget?.title}?</span>
             </p>
             <div className="flex border-t border-gray-700 pt-4 gap-4 justify-between">
               <button
@@ -551,9 +783,11 @@ const LookBook = () => {
                 className="flex-1 text-red-400 font-semibold py-2 rounded hover:bg-gray-800 transition disabled:opacity-50"
                 disabled={isLoading}
                 onClick={async () => {
-                  await handleDelete(deleteTarget.id);
-                  setShowDeleteModal(false);
-                  setDeleteTarget(null);
+                  if (deleteTarget) {
+                    await handleDelete(deleteTarget.id);
+                    setShowDeleteModal(false);
+                    setDeleteTarget(null);
+                  }
                 }}
               >
                 {isLoading ? 'Deleting...' : 'Delete'}
@@ -562,7 +796,7 @@ const LookBook = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 export default LookBook;

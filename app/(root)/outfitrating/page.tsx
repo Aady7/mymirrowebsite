@@ -16,7 +16,7 @@ const OutfitRatingIndexPage = () => {
         const { session } = await getSession();
         
         if (!session?.user) {
-          router.push('/mobile-sign-in');
+          router.push('/sign-in');
           return;
         }
 

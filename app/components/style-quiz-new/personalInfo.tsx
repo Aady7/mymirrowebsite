@@ -9,6 +9,7 @@ interface PersonalInfoProps {
   currentStep?: number;
   totalSteps?: number;
   hasExtendedFlow?: boolean;
+  onStartOver?: () => void;
 }
 
 export interface PersonalInfoData {
@@ -24,7 +25,8 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
   initialData,
   currentStep = 1,
   totalSteps = 8,
-  hasExtendedFlow = false
+  hasExtendedFlow = false,
+  onStartOver
 }) => {
   const [formData, setFormData] = useState<PersonalInfoData>({
     name: initialData?.name || '',
@@ -109,6 +111,7 @@ const PersonalInfo: React.FC<PersonalInfoProps> = ({
       nextButtonText="Continue"
       showBackButton={currentStep > 1}
       hasExtendedFlow={hasExtendedFlow}
+      onStartOver={onStartOver}
     >
       {/* Header */}
       <div className="mb-6">

@@ -64,7 +64,7 @@ const AuthNav = () => {
                 </motion.div>
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Link
-                    href="/aboutpage"
+                    href="/about"
                     className="text-gray-700 hover:text-gray-900 transition-all duration-300 font-medium tracking-wide relative group"
                   >
                     AboutUs
@@ -77,7 +77,7 @@ const AuthNav = () => {
             {/* Desktop Sign In/Up Buttons */}
             <div className="hidden sm:flex items-center space-x-4">
               <motion.button
-                onClick={() => router.push('/mobile-sign-in')}
+                onClick={() => router.push('/sign-in')}
                 className="bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white px-6 py-2 rounded-xl text-sm font-medium transition-all duration-300 tracking-wide"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
@@ -137,7 +137,7 @@ const AuthNav = () => {
                 Style Quiz
               </Link>
               <Link 
-                href="/aboutpage" 
+                href="/about" 
                 onClick={handleLinkClick}
                 className="block text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
               >
@@ -145,7 +145,7 @@ const AuthNav = () => {
               </Link>
               <div className="border-t border-gray-200 pt-2 mt-2">
                 <button
-                  onClick={() => handleButtonClick('/mobile-sign-in')}
+                  onClick={() => handleButtonClick('/sign-in')}
                   className="block w-full text-left text-gray-700 hover:text-indigo-600 hover:bg-gray-300 px-3 py-2 rounded-md"
                 >
                   Sign in

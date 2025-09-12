@@ -97,7 +97,7 @@ const Footer = () => {
               <h3 className="text-white text-xl font-light tracking-wide">Information</h3>
               <ul className="space-y-4">
                 {[
-                  { href: "/aboutpage", label: "About Us" },
+                  { href: "/about", label: "About Us" },
                   { href: "#", label: "More Search" },
                   { href: "#", label: "Blog" },
                   { href: "#", label: "Testimonials" }

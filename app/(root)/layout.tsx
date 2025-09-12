@@ -20,15 +20,15 @@ export default function ProtectedLayout({
         const { data: { session }, error } = await supabase.auth.getSession()
 
         if (!session || error) {
-          console.log('No session found, redirecting to mobile-sign-in')
-          router.push('/mobile-sign-in')
+          console.log('No session found, redirecting to sign-in')
+          router.push('/sign-in')
           return
         }
 
         const { data: { user }, error: userError } = await supabase.auth.getUser()
         if (!user || userError) {
-          console.log('Invalid session, redirecting to mobile-sign-in')
-          router.push('/mobile-sign-in')
+          console.log('Invalid session, redirecting to sign-in')
+          router.push('/sign-in')
           return
         }
 
@@ -36,7 +36,7 @@ export default function ProtectedLayout({
         setIsLoading(false)
       } catch (error) {
         console.error('Error checking auth:', error)
-        router.push('/mobile-sign-in')
+        router.push('/sign-in')
       }
     }
 
@@ -53,7 +53,7 @@ export default function ProtectedLayout({
         } catch (error) {
           console.warn('Failed to clear user data on sign out:', error);
         }
-        router.push('/mobile-sign-in')
+        router.push('/sign-in')
       }
     })
 

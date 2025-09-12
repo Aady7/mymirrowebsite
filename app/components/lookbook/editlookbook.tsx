@@ -14,6 +14,7 @@ interface EditLookBookProps {
     characterData?: any;
     color?: string;
     avatarSticker?: string;
+    visibility?: number; // 0 = private, 1 = public
   };
   onClose: () => void;
   onSave?: (lookbookId: string, updatedData: {
@@ -21,6 +22,7 @@ interface EditLookBookProps {
     avatarSticker: string;
     title: string;
     selectedCharacter: any;
+    visibility: number;
   }) => void;
 }
 
@@ -29,7 +31,8 @@ const EditLookBook = ({ item, onClose, onSave }: EditLookBookProps) => {
   const [showStickerPopup, setShowStickerPopup] = useState(false);
   const [showColorPopup, setShowColorPopup] = useState(false);
   const [showSave, setShowSave] = useState(false);
-  const[loading,setloading]=useState(false);
+  const [loading, setloading] = useState(false);
+  const [isPublic, setIsPublic] = useState(item.visibility === 1);
   const presetColors = [
     "#ff0000",
     "#ff8000",
@@ -145,40 +148,71 @@ const EditLookBook = ({ item, onClose, onSave }: EditLookBookProps) => {
         avatarSticker: selectedSticker.name,
         title: lookbookTitle,
         selectedCharacter: selectedCharacter,
+        visibility: isPublic ? 1 : 0,
       });
     }
     onClose();
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-auto bg-black text-white animate-slide-up pb-24">
-        {/*just to add a line height  */}
-        <div className="min-h-5"></div>
-
-        {/*Button zone */}
-        <div className="p-2 flex flex-row items-center justify-between mt-5">
-          <Button
+    <div 
+      className="fixed inset-0 bg-black/60 z-[60] flex items-end justify-center"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div 
+        className="bg-white w-full max-w-md rounded-t-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-gray-900">Edit Lookbook</h2>
+          <button
+            className="text-gray-500 hover:text-gray-700 text-2xl"
             onClick={onClose}
-            className="text-white bg-black text-sm font-semibold leading-normal font-[Boston]"
           >
-            Cancel
-          </Button>
-          <Button className="text-white bg-black text-sm font-semibold leading-normal font-[Boston]">
-            Create your cover
-          </Button>
-          <Button
-            onClick={() => setShowSave(true)}
-            className="text-white bg-black text-sm font-semibold leading-normal font-[Boston]"
-          >
-            {" "}
-            Save
-          </Button>
+            &times;
+          </button>
         </div>
 
+        {/* Visibility Toggle */}
+        <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-medium text-gray-900 mb-1">Visibility</h3>
+              <p className="text-xs text-gray-600">
+                {isPublic ? 'Anyone can view this lookbook' : 'Only you can view this lookbook'}
+              </p>
+            </div>
+            <button
+              onClick={() => setIsPublic(!isPublic)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 ${
+                isPublic ? 'bg-gray-900' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  isPublic ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+          <div className="mt-2 flex items-center gap-2 text-xs">
+            <span className={`px-2 py-1 rounded-full ${isPublic ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+              {isPublic ? 'Public' : 'Private'}
+            </span>
+            {isPublic && (
+              <span className="text-gray-500">• Visible in Explore section</span>
+            )}
+          </div>
+        </div>
         {/* Live Preview Canvas */}
-        <div className="mt-2 mb-10 p-4">
+        <div className="mb-6">
           <div 
-            className="relative w-full h-64 rounded-2xl overflow-hidden shadow-xl mx-auto max-w-sm"
+            className="relative w-full h-48 rounded-xl overflow-hidden shadow-lg mx-auto"
             style={{ backgroundColor: adjustColorBrightness(selectedColor, colorBrightness) }}
           >
             {/* Grid pattern overlay - matching reference image */}
@@ -272,45 +306,59 @@ const EditLookBook = ({ item, onClose, onSave }: EditLookBookProps) => {
           />
         </div>
 
-        {/* Bottom Controls - Fixed at bottom of screen */}
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-[#1F1F1F] grid grid-cols-3 gap-4 z-50 border-t border-gray-700">
+        {/* Edit Controls */}
+        <div className="bg-gray-50 rounded-xl p-4 mb-6">
+          <div className="grid grid-cols-3 gap-3">
+            <Button
+              className="text-gray-700 bg-white hover:bg-gray-50 flex flex-col text-xs font-semibold p-4 rounded-lg border border-gray-200 min-h-[80px] justify-center items-center"
+              onClick={() => setShowCharacterPopup(true)}
+            >
+              <Image
+                src={selectedCharacter?.image || "/assets/charactersvg.svg"}
+                alt="character"
+                width={28}
+                height={28}
+                className="w-7 h-7 border border-gray-300 rounded-sm mb-1"
+              />
+              <span className="text-xs leading-tight">Character</span>
+            </Button>
+            <Button
+              className="text-gray-700 bg-white hover:bg-gray-50 flex flex-col text-xs font-semibold p-4 rounded-lg border border-gray-200 min-h-[80px] justify-center items-center"
+              onClick={() => setShowColorPopup(true)}
+            >
+              <div 
+                className="w-7 h-7 rounded border border-gray-300 mb-1"
+                style={{ backgroundColor: adjustColorBrightness(selectedColor, colorBrightness) }}
+              ></div>
+              <span className="text-xs leading-tight">Background</span>
+            </Button>
+            <Button
+              className="text-gray-700 bg-white hover:bg-gray-50 flex flex-col text-xs font-semibold p-4 rounded-lg border border-gray-200 min-h-[80px] justify-center items-center"
+              onClick={() => setShowStickerPopup(true)}
+            >
+              <Image
+                src={selectedSticker.image}
+                alt="sticker"
+                width={28}
+                height={28}
+                className="w-7 h-7 mb-1"
+              />
+              <span className="text-xs leading-tight">Stickers</span>
+            </Button>
+          </div>
+        </div>
+
+        {/* Save Button */}
+        <div className="flex gap-3 mt-6">
           <Button
-            className="text-white bg-[#2A2A2A] flex flex-col text-xs font-semibold leading-normal font-[Boston] p-4 rounded-lg"
-            onClick={() => setShowCharacterPopup(true)}
+            onClick={() => setShowSave(true)}
+            className="flex-1 bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 tracking-wide"
           >
-            <Image
-              src={selectedCharacter?.image || "/assets/charactersvg.svg"}
-              alt="character"
-              width={40}
-              height={40}
-              className="w-10 h-10 border-2 border-white rounded-sm mb-2"
-            />
-            Character
-          </Button>
-          <Button
-            className="text-white bg-[#2A2A2A] flex flex-col text-xs font-semibold leading-normal font-[Boston] p-4 rounded-lg"
-            onClick={() => setShowColorPopup(true)}
-          >
-            <div 
-              className="w-10 h-10 rounded border-2 border-white mb-2"
-              style={{ backgroundColor: adjustColorBrightness(selectedColor, colorBrightness) }}
-            ></div>
-            Background
-          </Button>
-          <Button
-            className="text-white bg-[#2A2A2A] flex flex-col text-xs font-semibold leading-normal font-[Boston] p-4 rounded-lg"
-            onClick={() => setShowStickerPopup(true)}
-          >
-            <Image
-              src={selectedSticker.image}
-              alt="sticker"
-              width={40}
-              height={40}
-              className="w-10 h-10 mb-2"
-            />
-            Stickers
+            Save Changes
           </Button>
         </div>
+      </div>
+
       {/*save popup section */}
       {showSave && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-opacity-60">
@@ -350,8 +398,18 @@ const EditLookBook = ({ item, onClose, onSave }: EditLookBookProps) => {
       )}
       {/* Character selection popup */}
       {showCharacterPopup && (
-        <div className="fixed bottom-0 left-0 right-0 z-[9999] flex items-end justify-center">
-          <div className="bg-[#222] rounded-t-xl p-6 animate-slide-up w-full max-w-md mb-20 max-h-80 overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-black/60 z-[9999] flex items-end justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowCharacterPopup(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-[#222] rounded-t-xl p-6 animate-slide-up w-full max-w-md mb-20 max-h-80 overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-white text-lg">Character</h2>
               <button
@@ -389,8 +447,18 @@ const EditLookBook = ({ item, onClose, onSave }: EditLookBookProps) => {
 
       {/* Sticker selection popup */}
       {showStickerPopup && (
-        <div className="fixed bottom-0 left-0 right-0 z-[9999] flex items-end justify-center">
-          <div className="bg-[#222] rounded-t-xl p-6 animate-slide-up w-full max-w-md mb-20 max-h-80 overflow-y-auto">
+        <div 
+          className="fixed inset-0 bg-black/60 z-[9999] flex items-end justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowStickerPopup(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-[#222] rounded-t-xl p-6 animate-slide-up w-full max-w-md mb-20 max-h-80 overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-white text-lg">Stickers</h2>
               <button
@@ -431,8 +499,18 @@ const EditLookBook = ({ item, onClose, onSave }: EditLookBookProps) => {
       )}
       {/* Background color popup */}
       {showColorPopup && (
-        <div className="fixed bottom-0 left-0 right-0 z-[9999] flex items-end justify-center">
-          <div className="bg-[#222] rounded-t-xl p-6 animate-slide-up w-full max-w-md mb-20 max-h-80">
+        <div 
+          className="fixed inset-0 bg-black/60 z-[9999] flex items-end justify-center"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowColorPopup(false);
+            }
+          }}
+        >
+          <div 
+            className="bg-[#222] rounded-t-xl p-6 animate-slide-up w-full max-w-md mb-20 max-h-80"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-white text-lg">Colour</h2>
               <button
@@ -491,4 +569,5 @@ const EditLookBook = ({ item, onClose, onSave }: EditLookBookProps) => {
     </div>
   );
 };
+
 export default EditLookBook;

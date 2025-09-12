@@ -9,7 +9,37 @@ import AnsQuestion, { AnsQuestionData } from '@/app/components/style-quiz-new/an
 import OutfitSwipe, { SwipeResultData } from '@/app/components/style-quiz-new/outfitSwipe';
 import ContactVerification, { ContactVerificationData } from '@/app/components/style-quiz-new/contactVerification';
 import OtpVerification, { OtpVerificationData } from '@/app/components/style-quiz-new/otpVerification';
-import { storeQuizDataLocally, getQuizDataFromStorage } from '@/app/utils/styleQuizUtils';
+import { storeQuizDataLocally, getQuizDataFromStorage, clearQuizDataFromStorage } from '@/app/utils/styleQuizUtils';
+
+// Tracking utility functions
+declare global {
+  interface Window {
+    gtag?: (...args: any[]) => void;
+    fbq?: (...args: any[]) => void;
+    dataLayer?: any[];
+  }
+}
+
+const trackEvent = (eventName: string, parameters?: any) => {
+  try {
+    // GTM/Google Analytics tracking
+    if (typeof window !== 'undefined' && window.gtag) {
+      window.gtag('event', eventName, {
+        event_category: 'Style Quiz',
+        ...parameters
+      });
+    }
+
+    // Facebook Pixel tracking
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', eventName, parameters);
+    }
+
+    console.log(`Tracking event: ${eventName}`, parameters);
+  } catch (error) {
+    console.error('Tracking error:', error);
+  }
+};
 
 interface StyleQuizState {
   currentStep: number;
@@ -38,23 +68,6 @@ const StyleQuizPages = () => {
     contactVerification: null,
     otpVerification: null,
   });
-
-  // Load quiz data from local storage on component mount
-  useEffect(() => {
-    const savedData = getQuizDataFromStorage();
-    if (savedData) {
-      setQuizState(savedData);
-      console.log('Loaded quiz data from local storage:', savedData);
-    }
-  }, []);
-
-  // Save quiz data to local storage whenever quiz state changes
-  useEffect(() => {
-    // Only save if we have some data (not initial empty state)
-    if (quizState.personalInfo || quizState.bodyType || quizState.colorAnalysis) {
-      storeQuizDataLocally(quizState);
-    }
-  }, [quizState]);
 
   // Calculate total steps and flow type based on style origin selections
   const getTotalSteps = () => {
@@ -91,6 +104,90 @@ const StyleQuizPages = () => {
 
   const totalSteps = getTotalSteps();
 
+  // Load quiz data from local storage on component mount
+  useEffect(() => {
+    const savedData = getQuizDataFromStorage();
+    if (savedData) {
+      // Check if the quiz was already completed
+      if (savedData.otpVerification?.isVerified) {
+        // Quiz was completed, clear the data and start fresh
+        console.log('Quiz was already completed, starting fresh...');
+        clearQuizDataFromStorage();
+        setQuizState({
+          currentStep: 1,
+          personalInfo: null,
+          bodyType: null,
+          colorAnalysis: null,
+          styleOrigin: null,
+          styleVibe: null,
+          ansQuestion: null,
+          outfitSwipe: null,
+          contactVerification: null,
+          otpVerification: null,
+        });
+        
+        // Track quiz restart
+        trackEvent('quiz_restart', {
+          event_label: 'Quiz Restarted After Completion'
+        });
+      } else {
+        // Quiz was not completed, restore the saved state
+        setQuizState(savedData);
+        console.log('Loaded quiz data from local storage:', savedData);
+        
+        // Track quiz resume
+        trackEvent('quiz_resume', {
+          event_label: 'Quiz Resumed',
+          step: savedData.currentStep,
+          total_steps: totalSteps
+        });
+      }
+    } else {
+      // Track quiz start for new users
+      trackEvent('quiz_start', {
+        event_label: 'Style Quiz Started',
+        step: 1,
+        total_steps: totalSteps
+      });
+    }
+  }, []);
+
+  // Save quiz data to local storage whenever quiz state changes
+  useEffect(() => {
+    // Only save if we have some data (not initial empty state) and quiz is not completed
+    // Also don't save if we're on the final OTP step to prevent completion state from being saved
+    if ((quizState.personalInfo || quizState.bodyType || quizState.colorAnalysis) && 
+        !quizState.otpVerification?.isVerified && 
+        quizState.currentStep < totalSteps) {
+      storeQuizDataLocally(quizState);
+    }
+  }, [quizState, totalSteps]);
+
+  // Function to reset quiz to start
+  const resetQuiz = () => {
+    // Track quiz reset/abandonment
+    trackEvent('quiz_reset', {
+      event_label: 'Quiz Reset - Start Over',
+      from_step: quizState.currentStep,
+      total_steps: totalSteps,
+      completion_rate: ((quizState.currentStep / totalSteps) * 100).toFixed(2)
+    });
+    
+    clearQuizDataFromStorage();
+    setQuizState({
+      currentStep: 1,
+      personalInfo: null,
+      bodyType: null,
+      colorAnalysis: null,
+      styleOrigin: null,
+      styleVibe: null,
+      ansQuestion: null,
+      outfitSwipe: null,
+      contactVerification: null,
+      otpVerification: null,
+    });
+  };
+
   const handlePersonalInfoNext = (data: PersonalInfoData) => {
     console.log('Personal Info Data:', data);
     setQuizState(prev => ({
@@ -98,6 +195,14 @@ const StyleQuizPages = () => {
       personalInfo: data,
       currentStep: prev.currentStep + 1
     }));
+    
+    // Track step completion
+    trackEvent('quiz_step_completed', {
+      event_label: 'Personal Info Completed',
+      step: 1,
+      total_steps: totalSteps,
+      data: data
+    });
   };
 
   const handleBodyTypeNext = (data: BodyTypeData) => {
@@ -107,6 +212,14 @@ const StyleQuizPages = () => {
       bodyType: data,
       currentStep: prev.currentStep + 1
     }));
+    
+    // Track step completion
+    trackEvent('quiz_step_completed', {
+      event_label: 'Body Type Completed',
+      step: 2,
+      total_steps: totalSteps,
+      data: data
+    });
   };
 
   const handleColorAnalysisNext = (data: ColorAnalysisData) => {
@@ -116,6 +229,14 @@ const StyleQuizPages = () => {
       colorAnalysis: data,
       currentStep: prev.currentStep + 1
     }));
+    
+    // Track step completion
+    trackEvent('quiz_step_completed', {
+      event_label: 'Color Analysis Completed',
+      step: 3,
+      total_steps: totalSteps,
+      data: data
+    });
   };
 
   const handleStyleOriginNext = (data: StyleOriginData) => {
@@ -128,6 +249,14 @@ const StyleQuizPages = () => {
       styleOrigin: data,
       currentStep: prev.currentStep + 1
     }));
+    
+    // Track step completion
+    trackEvent('quiz_step_completed', {
+      event_label: 'Style Origin Completed',
+      step: 4,
+      total_steps: totalSteps,
+      style_selections: data.styleOrigin
+    });
   };
 
   const handleStyleVibeNext = (data: StyleVibeData) => {
@@ -164,6 +293,23 @@ const StyleQuizPages = () => {
       contactVerification: data,
       currentStep: prev.currentStep + 1
     }));
+    
+    // Track lead generation (email captured)
+    trackEvent('lead_generated', {
+      event_label: 'Email Captured',
+      step: quizState.currentStep,
+      total_steps: totalSteps,
+      email: data.email
+    });
+    
+    // Facebook Pixel Lead event
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'Lead', {
+        content_name: 'Style Quiz Email Capture',
+        value: 1.00,
+        currency: 'USD'
+      });
+    }
   };
 
   const handleOtpVerificationNext = (data: OtpVerificationData) => {
@@ -173,9 +319,45 @@ const StyleQuizPages = () => {
       otpVerification: data,
       currentStep: prev.currentStep + 1
     }));
+    
+    // Track quiz completion - MOST IMPORTANT CONVERSION EVENT
+    trackEvent('quiz_completed', {
+      event_label: 'Style Quiz Completed',
+      step: quizState.currentStep,
+      total_steps: totalSteps,
+      user_email: quizState.contactVerification?.email || '',
+      completion_rate: ((quizState.currentStep / totalSteps) * 100).toFixed(2)
+    });
+    
+    // Facebook Pixel Conversion event
+    if (typeof window !== 'undefined' && window.fbq) {
+      window.fbq('track', 'CompleteRegistration', {
+        content_name: 'Style Quiz Completion',
+        value: 10.00, // Assign a value to the completion
+        currency: 'USD'
+      });
+    }
+    
+    // GTM Custom Event for quiz completion
+    if (typeof window !== 'undefined' && window.dataLayer) {
+      window.dataLayer.push({
+        event: 'quiz_completion',
+        quiz_type: 'style_quiz',
+        user_email: quizState.contactVerification?.email || '',
+        completion_time: new Date().toISOString()
+      });
+    }
   };
 
   const handleBack = () => {
+    // Track step abandonment for funnel analysis
+    trackEvent('quiz_step_back', {
+      event_label: 'User Went Back',
+      from_step: quizState.currentStep,
+      total_steps: totalSteps,
+      completion_rate: ((quizState.currentStep / totalSteps) * 100).toFixed(2)
+    });
+    
     setQuizState(prev => {
       let newStep = Math.max(1, prev.currentStep - 1);
       
@@ -217,6 +399,7 @@ const StyleQuizPages = () => {
             currentStep={quizState.currentStep}
             totalSteps={totalSteps}
             hasExtendedFlow={hasExtendedFlow()}
+            onStartOver={resetQuiz}
           />
         );
       
@@ -230,6 +413,7 @@ const StyleQuizPages = () => {
             totalSteps={totalSteps}
             gender={quizState.personalInfo?.gender || ''}
             hasExtendedFlow={hasExtendedFlow()}
+            onStartOver={resetQuiz}
           />
         );
       
@@ -242,6 +426,7 @@ const StyleQuizPages = () => {
             currentStep={quizState.currentStep}
             totalSteps={totalSteps}
             hasExtendedFlow={hasExtendedFlow()}
+            onStartOver={resetQuiz}
           />
         );
       
@@ -255,6 +440,7 @@ const StyleQuizPages = () => {
             totalSteps={totalSteps}
             gender={quizState.personalInfo?.gender || ''}
             hasExtendedFlow={hasExtendedFlow()}
+            onStartOver={resetQuiz}
           />
         );
       
@@ -290,6 +476,7 @@ const StyleQuizPages = () => {
             totalSteps={totalSteps}
             gender={quizState.personalInfo?.gender || ''}
             hasExtendedFlow={hasExtendedFlow()}
+            onStartOver={resetQuiz}
           />
         );
       
@@ -324,6 +511,7 @@ const StyleQuizPages = () => {
             currentStep={quizState.currentStep}
             totalSteps={totalSteps}
             hasExtendedFlow={hasExtendedFlow()}
+            onStartOver={resetQuiz}
           />
         );
       
@@ -361,6 +549,7 @@ const StyleQuizPages = () => {
             currentStep={quizState.currentStep}
             totalSteps={totalSteps}
             gender={quizState.personalInfo?.gender || 'Male'}
+            onStartOver={resetQuiz}
           />
         );
       
@@ -373,6 +562,7 @@ const StyleQuizPages = () => {
             initialData={quizState.contactVerification || undefined}
             currentStep={quizState.currentStep}
             totalSteps={totalSteps}
+            onStartOver={resetQuiz}
           />
         );
       
@@ -389,6 +579,7 @@ const StyleQuizPages = () => {
             phone={quizState.contactVerification?.phone || ''}
             allQuizData={quizState}
             isLatestVersion={true}
+            onStartOver={resetQuiz}
           />
         );
       
@@ -400,14 +591,17 @@ const StyleQuizPages = () => {
             initialData={quizState.personalInfo || undefined}
             currentStep={quizState.currentStep}
             totalSteps={totalSteps}
+            onStartOver={resetQuiz}
           />
         );
     }
   };
 
   return (
-    <div className="w-full">
-      {renderCurrentStep()}
+    <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100/50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        {renderCurrentStep()}
+      </div>
     </div>
   );
 };

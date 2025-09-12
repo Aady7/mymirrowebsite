@@ -7,13 +7,12 @@ import { FaCartArrowDown } from 'react-icons/fa';
 import { FaIndianRupeeSign } from 'react-icons/fa6';
 import { Button } from '@/components/ui/button';
 import SimilarOutfitsCarousel from '@/app/components/looks/SimilarOutfitsCarousel';
-import { addToCart } from '@/lib/utils/cart';
 import { useAuth } from '@/lib/hooks/useAuth';
 import SmartLoader from '@/app/components/loader/SmartLoader';
 import StarRating from '@/app/components/starRating';
 import LooksFeedback from '@/app/components/looks/LooksFeedback';
 import { supabase } from '@/lib/supabase';
-import { CartContext } from '@/app/components/provider';
+import AddToLookbookButton from '@/app/components/lookbook/AddToLookbookButton';
 import { useNotification } from '@/app/components/common/NotificationContext';
 import RobustImage from '@/app/components/common/RobustImage';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -99,7 +98,6 @@ const LookPage = () => {
     isValidNumber: id ? !isNaN(Number(id)) : false 
   });
   const { getSession } = useAuth();
-  const { refreshCart } = useContext(CartContext);
   const { showNotification } = useNotification();
   const [products, setProducts] = useState<Product[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<Record<number, string>>({});
@@ -735,89 +733,7 @@ const LookPage = () => {
     return image;
   };
 
-  const handleAddProduct = async (idx: number) => {
-    const size = selectedSizes[idx];
-    if (!size) { 
-      setError('Please select a size'); 
-      return; 
-    }
-    
-    setLoading(prev => ({ ...prev, [idx]: true }));
-    setError(null);
 
-    try {
-      const { session, error: sessionError } = await getSession();
-      
-      if (sessionError || !session?.user?.id) {
-        setError('Please sign in first');
-        return;
-      }
-
-      const prod = products.find(p => p.id === idx);
-      if (!prod) {
-        setError('Product not found');
-        return;
-      }
-
-      const { success, error: cartError } = await addToCart(session.user.id, prod.id, size);
-      
-      if (!success) {
-        setError(cartError || 'Failed to add to cart');
-      } else {
-        console.log('✅ Item added to cart from looks page, refreshing cart count');
-        // Refresh cart count in header
-        await refreshCart();
-        // Show notification
-        const productName = prod?.name || 'Item';
-        showNotification(`${productName} added to cart!`, 'success');
-      } 
-    } catch (err) {
-      setError('An error occurred while adding to cart');
-    } finally {
-      setLoading(prev => ({ ...prev, [idx]: false }));
-    }
-  };
-
-  const handleAddAll = async () => {
-    const allSelected = products.every((product) => selectedSizes[product.id]);
-    if (!allSelected) { 
-      setError('Please select sizes for all items'); 
-      return; 
-    }
-
-    setLoading(prev => ({ ...prev, all: true }));
-    setError(null);
-
-    try {
-      const { session, error: sessionError } = await getSession();
-      
-      if (sessionError || !session?.user?.id) {
-        setError('Please sign in first');
-        return;
-      }
-
-      // Add items sequentially to avoid race conditions
-      const results = [];
-      for (const product of products) {
-        const result = await addToCart(session.user.id, product.id, selectedSizes[product.id]);
-        results.push(result);
-      }
-
-      if (!results.every(r => r.success)) {
-        setError('Some items failed to add to cart');
-      } else {
-        // Refresh cart count in header
-        await refreshCart();
-        // Show notification for all items
-        const successCount = results.filter(r => r.success).length;
-        showNotification(`${successCount} items added to cart!`, 'success');
-      }
-    } catch (err) {
-      setError('An error occurred while adding items to cart');
-    } finally {
-      setLoading(prev => ({ ...prev, all: false }));
-    }
-  };
 
   const parseSizes = (sizesStr: any): { size: string; price: number }[] => {
     // Handle different input types
@@ -1270,16 +1186,11 @@ const LookPage = () => {
 
                         {/* Action Buttons */}
                         <div className="flex gap-3">
-                          <motion.button
-                            onClick={() => handleAddProduct(product.id)}
-                            disabled={loading[product.id] || !selectedSizes[product.id]}
-                            className="flex items-center justify-center px-4 py-3 bg-gray-900 text-white font-medium rounded-xl disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <FaCartArrowDown className="mr-2" />
-                            ADD TO CART
-                          </motion.button>
+                          <AddToLookbookButton
+                            itemId={String(product.id)}
+                            itemType="product"
+                            className="px-4 py-3"
+                          />
                           
                           <Link href={`/products/${product.id}`} className="flex-1">
                             <motion.button
@@ -1447,16 +1358,11 @@ const LookPage = () => {
                         </div>
 
                         <div className="space-y-2">
-                          <motion.button
-                            onClick={() => handleAddProduct(product.id)}
-                            disabled={loading[product.id] || !selectedSizes[product.id]}
-                            className="w-full flex items-center justify-center px-4 py-2 bg-gray-900 text-white font-medium rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors text-sm"
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                          >
-                            <FaCartArrowDown className="mr-2" />
-                            ADD TO CART
-                          </motion.button>
+                          <AddToLookbookButton
+                            itemId={String(product.id)}
+                            itemType="product"
+                            className="w-full px-4 py-2 text-sm"
+                          />
                           
                           <Link href={`/products/${product.id}`}>
                             <motion.button
@@ -1508,27 +1414,17 @@ const LookPage = () => {
           transition={{ duration: 0.6, delay: 0.8 }}
         >
           <div className="text-center mb-6">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Complete Your Look</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Save This Look</h3>
             <p className="text-sm text-gray-500 font-light">
-              {products.length === 1 ? 'Add this item to your cart' : 'Add all items to your cart'}
+              Add this complete outfit to your lookbook collection
             </p>
           </div>
           
-          <motion.button
-            onClick={handleAddAll}
-            disabled={loading.all || products.some(product => !selectedSizes[product.id])}
-            className="w-full py-4 bg-gradient-to-r from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white font-medium rounded-xl shadow-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed tracking-wide"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            {loading.all 
-              ? (products.length === 1 ? 'ADDING TO CART...' : 'ADDING ALL...') 
-              : (products.length === 1 
-                  ? `ADD TO CART - ₹${totalPrice}` 
-                  : `ADD ALL TO CART - ₹${totalPrice}`
-                )
-            }
-          </motion.button>
+          <AddToLookbookButton
+            itemId={id as string}
+            itemType="outfit"
+            className="w-full py-4"
+          />
         </motion.div>
 
         {/* Rating and Feedback */}

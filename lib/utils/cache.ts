@@ -85,16 +85,44 @@ class SessionCache {
       // Clear cache
       this.clear();
       
-      // Clear localStorage items
-      const localStorageKeys = ['styleQuizId', 'userId', 'styleQuizNewId', 'styleQuizNewData', 'styleQuizNewStep'];
+      // Clear all localStorage items
+      const localStorageKeys = [
+        'styleQuizId', 
+        'userId', 
+        'styleQuizNewId', 
+        'styleQuizNewData', 
+        'styleQuizNewStep',
+        'mymirro_cart_items',
+        'mymirro_default_address',
+        'style-quiz-v2' // Style quiz data
+      ];
+      
       localStorageKeys.forEach(key => {
         localStorage.removeItem(key);
+      });
+      
+      // Clear any other localStorage items that start with common prefixes
+      const allLocalStorageKeys = Object.keys(localStorage);
+      allLocalStorageKeys.forEach(key => {
+        if (key.startsWith('mymirro_') || 
+            key.startsWith('style-quiz') || 
+            key.startsWith('supabase_') ||
+            key.includes('quiz') ||
+            key.includes('user') ||
+            key.includes('cart') ||
+            key.includes('address')) {
+          localStorage.removeItem(key);
+        }
       });
       
       // Clear any sessionStorage items that might contain user data
       const sessionKeys = Object.keys(sessionStorage);
       sessionKeys.forEach(key => {
-        if (key.startsWith('mymirro_') || key.startsWith('supabase_')) {
+        if (key.startsWith('mymirro_') || 
+            key.startsWith('supabase_') ||
+            key.startsWith('style-quiz') ||
+            key.includes('quiz') ||
+            key.includes('user')) {
           sessionStorage.removeItem(key);
         }
       });

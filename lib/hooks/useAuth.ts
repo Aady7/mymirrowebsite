@@ -22,7 +22,7 @@ export const useAuth = () => {
 
       console.log('Sign in successful:', data)
 
-      // Manually redirect after successful mobile-sign-in
+      // Manually redirect after successful sign-in
       router.push('/dashboard');
       return { data, error: null }
       
@@ -79,15 +79,15 @@ export const useAuth = () => {
   
       console.log('Successfully cleared all user data and signed out');
       
-      // Redirect to mobile-sign-in page
-      router.push('/mobile-sign-in');
+      // Redirect to sign-in page
+      router.push('/sign-in');
     } catch (error) {
       console.error('Error signing out:', error);
       // Even if there's an error, try to clear data and redirect
       try {
         const { cache } = await import('../utils/cache');
         cache.clearAllUserData();
-        router.push('/mobile-sign-in');
+        router.push('/sign-in');
       } catch (fallbackError) {
         console.error('Fallback cleanup failed:', fallbackError);
       }

@@ -9,6 +9,7 @@ interface LookBookCardProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onShare?: () => void;
+  onView?: () => void;
 }
 
 const LookBookCard: React.FC<LookBookCardProps> = ({ 
@@ -18,12 +19,14 @@ const LookBookCard: React.FC<LookBookCardProps> = ({
   avatarSticker,
   onEdit, 
   onDelete,
-  onShare
+  onShare,
+  onView
 }) => {
   return (
     <div 
-      className="relative w-full max-w-sm mx-auto rounded-3xl p-6 shadow-xl overflow-hidden"
+      className="relative w-full h-full rounded-3xl p-6 shadow-xl overflow-hidden group cursor-pointer transition-all duration-300 hover:scale-105"
       style={{ backgroundColor }}
+      onClick={onView}
     >
       {/* Header with title and action buttons */}
       <div className="flex justify-between items-start mb-8">
@@ -156,6 +159,25 @@ const LookBookCard: React.FC<LookBookCardProps> = ({
           </>
         )}
       </div>
+
+      {/* Hover Overlay with View Button */}
+      {onView && (
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center rounded-3xl">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onView();
+            }}
+            className="bg-white text-gray-900 px-6 py-3 rounded-xl font-semibold text-sm shadow-lg hover:bg-gray-100 transition-all duration-200 flex items-center gap-2 transform scale-90 group-hover:scale-100"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            View Lookbook
+          </button>
+        </div>
+      )}
       </div>
   );
 };
