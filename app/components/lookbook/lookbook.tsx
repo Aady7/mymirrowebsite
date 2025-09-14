@@ -115,7 +115,7 @@ const LookBook = () => {
         name: name.trim(),
         color: getColorByIndex(lookbook.length), // Use the same color logic
         avatar: defaultSticker.name, // Store sticker name in database
-        visibility: 1, // Default to public, you can make this configurable// Store character data as JSON
+        visibility: 0, // Default to private for security
         products: undefined, // Will be populated later as mentioned
         shareUrl: undefined, // Can be generated later if needed
       };

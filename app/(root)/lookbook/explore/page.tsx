@@ -4,6 +4,8 @@ import { motion } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import LookBookCard from '@/app/components/look-book/lookBooklookCard';
+import { Character } from '@/app/components/lookbook/character';
+import { getStickerByName, defaultSticker } from '@/app/data/stickerMapping';
 
 interface PublicLookbook {
   id: string;
@@ -208,10 +210,19 @@ const ExploreLookbooks = () => {
               >
                 <div className="relative">
                   <LookBookCard
-                    imageUrl={lookbook.avatar}
+                    imageUrl={Character[0].image} // Use default character image
                     heading={lookbook.name}
                     backgroundColor={lookbook.color}
-                    avatarSticker={lookbook.avatar}
+                    avatarSticker={(() => {
+                      // Handle both cases: sticker name or full path
+                      if (lookbook.avatar?.startsWith('/')) {
+                        // It's already a path
+                        return lookbook.avatar;
+                      } else {
+                        // It's a sticker name, convert to path
+                        return getStickerByName(lookbook.avatar)?.image || defaultSticker.image;
+                      }
+                    })()}
                     onView={() => handleViewLookbook(lookbook.id)}
                   />
                   

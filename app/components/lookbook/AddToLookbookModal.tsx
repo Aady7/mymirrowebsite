@@ -9,6 +9,9 @@ interface LookbookOption {
   name: string;
   color: string;
   avatar: string;
+  hasProduct?: boolean; // Whether this lookbook already contains the product
+  products?: string | null; // Raw products JSON
+  outfits?: string | null; // Raw outfits JSON
 }
 
 interface AddToLookbookModalProps {
@@ -34,6 +37,7 @@ const AddToLookbookModal: React.FC<AddToLookbookModalProps> = ({
   const [selectedLookbooks, setSelectedLookbooks] = useState<string[]>([]);
 
   useEffect(() => {
+    console.log('🔄 AddToLookbookModal: Modal state changed. isOpen:', isOpen);
     if (isOpen) {
       fetchUserLookbooks();
     }
@@ -42,19 +46,70 @@ const AddToLookbookModal: React.FC<AddToLookbookModalProps> = ({
   const fetchUserLookbooks = async () => {
     try {
       setLoading(true);
-      const session = await getSession();
-      if (!session?.user?.id) return;
+      
+      // Try both methods to get the session
+      const sessionResult = await getSession();
+      const { data: { session: directSession } } = await supabase.auth.getSession();
+      
+      console.log('🔍 AddToLookbookModal: Session debug:', {
+        sessionResult,
+        directSession,
+        sessionResultType: typeof sessionResult,
+        directSessionType: typeof directSession,
+        sessionUser: sessionResult?.session?.user,
+        directUser: directSession?.user,
+        userFromResult: sessionResult?.session?.user?.id,
+        userFromDirect: directSession?.user?.id
+      });
+      
+      // Try different ways to access the user ID
+      const userId = sessionResult?.session?.user?.id || 
+                     directSession?.user?.id || 
+                     sessionResult?.user?.id;
+      
+      if (!userId) {
+        console.warn('⚠️ AddToLookbookModal: No user session found');
+        return;
+      }
+      
+      console.log('✅ AddToLookbookModal: Using user ID:', userId);
 
       const { data, error } = await supabase
         .from('lookbook')
-        .select('id, name, color, avatar')
-        .eq('user_id', session.user.id)
+        .select('id, name, color, avatar, created_at, products, outfits')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
+      console.log('📊 AddToLookbookModal: Lookbooks query result:', { data, error, count: data?.length });
+
       if (error) throw error;
-      setLookbooks(data || []);
+      
+      // Process lookbooks to check if they already contain the current item
+      const processedLookbooks = (data || []).map(lookbook => {
+        let hasProduct = false;
+        
+        try {
+          if (itemType === 'product' && lookbook.products) {
+            const existingProducts = JSON.parse(lookbook.products);
+            hasProduct = existingProducts.includes(itemId);
+          } else if (itemType === 'outfit' && lookbook.outfits) {
+            const existingOutfits = JSON.parse(lookbook.outfits);
+            hasProduct = existingOutfits.includes(itemId);
+          }
+        } catch (e) {
+          console.warn('Error parsing lookbook data:', e);
+        }
+        
+        return {
+          ...lookbook,
+          hasProduct
+        };
+      });
+      
+      console.log('✅ Processed lookbooks with duplicate check:', processedLookbooks);
+      setLookbooks(processedLookbooks);
     } catch (error) {
-      console.error('Error fetching lookbooks:', error);
+      console.error('❌ AddToLookbookModal: Error fetching lookbooks:', error);
     } finally {
       setLoading(false);
     }
@@ -62,14 +117,31 @@ const AddToLookbookModal: React.FC<AddToLookbookModalProps> = ({
 
   const createNewLookbook = async () => {
     try {
-      if (!newLookbookName.trim()) return;
+      if (!newLookbookName.trim()) {
+        console.warn('⚠️ AddToLookbookModal: No lookbook name provided');
+        return;
+      }
       
       setLoading(true);
-      const session = await getSession();
-      if (!session?.user?.id) return;
+      
+      // Try both methods to get the session
+      const sessionResult = await getSession();
+      const { data: { session: directSession } } = await supabase.auth.getSession();
+      
+      // Try different ways to access the user ID
+      const userId = sessionResult?.session?.user?.id || 
+                     directSession?.user?.id || 
+                     sessionResult?.user?.id;
+      
+      console.log('🔍 AddToLookbookModal: Creating lookbook for user:', userId, 'with name:', newLookbookName);
+      
+      if (!userId) {
+        console.warn('⚠️ AddToLookbookModal: No user session found for creation');
+        return;
+      }
 
       const newLookbook = {
-        user_id: session.user.id,
+        user_id: userId,
         name: newLookbookName,
         color: '#B58CD2', // Default color
         avatar: '/assets/stickers/image_1.svg', // Default avatar
@@ -78,9 +150,14 @@ const AddToLookbookModal: React.FC<AddToLookbookModalProps> = ({
         products: itemType === 'product' ? JSON.stringify([itemId]) : null,
       };
 
-      const { error } = await supabase
+      console.log('📝 AddToLookbookModal: Inserting lookbook data:', newLookbook);
+
+      const { data, error } = await supabase
         .from('lookbook')
-        .insert([newLookbook]);
+        .insert([newLookbook])
+        .select();
+
+      console.log('📊 AddToLookbookModal: Insert result:', { data, error });
 
       if (error) throw error;
 
@@ -90,7 +167,7 @@ const AddToLookbookModal: React.FC<AddToLookbookModalProps> = ({
       onSuccess?.();
       
     } catch (error) {
-      console.error('Error creating lookbook:', error);
+      console.error('❌ AddToLookbookModal: Error creating lookbook:', error);
     } finally {
       setLoading(false);
     }
@@ -116,12 +193,18 @@ const AddToLookbookModal: React.FC<AddToLookbookModalProps> = ({
         if (!currentOutfits.includes(itemId)) {
           currentOutfits.push(itemId);
           updateData.outfits = JSON.stringify(currentOutfits);
+        } else {
+          console.log('⚠️ Outfit already exists in lookbook');
+          return; // Don't update if already exists
         }
       } else {
         const currentProducts = lookbook.products ? JSON.parse(lookbook.products) : [];
         if (!currentProducts.includes(itemId)) {
           currentProducts.push(itemId);
           updateData.products = JSON.stringify(currentProducts);
+        } else {
+          console.log('⚠️ Product already exists in lookbook');
+          return; // Don't update if already exists
         }
       }
 
@@ -235,17 +318,22 @@ const AddToLookbookModal: React.FC<AddToLookbookModalProps> = ({
                   
                   {lookbooks.length === 0 ? (
                     <div className="text-center py-8 text-gray-500">
-                      <p>No lookbooks yet.</p>
+                      <p>No lookbooks found.</p>
                       <p className="text-sm">Create your first one above!</p>
                     </div>
                   ) : (
                     lookbooks.map((lookbook) => (
                       <motion.button
                         key={lookbook.id}
-                        onClick={() => handleLookbookSelect(lookbook.id)}
-                        className="w-full p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-3"
-                        whileHover={{ scale: 1.02 }}
-                        whileTap={{ scale: 0.98 }}
+                        onClick={() => lookbook.hasProduct ? null : handleLookbookSelect(lookbook.id)}
+                        disabled={lookbook.hasProduct}
+                        className={`w-full p-3 border rounded-lg transition-colors flex items-center gap-3 ${
+                          lookbook.hasProduct 
+                            ? 'border-green-200 bg-green-50 cursor-not-allowed opacity-75' 
+                            : 'border-gray-200 hover:bg-gray-50 cursor-pointer'
+                        }`}
+                        whileHover={lookbook.hasProduct ? {} : { scale: 1.02 }}
+                        whileTap={lookbook.hasProduct ? {} : { scale: 0.98 }}
                       >
                         <div 
                           className="w-8 h-8 rounded-lg"
@@ -254,7 +342,16 @@ const AddToLookbookModal: React.FC<AddToLookbookModalProps> = ({
                         <span className="flex-1 text-left font-medium text-gray-900">
                           {lookbook.name}
                         </span>
-                        <span className="text-gray-400">→</span>
+                        {lookbook.hasProduct ? (
+                          <div className="flex items-center gap-1 text-green-600 text-sm">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                            Added
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">→</span>
+                        )}
                       </motion.button>
                     ))
                   )}

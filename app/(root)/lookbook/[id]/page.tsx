@@ -3,10 +3,13 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import LookBookCard from "@/app/components/look-book/lookBooklookCard";
-import LookBookOutfit from "@/app/components/look-book/lookBookOutfit";
+import DashboardStyleOutfit from "@/app/components/look-book/DashboardStyleOutfit";
 import LookBookProduct from "@/app/components/look-book/lookBookProduct";
+import PrivacyToggle from "@/app/components/look-book/PrivacyToggle";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/hooks/useAuth";
+import { Character } from "@/app/components/lookbook/character";
+import { getStickerByName, defaultSticker } from "@/app/data/stickerMapping";
 
 interface LookbookData {
   id: string;
@@ -25,7 +28,11 @@ interface OutfitData {
   id: string;
   name: string;
   image: string;
-  // Add more fields as needed from your outfit data structure
+  leftImage?: string;
+  rightImage?: string;
+  topTitle?: string;
+  bottomTitle?: string;
+  category?: string;
 }
 
 interface ProductData {
@@ -47,6 +54,7 @@ const LookbookPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+  const [privacyLoading, setPrivacyLoading] = useState(false);
 
   useEffect(() => {
     const fetchLookbookData = async () => {
@@ -54,9 +62,14 @@ const LookbookPage = () => {
         setLoading(true);
         setError(null);
 
-        // Get current user session
+        // Get current user session with multiple methods
         const session = await getSession();
-        const currentUserId = session?.user?.id;
+        const { data: { session: directSession } } = await supabase.auth.getSession();
+        
+        // Try different ways to get user ID
+        const currentUserId = session?.session?.user?.id || 
+                             session?.user?.id || 
+                             directSession?.user?.id;
 
         // Fetch lookbook data from Supabase
         const { data: lookbook, error: lookbookError } = await supabase
@@ -82,6 +95,7 @@ const LookbookPage = () => {
           return;
         }
 
+        
         setLookbookData(lookbook);
         setIsOwner(lookbook.user_id === currentUserId);
 
@@ -89,21 +103,75 @@ const LookbookPage = () => {
         if (lookbook.outfits) {
           try {
             const outfitIds = JSON.parse(lookbook.outfits);
+            
             if (outfitIds && outfitIds.length > 0) {
-              // You'll need to implement this based on your outfit data structure
-              // For now, we'll use dummy data
-              setOutfitsData([
-                {
-                  id: "outfit-1",
-                  name: "URBAN SHIFT",
-                  image: "/assets/pant-22.png"
-                },
-                {
-                  id: "outfit-2", 
-                  name: "STREET STYLE",
-                  image: "/assets/shooes.png"
+              // First fetch outfit data without joins
+              const { data: outfitsData, error: outfitsError } = await supabase
+                .from('outfits_v2')
+                .select('id, category, top_id, bottom_id, rank, gender')
+                .in('id', outfitIds);
+
+
+              if (outfitsError) {
+                console.error('Error fetching outfits:', outfitsError);
+              } else if (outfitsData && outfitsData.length > 0) {
+                
+                // Get all unique product IDs from outfits
+                const productIds = [...new Set([
+                  ...outfitsData.map(outfit => outfit.top_id),
+                  ...outfitsData.map(outfit => outfit.bottom_id)
+                ].filter(id => id && id !== 0))];
+
+                if (productIds.length > 0) {
+                  // Fetch product details
+                  const { data: productsData, error: productsError } = await supabase
+                    .from('products_v2')
+                    .select('id, title, name, price, product_images')
+                    .in('id', productIds);
+
+                  if (productsError) {
+                    console.error('Error fetching outfit products:', productsError);
+                  } else if (productsData) {
+                    // Create a map for quick product lookup
+                    const productMap = new Map(productsData.map(p => [p.id, p]));
+                    
+                    // Transform the data to match the expected format
+                    const formattedOutfits = outfitsData.map(outfit => {
+                      const topProduct = productMap.get(outfit.top_id);
+                      const bottomProduct = productMap.get(outfit.bottom_id);
+                      
+                      // Helper function to extract first image from product_images
+                      const getFirstImage = (product: any) => {
+                        if (!product?.product_images) return '/assets/logo.png';
+                        try {
+                          const images = typeof product.product_images === 'string' 
+                            ? JSON.parse(product.product_images) 
+                            : product.product_images;
+                          return Array.isArray(images) && images.length > 0 ? images[0] : '/assets/logo.png';
+                        } catch (e) {
+                          return '/assets/logo.png';
+                        }
+                      };
+                      
+                      const topImage = getFirstImage(topProduct);
+                      const bottomImage = getFirstImage(bottomProduct);
+                      
+                      return {
+                        id: outfit.id,
+                        name: `${topProduct?.title || topProduct?.name || 'Top'} + ${bottomProduct?.title || bottomProduct?.name || 'Bottom'}`,
+                        image: topImage !== '/assets/logo.png' ? topImage : bottomImage,
+                        leftImage: topImage,
+                        rightImage: bottomImage,
+                        topTitle: topProduct?.title || topProduct?.name || 'Top',
+                        bottomTitle: bottomProduct?.title || bottomProduct?.name || 'Bottom',
+                        category: outfit.category || 'OUTFIT'
+                      };
+                    });
+                    
+                    setOutfitsData(formattedOutfits);
+                  }
                 }
-              ]);
+              }
             }
           } catch (e) {
             console.error('Error parsing outfits JSON:', e);
@@ -114,25 +182,47 @@ const LookbookPage = () => {
         if (lookbook.products) {
           try {
             const productIds = JSON.parse(lookbook.products);
+            
             if (productIds && productIds.length > 0) {
-              // You'll need to implement this based on your product data structure
-              // For now, we'll use dummy data
-              setProductsData([
-                {
-                  id: "product-1",
-                  name: "Glitchez Vivid Edge Shirt",
-                  image: "/assets/tex-2.png",
-                  brand: "Glitchez",
-                  price: "$29.99"
-                },
-                {
-                  id: "product-2", 
-                  name: "Kook N Keech Trousers",
-                  image: "/assets/pant-22.png",
-                  brand: "Kook N Keech",
-                  price: "$49.99"
-                }
-              ]);
+              const { data: productsData, error: productsError } = await supabase
+                .from('products_v2')
+                .select('id, title, name, price, product_images, url')
+                .in('id', productIds);
+
+
+              if (productsError) {
+                console.error('Error fetching products:', productsError);
+              } else if (productsData) {
+                
+                // Transform the data to match the expected format
+                const formattedProducts = productsData.map(product => {
+                  let firstImage = '/assets/logo.png';
+                  
+                  try {
+                    if (product.product_images) {
+                      const images = typeof product.product_images === 'string' 
+                        ? JSON.parse(product.product_images) 
+                        : product.product_images;
+                      if (Array.isArray(images) && images.length > 0) {
+                        firstImage = images[0];
+                      }
+                    }
+                  } catch (e) {
+                    console.error('Error parsing product images:', e);
+                  }
+                  
+                  return {
+                    id: product.id,
+                    name: product.title || product.name || 'Untitled Product',
+                    image: firstImage,
+                    brand: product.name || '',
+                    price: product.price, // Remove rupee symbol here, component will add it
+                    affiliateUrl: product.url
+                  };
+                });
+                
+                setProductsData(formattedProducts);
+              }
             }
           } catch (e) {
             console.error('Error parsing products JSON:', e);
@@ -153,29 +243,148 @@ const LookbookPage = () => {
     }
   }, [id, getSession]);
 
-  const handleEdit = () => {
-    router.push(`/lookbook/${id}/edit`);
-  };
+  const handlePrivacyToggle = async (isPublic: boolean) => {
+    if (!lookbookData || !isOwner) return;
 
-  const handleDelete = () => {
-    if (confirm("Are you sure you want to delete this lookbook?")) {
-      // In a real app, you would call your delete API
-      console.log("Deleting lookbook:", id);
-      router.push("/lookbook");
+    try {
+      setPrivacyLoading(true);
+      
+      const { session } = await getSession();
+      if (!session?.user?.id) {
+        throw new Error('User not authenticated');
+      }
+
+      const response = await fetch(`/api/lookbook/${id}/privacy`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          visibility: isPublic ? 1 : 0,
+          userId: session.user.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update privacy');
+      }
+
+      const result = await response.json();
+      
+      // Update local state
+      setLookbookData(prev => prev ? { ...prev, visibility: result.data.visibility } : null);
+      
+      // Show success message (you can add a toast notification here)
+      console.log(result.data.message);
+      
+    } catch (error) {
+      console.error('Error updating privacy:', error);
+      // You can add error toast notification here
+    } finally {
+      setPrivacyLoading(false);
     }
   };
 
-  const handleShare = () => {
-    const shareUrl = `${window.location.origin}/lookbook/${id}`;
-    if (navigator.share) {
-      navigator.share({
-        title: lookbookData?.name || "My Lookbook",
-        url: shareUrl,
+  const handleEdit = async () => {
+    const newName = prompt("Enter new lookbook name:", lookbookData?.name || "");
+    if (!newName || !newName.trim() || newName === lookbookData?.name) {
+      return;
+    }
+
+    try {
+      const { session } = await getSession();
+      if (!session?.user?.id) {
+        alert("You must be logged in to edit a lookbook");
+        return;
+      }
+
+      const response = await fetch(`/api/lookbook/${id}/name`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newName.trim(),
+          userId: session.user.id,
+        }),
       });
-    } else {
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to update lookbook name');
+      }
+
+      const result = await response.json();
+      
+      // Update local state
+      setLookbookData(prev => prev ? { ...prev, name: result.data.name } : null);
+      
+      alert("Lookbook name updated successfully!");
+      
+    } catch (error) {
+      console.error('Error updating lookbook name:', error);
+      alert("Failed to update lookbook name. Please try again.");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this lookbook? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const { session } = await getSession();
+      if (!session?.user?.id) {
+        alert("You must be logged in to delete a lookbook");
+        return;
+      }
+
+      // Delete from Supabase
+      const { error } = await supabase
+        .from('lookbook')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', session.user.id); // Ensure user can only delete their own lookbooks
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      alert("Lookbook deleted successfully!");
+      router.push("/lookbook");
+      
+    } catch (error) {
+      console.error('Error deleting lookbook:', error);
+      alert("Failed to delete lookbook. Please try again.");
+    }
+  };
+
+  const handleShare = async () => {
+    const shareUrl = `${window.location.origin}/lookbook/${id}`;
+    
+    try {
+      if (navigator.share && navigator.canShare) {
+        await navigator.share({
+          title: lookbookData?.name || "My Lookbook",
+          text: `Check out my lookbook: ${lookbookData?.name || "My Lookbook"}`,
+          url: shareUrl,
+        });
+      } else {
+        // Fallback to copying to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Share link copied to clipboard!");
+      }
+    } catch (error) {
+      console.error('Error sharing:', error);
       // Fallback to copying to clipboard
-      navigator.clipboard.writeText(shareUrl);
-      alert("Share link copied to clipboard!");
+      try {
+        await navigator.clipboard.writeText(shareUrl);
+        alert("Share link copied to clipboard!");
+      } catch (clipboardError) {
+        console.error('Clipboard error:', clipboardError);
+        alert("Unable to copy link. Please copy manually: " + shareUrl);
+      }
     }
   };
 
@@ -225,37 +434,49 @@ const LookbookPage = () => {
   return (
     <div className="min-h-screen bg-white py-8">
       <div className="max-w-4xl mx-auto px-4">
-        {/* Header with Privacy Badge */}
+        {/* Header with Privacy Controls */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 flex items-center justify-between"
+          className="mb-8"
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between mb-4">
             <button
               onClick={() => router.push("/lookbook")}
-              className="text-gray-600 hover:text-gray-900 transition-colors"
+              className="text-gray-600 hover:text-gray-900 transition-colors flex items-center gap-2"
             >
               ← Back to Lookbooks
             </button>
-            {lookbookData.visibility === 0 && (
-              <span className="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                Private
-              </span>
-            )}
-            {lookbookData.visibility === 1 && (
-              <span className="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
-                Public
-              </span>
-            )}
           </div>
+          
+          {/* Privacy Toggle for Owners */}
           {isOwner && (
-            <button
-              onClick={() => router.push(`/lookbook/${id}/edit`)}
-              className="text-gray-600 hover:text-gray-900 transition-colors text-sm"
-            >
-              Edit Lookbook
-            </button>
+            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-900 mb-1">Privacy Settings</h3>
+                  <p className="text-xs text-gray-500">Control who can view this lookbook</p>
+                </div>
+                <PrivacyToggle
+                  isPublic={lookbookData.visibility === 1}
+                  onToggle={handlePrivacyToggle}
+                  disabled={privacyLoading}
+                />
+              </div>
+            </div>
+          )}
+          
+          {/* Privacy Badge for Non-Owners */}
+          {!isOwner && (
+            <div className="flex items-center gap-2">
+              <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${
+                lookbookData.visibility === 1 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-yellow-100 text-yellow-800'
+              }`}>
+                {lookbookData.visibility === 1 ? 'Public Lookbook' : 'Private Lookbook'}
+              </span>
+            </div>
           )}
         </motion.div>
 
@@ -268,13 +489,23 @@ const LookbookPage = () => {
         >
           <div className="w-full max-w-sm">
             <LookBookCard
-              imageUrl={lookbookData.avatar}
+              imageUrl={Character[0].image} // Use default character image
               heading={lookbookData.name}
               backgroundColor={lookbookData.color}
-              avatarSticker={lookbookData.avatar}
+              avatarSticker={(() => {
+                // Handle both cases: sticker name or full path
+                if (lookbookData.avatar?.startsWith('/')) {
+                  // It's already a path
+                  return lookbookData.avatar;
+                } else {
+                  // It's a sticker name, convert to path
+                  return getStickerByName(lookbookData.avatar)?.image || defaultSticker.image;
+                }
+              })()}
               onEdit={isOwner ? handleEdit : undefined}
               onDelete={isOwner ? handleDelete : undefined}
               onShare={handleShare}
+              onView={() => window.location.reload()} // Refresh to show updated content
             />
           </div>
         </motion.div>
@@ -288,7 +519,7 @@ const LookbookPage = () => {
         >
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">OUTFITS</h2>
           {outfitsData.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-8">
               {outfitsData.map((outfit) => (
                 <motion.div
                   key={outfit.id}
@@ -296,10 +527,17 @@ const LookbookPage = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.1 }}
                 >
-                  <LookBookOutfit
-                    leftImageUrl={outfit.image}
-                    rightImageUrl={outfit.image}
+                  <DashboardStyleOutfit
+                    leftImageUrl={outfit.leftImage || outfit.image}
+                    rightImageUrl={outfit.rightImage || outfit.image}
                     outfitName={outfit.name}
+                    topTitle={outfit.topTitle}
+                    bottomTitle={outfit.bottomTitle}
+                    category={outfit.category}
+                    onView={() => {
+                      // Navigate to the looks page for this outfit
+                      router.push(`/looks/${outfit.id}`);
+                    }}
                   />
                 </motion.div>
               ))}
@@ -322,7 +560,7 @@ const LookbookPage = () => {
         >
           <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">PRODUCTS</h2>
           {productsData.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
               {productsData.map((product) => (
                 <motion.div
                   key={product.id}
@@ -332,8 +570,13 @@ const LookbookPage = () => {
                 >
                   <LookBookProduct
                     productImageUrl={product.image}
-                    productUrl={product.affiliateUrl || `#`}
+                    productUrl={`/products/${product.id}`}
+                    affiliateUrl={product.affiliateUrl}
                     productId={product.id}
+                    productName={product.name}
+                    productPrice={product.price}
+                    productDescription={product.description || "High-quality fashion item perfect for your wardrobe"}
+                    productBrand={product.brand || "Fashion Brand"}
                   />
                 </motion.div>
               ))}
