@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase'
 
+// NOTE: Cart functionality is currently disabled - this file is kept for reference
+
 interface CartItem {
   productId: number | undefined
   size: string

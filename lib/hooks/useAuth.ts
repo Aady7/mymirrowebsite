@@ -44,15 +44,15 @@ export const useAuth = () => {
       }
       const { user } = data
       const { error: insertError } = await supabase
-        .from('users')
+        .from('users_updated')
         .upsert([
           {
-            email: user?.email,
-            userid:user?.id,              
+            email_address: user?.email,
+            user_id: user?.id,              
             created_at: new Date().toISOString(),
           },
         ], {
-          onConflict: 'userid',
+          onConflict: 'user_id',
           ignoreDuplicates: false
         })
         if (insertError) {

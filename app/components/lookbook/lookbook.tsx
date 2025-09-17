@@ -10,11 +10,15 @@ import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import EditLookBook from "./editlookbook";
+import EnhancedEditLookbook from "./EnhancedEditLookbook";
 import { useRouter } from "next/navigation";
 import { LookbookItem, LookbookRecord, CreateLookbookRequest } from "@/app/types/lookbook";
 import { stickerMapping, getStickerByName, defaultSticker } from "@/app/data/stickerMapping";
 import LookBookCard from "../look-book/lookBooklookCard";
+import EnhancedLookBookCard from "../look-book/EnhancedLookBookCard";
+import { useLookbookEngagement } from "@/lib/hooks/useLookbookEngagement";
 import { Character } from "./character";
+import { canAccessAdvancedEdit, hasSessionAdminAccess, isAdminForUI } from "@/lib/utils/admin";
 
 const LookBook = () => {
   const [lookbook, setLookbook] = useState<LookbookItem[]>([]);
@@ -33,19 +37,88 @@ const LookBook = () => {
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [showEnhancedEdit, setShowEnhancedEdit] = useState(false);
+  const [editingLookbook, setEditingLookbook] = useState<LookbookItem | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   
-  // Fetch existing lookbooks from Supabase
+  // Ensure user exists in the users_updated table (required for foreign key constraints)
+  const ensureUserExists = async (user: User) => {
+    try {
+      // Check if user already exists in the users_updated table
+      const { data: existingUser, error: checkError } = await supabase
+        .from('users_updated')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        // PGRST116 is "no rows returned", which is expected if user doesn't exist
+        throw new Error(`Failed to check user existence: ${checkError.message}`);
+      }
+
+      // If user doesn't exist, create them
+      if (!existingUser) {
+        console.log('Creating missing user record for lookbook creation:', user.id);
+        const { error: insertError } = await supabase
+          .from('users_updated')
+          .upsert([
+            {
+              email_address: user.email,
+              user_id: user.id,
+              created_at: new Date().toISOString(),
+            },
+          ], {
+            onConflict: 'user_id',
+            ignoreDuplicates: false
+          });
+
+        if (insertError) {
+          throw new Error(`Failed to create user record: ${insertError.message}`);
+        }
+        
+        console.log('Successfully created user record:', user.id);
+      }
+    } catch (error) {
+      console.error('Error ensuring user exists:', error);
+      throw error;
+    }
+  };
+  
+  // Fetch existing lookbooks from Supabase with engagement data
   const fetchLookbooks = async (userId: string) => {
     try {
       setIsLoading(true);
+      
+      // Fetch lookbooks with engagement data and user info
       const { data, error } = await supabase
         .from('lookbook')
-        .select('*')
+        .select(`
+          *,
+          users_updated!inner(user_id, email_address)
+        `)
         .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) {
         throw new Error(error.message);
+      }
+
+      // Check which lookbooks current user has liked
+      const lookbookIds = data.map(record => record.id);
+      let userLikes: number[] = [];
+      
+      if (user) {
+        const { data: likesData, error: likesError } = await supabase
+          .from('lookbook_likes')
+          .select('lookbook_id')
+          .eq('user_id', user.id)
+          .in('lookbook_id', lookbookIds);
+          
+        if (likesError) {
+          console.error('Error fetching user likes:', likesError);
+        } else {
+          userLikes = likesData.map(like => like.lookbook_id);
+        }
       }
 
       // Convert Supabase records to local LookbookItem format
@@ -61,6 +134,19 @@ const LookBook = () => {
         } catch (e) {
           console.warn('Failed to parse character data:', e);
         }
+
+        // Parse social links
+        let socialLinks = {};
+        try {
+          if (record.social_links) {
+            socialLinks = JSON.parse(record.social_links);
+          }
+        } catch (e) {
+          console.warn('Failed to parse social links:', e);
+        }
+
+        // Get user data from the joined table
+        const userData = (record as any).users_updated;
         
         return {
           id: record.id!.toString(),
@@ -72,10 +158,24 @@ const LookBook = () => {
           shareUrl: record.shareUrl || undefined,
           avatarSticker: record.avatar || defaultSticker.name,
           avatarStickerUrl: stickerData.image,
+          // Enhanced fields
+          customAvatarUrl: record.custom_avatar_url || undefined,
+          creatorName: userData?.email_address?.split('@')[0] || 'User',
+          creatorType: record.creator_type || 'user',
+          verificationBadge: record.verification_badge || null,
+          likesCount: record.likes_count || 0,
+          viewsCount: record.views_count || 0,
+          isLiked: userLikes.includes(record.id!),
+          isPremium: record.is_premium || false,
+          priceTier: record.price_tier || 'free',
+          bio: record.bio || undefined,
+          socialLinks: socialLinks,
+          creatorId: record.user_id,
+          totalEngagementScore: record.total_engagement_score || 0
         };
       });
 
-      setLookbook(lookbookItems);
+        setLookbook(lookbookItems);
     } catch (error) {
       console.error('Error fetching lookbooks:', error);
       setError(error instanceof Error ? error.message : 'Failed to fetch lookbooks');
@@ -90,6 +190,8 @@ const LookBook = () => {
       const { session } = await getSession();
       if (session?.user) {
         setUser(session.user);
+        // Check admin status
+        setIsAdmin(isAdminForUI(session.user.email));
         // Fetch existing lookbooks when user is authenticated
         await fetchLookbooks(session.user.id);
       }
@@ -108,6 +210,9 @@ const LookBook = () => {
     setError(null);
 
     try {
+      // Ensure user exists in the users_updated table (required for foreign key constraint)
+      await ensureUserExists(user);
+
       // Create the lookbook record for Supabase
       const defaultCharacter = Character[0];
       const lookbookData: CreateLookbookRequest = {
@@ -150,7 +255,20 @@ const LookBook = () => {
       setName("");
     } catch (error) {
       console.error('Error creating lookbook:', error);
-      setError(error instanceof Error ? error.message : 'Failed to create lookbook');
+      
+      // Provide user-friendly error messages
+      let userMessage = 'Failed to create lookbook';
+      if (error instanceof Error) {
+        if (error.message.includes('foreign key constraint')) {
+          userMessage = 'Account setup issue detected. Please try again or contact support if the problem persists.';
+        } else if (error.message.includes('Failed to create user record')) {
+          userMessage = 'Unable to verify your account. Please try signing out and signing back in.';
+        } else {
+          userMessage = error.message;
+        }
+      }
+      
+      setError(userMessage);
     } finally {
       setIsLoading(false);
     }
@@ -187,6 +305,17 @@ const LookBook = () => {
     setShowEditLookBook(true);
   };
 
+  const handleEnhancedEdit = (lookbook: LookbookItem) => {
+    // Check admin access before allowing enhanced edit
+    if (!hasSessionAdminAccess() && !canAccessAdvancedEdit(user?.email)) {
+      alert('Access denied. Advanced edit features require admin privileges.');
+      return;
+    }
+    
+    setEditingLookbook(lookbook);
+    setShowEnhancedEdit(true);
+  };
+
   //to share the card
   const handleShare = (card: LookbookItem) => {
     if (card.shareUrl) {
@@ -218,8 +347,128 @@ const LookBook = () => {
     setCurrentCardIndex(index);
   };
 
-  const handleViewLookbook = (lookbookId: string) => {
+  const handleViewLookbook = async (lookbookId: string) => {
+    // Record view before navigating
+    await recordView(parseInt(lookbookId));
     router.push(`/lookbook/${lookbookId}`);
+  };
+
+  // Engagement handlers
+  const handleLike = async (lookbookId: string) => {
+    if (!user) {
+      alert('Please sign in to like lookbooks');
+      return;
+    }
+
+    try {
+      // First check if the user has already liked this lookbook
+      const { data: existingLike, error: checkError } = await supabase
+        .from('lookbook_likes')
+        .select('id')
+        .eq('lookbook_id', parseInt(lookbookId))
+        .eq('user_id', user.id)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        // PGRST116 means no rows returned, which is expected if not liked yet
+        throw checkError;
+      }
+
+      if (existingLike) {
+        // Already liked, do nothing or show a message
+        console.log('Lookbook already liked by user');
+        return;
+      }
+
+      // Insert new like record
+      const { error } = await supabase
+        .from('lookbook_likes')
+        .insert([{
+          lookbook_id: parseInt(lookbookId),
+          user_id: user.id
+        }]);
+
+      if (error) {
+        // Handle the duplicate key constraint violation gracefully
+        if (error.code === '23505') {
+          console.log('Lookbook already liked by user (race condition)');
+          return;
+        }
+        throw error;
+      }
+
+      // Update local state
+      setLookbook(prev => prev.map(item => 
+        item.id === lookbookId 
+          ? { 
+              ...item, 
+              isLiked: true, 
+              likesCount: (item.likesCount || 0) + 1 
+            }
+          : item
+      ));
+    } catch (error) {
+      console.error('Error liking lookbook:', error);
+    }
+  };
+
+  const handleUnlike = async (lookbookId: string) => {
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('lookbook_likes')
+        .delete()
+        .eq('lookbook_id', parseInt(lookbookId))
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Update local state
+      setLookbook(prev => prev.map(item => 
+        item.id === lookbookId 
+          ? { 
+              ...item, 
+              isLiked: false, 
+              likesCount: Math.max(0, (item.likesCount || 1) - 1) 
+            }
+          : item
+      ));
+    } catch (error) {
+      console.error('Error unliking lookbook:', error);
+    }
+  };
+
+  const recordView = async (lookbookId: number) => {
+    try {
+      // Get user's IP address for anonymous view tracking
+      const ipResponse = await fetch('/api/get-ip');
+      const { ip } = await ipResponse.json();
+
+      const viewData: any = {
+        lookbook_id: lookbookId,
+        ip_address: ip,
+        view_date: new Date().toISOString().split('T')[0] // YYYY-MM-DD format
+      };
+
+      // Add user_id if available
+      if (user) {
+        viewData.user_id = user.id;
+      }
+
+      const { error } = await supabase
+        .from('lookbook_views')
+        .insert([viewData]);
+
+      if (error) {
+        // If it's a duplicate view (same user/IP same day), that's okay
+        if (error.code !== '23505') {
+          console.error('Error recording view:', error);
+        }
+      }
+    } catch (error) {
+      console.error('Error recording view:', error);
+    }
   };
 
   // Handle drag/swipe events
@@ -296,6 +545,7 @@ const LookBook = () => {
     avatarSticker: string;
     title: string;
     selectedCharacter: any;
+    visibility: number;
   }) => {
     try {
       setIsLoading(true);
@@ -308,7 +558,7 @@ const LookBook = () => {
           name: updatedData.title,
           color: updatedData.color,
           avatar: updatedData.avatarSticker,
-          
+          visibility: updatedData.visibility
         })
         .eq('id', parseInt(lookbookId));
 
@@ -394,7 +644,7 @@ const LookBook = () => {
         >
           <div>
             <h1 className="text-2xl md:text-3xl text-gray-900 font-bold tracking-wide">
-              Your Lookbook
+              Your Lookbooks
             </h1>
             <p className="text-gray-600 mt-2">
               {lookbook.length > 0 
@@ -488,18 +738,35 @@ const LookBook = () => {
                             }
                           }}
                         >
-                          <LookBookCard
+                          <EnhancedLookBookCard
+                            id={card.id}
                             imageUrl={card.characterImage}
                             heading={card.title}
                             backgroundColor={card.color || getColorByIndex(idx)}
                             avatarSticker={card.avatarStickerUrl}
                             onView={() => handleViewLookbook(card.id)}
                             onEdit={() => handleEdit(idx)}
+                            {...(isAdmin ? {onEnhancedEdit: () => handleEnhancedEdit(card)} : {})}
                             onShare={() => handleShare(card)}
                             onDelete={() => {
                               setDeleteTarget(card);
                               setShowDeleteModal(true);
                             }}
+                            customAvatarUrl={card.customAvatarUrl}
+                            creatorName={card.creatorName || 'User'}
+                            creatorType={card.creatorType || 'user'}
+                            verificationBadge={card.verificationBadge}
+                            likesCount={card.likesCount || 0}
+                            viewsCount={card.viewsCount || 0}
+                            isLiked={card.isLiked || false}
+                            isPremium={card.isPremium || false}
+                            priceTier={card.priceTier || 'free'}
+                            bio={card.bio}
+                            socialLinks={card.socialLinks}
+                            onLike={() => handleLike(card.id)}
+                            onUnlike={() => handleUnlike(card.id)}
+                            currentUserId={user?.id}
+                            creatorId={card.creatorId || ''}
                           />
                         </motion.div>
                       );
@@ -562,18 +829,35 @@ const LookBook = () => {
                             }
                           }}
                         >
-                          <LookBookCard
+                          <EnhancedLookBookCard
+                            id={card.id}
                             imageUrl={card.characterImage}
                             heading={card.title}
                             backgroundColor={card.color || getColorByIndex(idx)}
                             avatarSticker={card.avatarStickerUrl}
                             onView={() => handleViewLookbook(card.id)}
                             onEdit={() => handleEdit(idx)}
+                            {...(isAdmin ? {onEnhancedEdit: () => handleEnhancedEdit(card)} : {})}
                             onShare={() => handleShare(card)}
                             onDelete={() => {
                               setDeleteTarget(card);
                               setShowDeleteModal(true);
                             }}
+                            customAvatarUrl={card.customAvatarUrl}
+                            creatorName={card.creatorName || 'User'}
+                            creatorType={card.creatorType || 'user'}
+                            verificationBadge={card.verificationBadge}
+                            likesCount={card.likesCount || 0}
+                            viewsCount={card.viewsCount || 0}
+                            isLiked={card.isLiked || false}
+                            isPremium={card.isPremium || false}
+                            priceTier={card.priceTier || 'free'}
+                            bio={card.bio}
+                            socialLinks={card.socialLinks}
+                            onLike={() => handleLike(card.id)}
+                            onUnlike={() => handleUnlike(card.id)}
+                            currentUserId={user?.id}
+                            creatorId={card.creatorId || ''}
                           />
                         </motion.div>
                       );
@@ -761,6 +1045,19 @@ const LookBook = () => {
             setEditIndex(null);
           }}
           onSave={handleUpdateLookbook}
+        />
+      )}
+
+      {showEnhancedEdit && editingLookbook && (
+        <EnhancedEditLookbook
+          lookbook={editingLookbook}
+          onClose={() => {
+            setShowEnhancedEdit(false);
+            setEditingLookbook(null);
+          }}
+          onSave={() => {
+            fetchLookbooks(user?.id || '');
+          }}
         />
       )}
 
