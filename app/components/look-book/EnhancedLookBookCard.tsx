@@ -156,7 +156,7 @@ const EnhancedLookBookCard: React.FC<EnhancedLookBookCardProps> = ({
     >
 
       {/* Header with creator info and menu */}
-      <div className="relative p-6 pb-2">
+      <div className="relative p-4 sm:p-6 pb-2">
         {/* Creator Info Section */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -389,7 +389,7 @@ const EnhancedLookBookCard: React.FC<EnhancedLookBookCardProps> = ({
       </div>
 
       {/* Enhanced Bottom Section with Engagement Stats */}
-      <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/20 to-transparent">
+      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black/20 to-transparent">
         {/* Engagement Stats */}
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-4">

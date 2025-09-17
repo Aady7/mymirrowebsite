@@ -214,7 +214,9 @@ const NetflixStyleExplore: React.FC = () => {
   const scroll = (categoryId: string, direction: 'left' | 'right') => {
     const element = scrollRefs.current[categoryId];
     if (element) {
-      const scrollAmount = 320; // Width of card + gap
+      // Mobile: w-64 (256px) + gap 12px = 268px, Desktop: w-72 (288px) + gap 16px = 304px
+      const isMobile = window.innerWidth < 640;
+      const scrollAmount = isMobile ? 268 : 304;
       element.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'
@@ -456,7 +458,7 @@ const NetflixStyleExplore: React.FC = () => {
       )}
 
       {/* Accordion Sections */}
-      <div className="container mx-auto px-8 py-8 space-y-6">
+      <div className="container mx-auto px-4 sm:px-8 py-8 space-y-6">
         {categories.map((category) => {
           const categoryLookbooks = getLookbooksByCategory(category.id);
           const isOpen = openAccordions.has(category.id);
@@ -468,13 +470,12 @@ const NetflixStyleExplore: React.FC = () => {
               {/* Accordion Header */}
               <button
                 onClick={() => toggleAccordion(category.id)}
-                className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-800/50 transition-colors"
+                className="w-full px-4 sm:px-6 py-4 flex items-center justify-between hover:bg-gray-800/50 transition-colors"
               >
-                <div className="flex items-center space-x-4">
-                  <span className="text-2xl">{category.icon}</span>
+                <div className="flex items-center">
                   <div className="text-left">
-                    <h2 className="text-xl font-bold text-white">{category.name}</h2>
-                    <p className="text-gray-400 text-sm">{category.description}</p>
+                    <h2 className="text-lg sm:text-xl font-bold text-white">{category.name}</h2>
+                    <p className="text-gray-400 text-xs sm:text-sm">{category.description}</p>
                   </div>
                 </div>
                 
@@ -525,18 +526,18 @@ const NetflixStyleExplore: React.FC = () => {
                     transition={{ duration: 0.3 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-6 pb-6">
+                    <div className="px-4 sm:px-6 pb-6">
                       {/* Horizontal Scroll Container */}
                       <div className="relative">
                         <div
                           ref={(el) => scrollRefs.current[category.id] = el}
-                          className="flex space-x-4 overflow-x-auto scrollbar-hide pb-4"
+                          className="flex space-x-3 sm:space-x-4 overflow-x-auto scrollbar-hide pb-4"
                           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
                         >
                           {categoryLookbooks.map((lookbook) => {
                             return (
-                            <div key={lookbook.id} className="flex-none w-72">
-                              <div className="relative w-full h-96">
+                            <div key={lookbook.id} className="flex-none w-64 sm:w-72">
+                              <div className="relative w-full h-96 sm:h-[420px]">
                                 <EnhancedLookBookCard
                                   id={lookbook.id}
                                   imageUrl={(() => {

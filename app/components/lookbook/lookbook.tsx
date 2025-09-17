@@ -703,7 +703,7 @@ const LookBook = () => {
               {/* Desktop: Horizontal Stacked Carousel */}
               <div className="hidden md:block">
                 <div 
-                  className="relative flex justify-center items-center h-96 cursor-grab select-none overflow-visible"
+                  className="relative flex justify-center items-center h-[420px] cursor-grab select-none overflow-visible"
                   onMouseDown={handleMouseDown}
                   onMouseUp={handleMouseUp}
                   onTouchStart={handleTouchStart}
@@ -796,11 +796,11 @@ const LookBook = () => {
               {/* Mobile: Horizontal Stacked Carousel (Same as Desktop) */}
               <div className="md:hidden">
                 <div 
-                  className="relative flex justify-center items-center h-80 cursor-grab select-none overflow-hidden -mt-4"
+                  className="relative flex justify-center items-center h-96 cursor-grab select-none overflow-hidden -mt-4"
                   onTouchStart={handleTouchStart}
                   onTouchEnd={handleTouchEnd}
                 >
-                  <div className="relative w-72 h-full">
+                  <div className="relative w-64 sm:w-72 h-full">
                     {lookbook.map((card, idx) => {
                       const isActive = idx === currentCardIndex;
                       const offset = idx - currentCardIndex;
