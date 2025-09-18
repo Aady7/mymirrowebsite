@@ -18,6 +18,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const supabase = useSupabaseClient();
 
   const fetchCartCount = useCallback(async () => {
+    // Cart functionality temporarily disabled
+    console.log('🔄 Cart functionality disabled, setting count to 0');
+    setCartCount(0);
+    
+    /* COMMENTED OUT - Cart functionality not in use
     try {
       console.log('🔄 Fetching cart count...');
       console.log('📋 Session status:', !!session?.user, 'User ID:', session?.user?.id);
@@ -52,6 +57,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       console.error('❌ Cart fetch error:', error);
       setCartCount(0);
     }
+    */
   }, [session, supabase]);
 
   useEffect(() => { 

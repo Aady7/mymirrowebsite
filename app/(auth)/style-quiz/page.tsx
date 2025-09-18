@@ -9,7 +9,9 @@ import AnsQuestion, { AnsQuestionData } from '@/app/components/style-quiz-new/an
 import OutfitSwipe, { SwipeResultData } from '@/app/components/style-quiz-new/outfitSwipe';
 import ContactVerification, { ContactVerificationData } from '@/app/components/style-quiz-new/contactVerification';
 import OtpVerification, { OtpVerificationData } from '@/app/components/style-quiz-new/otpVerification';
-import { storeQuizDataLocally, getQuizDataFromStorage, clearQuizDataFromStorage } from '@/app/utils/styleQuizUtils';
+import { storeQuizDataLocally, getQuizDataFromStorage, clearQuizDataFromStorage, getStyleQuizData } from '@/app/utils/styleQuizUtils';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { supabase } from '@/lib/supabase';
 
 // Tracking utility functions
 declare global {
@@ -52,10 +54,17 @@ interface StyleQuizState {
   outfitSwipe: SwipeResultData | null;
   contactVerification: ContactVerificationData | null;
   otpVerification: OtpVerificationData | null;
+  isRetake?: boolean; // Flag to indicate if this is a quiz retake
   // Add more steps as needed
 }
 
 const StyleQuizPages = () => {
+  const { getSession } = useAuth();
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [existingQuizData, setExistingQuizData] = useState<any>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
+  
   const [quizState, setQuizState] = useState<StyleQuizState>({
     currentStep: 1,
     personalInfo: null,
@@ -69,10 +78,11 @@ const StyleQuizPages = () => {
     otpVerification: null,
   });
 
-  // Calculate total steps and flow type based on style origin selections
+  // Calculate total steps and flow type based on style origin selections and authentication status
   const getTotalSteps = () => {
     if (!quizState.styleOrigin?.styleOrigin) {
-      return 9; // Default total steps
+      // Default total steps - reduce by 2 if authenticated (skip contact verification and OTP)
+      return isAuthenticated ? 7 : 9;
     }
     
     const selectedStyles = quizState.styleOrigin.styleOrigin;
@@ -82,11 +92,17 @@ const StyleQuizPages = () => {
     
     // If user selected only trend-focused, skip styleVibe and ansQuestion steps
     if (hasTrendFocused && !hasInspiredByVibe && !hasSelfExpressive) {
-      return 7; // PersonalInfo(1) -> BodyType(2) -> ColorAnalysis(3) -> StyleOrigin(4) -> OutfitSwipe(5) -> ContactVerification(6) -> OtpVerification(7)
+      // PersonalInfo(1) -> BodyType(2) -> ColorAnalysis(3) -> StyleOrigin(4) -> OutfitSwipe(5) 
+      // + ContactVerification(6) -> OtpVerification(7) for non-authenticated
+      // + No additional steps for authenticated users
+      return isAuthenticated ? 5 : 7;
     }
     
     // If user selected inspired-by-vibe or self-expressive (with or without trend-focused), show all steps
-    return 9; // Include all steps: PersonalInfo(1) -> BodyType(2) -> ColorAnalysis(3) -> StyleOrigin(4) -> StyleVibe(5) -> AnsQuestion(6) -> OutfitSwipe(7) -> ContactVerification(8) -> OtpVerification(9)
+    // PersonalInfo(1) -> BodyType(2) -> ColorAnalysis(3) -> StyleOrigin(4) -> StyleVibe(5) -> AnsQuestion(6) -> OutfitSwipe(7)
+    // + ContactVerification(8) -> OtpVerification(9) for non-authenticated
+    // + No additional steps for authenticated users
+    return isAuthenticated ? 7 : 9;
   };
 
   // Determine if user has extended flow (inspired-by-vibe or self-expressive)
@@ -104,52 +120,98 @@ const StyleQuizPages = () => {
 
   const totalSteps = getTotalSteps();
 
-  // Load quiz data from local storage on component mount
+  // Check authentication status on component mount
   useEffect(() => {
-    const savedData = getQuizDataFromStorage();
-    if (savedData) {
-      // Check if the quiz was already completed
-      if (savedData.otpVerification?.isVerified) {
-        // Quiz was completed, clear the data and start fresh
-        console.log('Quiz was already completed, starting fresh...');
-        clearQuizDataFromStorage();
-        setQuizState({
-          currentStep: 1,
-          personalInfo: null,
-          bodyType: null,
-          colorAnalysis: null,
-          styleOrigin: null,
-          styleVibe: null,
-          ansQuestion: null,
-          outfitSwipe: null,
-          contactVerification: null,
-          otpVerification: null,
-        });
+    const checkAuthAndLoadData = async () => {
+      setIsCheckingAuth(true);
+      try {
+        const { session } = await getSession();
         
-        // Track quiz restart
-        trackEvent('quiz_restart', {
-          event_label: 'Quiz Restarted After Completion'
-        });
-      } else {
-        // Quiz was not completed, restore the saved state
-        setQuizState(savedData);
-        console.log('Loaded quiz data from local storage:', savedData);
+        if (session?.user) {
+          console.log('User is authenticated:', session.user.id);
+          setIsAuthenticated(true);
+          setUserEmail(session.user.email || '');
+          
+          // Try to fetch existing quiz data for authenticated users
+          try {
+            const { data: existingQuiz } = await getStyleQuizData();
+            if (existingQuiz) {
+              console.log('Found existing quiz data for user:', existingQuiz);
+              setExistingQuizData(existingQuiz);
+              
+              // Automatically proceed with quiz retake for existing users
+              console.log('User has existing quiz, proceeding with retake');
+              setQuizState(prev => ({ ...prev, isRetake: true }));
+              trackEvent('quiz_retake_started', {
+                event_label: 'Quiz Retake Started',
+                existing_quiz_id: existingQuiz.id
+              });
+            }
+          } catch (error) {
+            console.log('No existing quiz data found, starting fresh quiz');
+          }
+        } else {
+          console.log('User is not authenticated');
+          setIsAuthenticated(false);
+        }
         
-        // Track quiz resume
-        trackEvent('quiz_resume', {
-          event_label: 'Quiz Resumed',
-          step: savedData.currentStep,
-          total_steps: totalSteps
-        });
+        // Load quiz data from local storage
+        const savedData = getQuizDataFromStorage();
+        if (savedData) {
+          // Check if the quiz was already completed
+          if (savedData.otpVerification?.isVerified) {
+            // Quiz was completed, clear the data and start fresh
+            console.log('Quiz was already completed, starting fresh...');
+            clearQuizDataFromStorage();
+            setQuizState({
+              currentStep: 1,
+              personalInfo: null,
+              bodyType: null,
+              colorAnalysis: null,
+              styleOrigin: null,
+              styleVibe: null,
+              ansQuestion: null,
+              outfitSwipe: null,
+              contactVerification: null,
+              otpVerification: null,
+              isRetake: quizState.isRetake,
+            });
+            
+            // Track quiz restart
+            trackEvent('quiz_restart', {
+              event_label: 'Quiz Restarted After Completion'
+            });
+          } else {
+            // Quiz was not completed, restore the saved state
+            setQuizState(prev => ({ ...savedData, isRetake: prev.isRetake }));
+            console.log('Loaded quiz data from local storage:', savedData);
+            
+            // Track quiz resume
+            trackEvent('quiz_resume', {
+              event_label: 'Quiz Resumed',
+              step: savedData.currentStep,
+              total_steps: totalSteps
+            });
+          }
+        } else {
+          // Track quiz start for new users
+          trackEvent('quiz_start', {
+            event_label: session?.user ? 'Authenticated Quiz Started' : 'Guest Quiz Started',
+            step: 1,
+            total_steps: totalSteps,
+            is_authenticated: !!session?.user
+          });
+        }
+        
+      } catch (error) {
+        console.error('Error checking authentication:', error);
+        setIsAuthenticated(false);
+      } finally {
+        setIsCheckingAuth(false);
       }
-    } else {
-      // Track quiz start for new users
-      trackEvent('quiz_start', {
-        event_label: 'Style Quiz Started',
-        step: 1,
-        total_steps: totalSteps
-      });
-    }
+    };
+
+    checkAuthAndLoadData();
   }, []);
 
   // Save quiz data to local storage whenever quiz state changes
@@ -277,13 +339,83 @@ const StyleQuizPages = () => {
     }));
   };
 
-  const handleOutfitSwipeNext = (data: SwipeResultData) => {
+  const handleOutfitSwipeNext = async (data: SwipeResultData) => {
     console.log('Outfit Swipe Data:', data);
-    setQuizState(prev => ({
-      ...prev,
-      outfitSwipe: data,
-      currentStep: prev.currentStep + 1
-    }));
+    
+    // For authenticated users, this is the final step - complete the quiz
+    if (isAuthenticated) {
+      const updatedQuizState = {
+        ...quizState,
+        outfitSwipe: data,
+        // Auto-fill contact verification with user's email
+        contactVerification: {
+          email: userEmail,
+          phone: '', // Will be handled during storage
+          isVerified: true
+        },
+        otpVerification: {
+          isVerified: true,
+          verifiedEmail: userEmail,
+          verifiedPhone: ''
+        },
+        isRetake: quizState.isRetake
+      };
+      
+      setQuizState(updatedQuizState);
+      
+      // Complete the quiz immediately for authenticated users
+      await completeQuizForAuthenticatedUser(updatedQuizState);
+    } else {
+      // For non-authenticated users, proceed to contact verification
+      setQuizState(prev => ({
+        ...prev,
+        outfitSwipe: data,
+        currentStep: prev.currentStep + 1
+      }));
+    }
+  };
+
+  // Complete quiz for authenticated users
+  const completeQuizForAuthenticatedUser = async (finalQuizState: StyleQuizState) => {
+    try {
+      console.log('🎉 Completing quiz for authenticated user');
+      
+      // Transform and store quiz data in Supabase
+      const { transformQuizDataForV2, storeQuizDataInSupabase } = await import('@/app/utils/styleQuizUtils');
+      const transformedData = transformQuizDataForV2(finalQuizState);
+      
+      console.log('Storing quiz data...', transformedData);
+      const { data, error } = await storeQuizDataInSupabase(transformedData, finalQuizState.isRetake || false);
+      
+      if (error) {
+        console.error('Error storing quiz data:', error);
+        throw new Error(`Failed to store quiz data: ${error}`);
+      }
+      
+      console.log('Quiz data successfully stored:', data);
+      
+      // Clear local storage since we're completing the quiz
+      clearQuizDataFromStorage();
+      
+      // Track quiz completion
+      trackEvent('quiz_completed', {
+        event_label: 'Authenticated User Quiz Completed',
+        total_steps: totalSteps,
+        is_retake: finalQuizState.isRetake,
+        completion_method: 'authenticated_auto',
+        quiz_id: data?.id
+      });
+      
+      // Redirect to dashboard
+      console.log('Redirecting to dashboard...');
+      window.location.href = '/dashboard';
+      
+    } catch (error) {
+      console.error('Error completing quiz for authenticated user:', error);
+      // Still redirect on error
+      console.warn('Quiz completed but there was an issue saving your data.');
+      window.location.href = '/dashboard';
+    }
   };
 
   const handleContactVerificationNext = (data: ContactVerificationData) => {
@@ -596,6 +728,18 @@ const StyleQuizPages = () => {
         );
     }
   };
+
+  // Show loading state while checking authentication
+  if (isCheckingAuth) {
+    return (
+      <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100/50 py-8 px-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p className="text-lg text-gray-600">Loading your style quiz...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100/50 py-8 px-4">

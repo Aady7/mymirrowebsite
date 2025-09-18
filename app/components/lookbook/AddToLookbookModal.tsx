@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { User } from '@supabase/supabase-js';
 
 interface LookbookOption {
   id: string;
@@ -42,6 +43,49 @@ const AddToLookbookModal: React.FC<AddToLookbookModalProps> = ({
       fetchUserLookbooks();
     }
   }, [isOpen]);
+
+  // Ensure user exists in the users_updated table (required for foreign key constraints)
+  const ensureUserExists = async (user: User) => {
+    try {
+      // Check if user already exists in the users_updated table
+      const { data: existingUser, error: checkError } = await supabase
+        .from('users_updated')
+        .select('user_id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        // PGRST116 is "no rows returned", which is expected if user doesn't exist
+        throw new Error(`Failed to check user existence: ${checkError.message}`);
+      }
+
+      // If user doesn't exist, create them
+      if (!existingUser) {
+        console.log('Creating missing user record for lookbook creation:', user.id);
+        const { error: insertError } = await supabase
+          .from('users_updated')
+          .upsert([
+            {
+              email_address: user.email,
+              user_id: user.id,
+              created_at: new Date().toISOString(),
+            },
+          ], {
+            onConflict: 'user_id',
+            ignoreDuplicates: false
+          });
+
+        if (insertError) {
+          throw new Error(`Failed to create user record: ${insertError.message}`);
+        }
+        
+        console.log('Successfully created user record:', user.id);
+      }
+    } catch (error) {
+      console.error('Error ensuring user exists:', error);
+      throw error;
+    }
+  };
 
   const fetchUserLookbooks = async () => {
     try {
@@ -128,17 +172,24 @@ const AddToLookbookModal: React.FC<AddToLookbookModalProps> = ({
       const sessionResult = await getSession();
       const { data: { session: directSession } } = await supabase.auth.getSession();
       
-      // Try different ways to access the user ID
+      // Try different ways to access the user ID and user object
       const userId = sessionResult?.session?.user?.id || 
                      directSession?.user?.id || 
                      sessionResult?.user?.id;
       
+      const user = sessionResult?.session?.user || 
+                   directSession?.user || 
+                   sessionResult?.user;
+      
       console.log('🔍 AddToLookbookModal: Creating lookbook for user:', userId, 'with name:', newLookbookName);
       
-      if (!userId) {
+      if (!userId || !user) {
         console.warn('⚠️ AddToLookbookModal: No user session found for creation');
         return;
       }
+
+      // Ensure user exists in the users_updated table (required for foreign key constraint)
+      await ensureUserExists(user);
 
       const newLookbook = {
         user_id: userId,
@@ -168,6 +219,15 @@ const AddToLookbookModal: React.FC<AddToLookbookModalProps> = ({
       
     } catch (error) {
       console.error('❌ AddToLookbookModal: Error creating lookbook:', error);
+      
+      // Provide user-friendly error messages
+      if (error instanceof Error) {
+        if (error.message.includes('foreign key constraint')) {
+          console.error('Foreign key constraint violation - user may not exist in users_updated table');
+        } else if (error.message.includes('Failed to create user record')) {
+          console.error('Unable to create user record for lookbook creation');
+        }
+      }
     } finally {
       setLoading(false);
     }

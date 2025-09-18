@@ -76,7 +76,7 @@ const SignIn = () => {
           cleanedPhone = '91' + cleanedPhone
         }
 
-        // Check if phone number exists in users table
+        // Check if phone number exists in users_updated table
         const { data: users, error: fetchError } = await supabase
           .from('users_updated')
           .select('phone_number')

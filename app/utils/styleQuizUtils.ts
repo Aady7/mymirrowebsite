@@ -103,23 +103,22 @@ export const getStyleQuizData = async () => {
     if (quizData) {
       console.log('Successfully fetched quiz data from style-quiz-v2');
       
-      // Also update the users_updated table if it's missing the style_quiz_id
+      // Ensure user record exists in users_updated table
       const { data: userData, error: userError } = await supabase
         .from('users_updated')
-        .select('style_quiz_id')
+        .select('user_id')
         .eq('user_id', session.user.id)
         .maybeSingle();
 
-      if (!userError && (!userData?.style_quiz_id || userData.style_quiz_id !== quizData.id)) {
-        console.log('Updating users_updated table with style_quiz_id');
+      if (!userData) {
+        console.log('Creating user record in users_updated table');
         await supabase
           .from('users_updated')
           .upsert([{
-            user_id: session.user.id,
-            style_quiz_id: quizData.id,
-            quiz_completed: true,
-            quiz_completed_at: quizData.created_at,
-            updated_at: new Date().toISOString()
+        user_id: session.user.id,
+        email_address: session.user.email || null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
           }], {
             onConflict: 'user_id'
           });
@@ -128,23 +127,7 @@ export const getStyleQuizData = async () => {
       return { data: quizData, error: null };
     }
 
-    // If no quiz data found, check if user has a style_quiz_id in users_updated (legacy check)
-    const { data: userData, error: userError } = await supabase
-      .from('users_updated')
-      .select('style_quiz_id')
-      .eq('user_id', session.user.id)
-      .maybeSingle();
-
-    if (userError) {
-      console.error('User data fetch error:', userError);
-      throw new Error(`Failed to fetch user data: ${userError.message}`);
-    }
-    
-    if (!userData?.style_quiz_id) {
-      throw new Error('No style quiz found for this user. Please complete the style quiz first.');
-    }
-
-    console.log('Found style quiz ID in users_updated:', userData.style_quiz_id);
+    // No quiz data found in style-quiz-v2 table
     throw new Error('No style quiz found for this user. Please complete the style quiz first.');
   } catch (error) {
     console.error('Error in getStyleQuizData:', error);
@@ -406,8 +389,8 @@ export const transformQuizDataForV2 = (quizState: any): StyleQuizV2Data => {
   };
 };
 
-// Store quiz data in Supabase style-quiz-v2 table
-export const storeQuizDataInSupabase = async (quizData: StyleQuizV2Data) => {
+// Store quiz data in Supabase style-quiz-v2 table (handles both new and updates)
+export const storeQuizDataInSupabase = async (quizData: StyleQuizV2Data, isRetake: boolean = false) => {
   try {
     // Get the current authenticated user
     const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -416,45 +399,68 @@ export const storeQuizDataInSupabase = async (quizData: StyleQuizV2Data) => {
       throw new Error('No authenticated user found');
     }
 
-    console.log('Storing quiz data for user:', session.user.id);
+    console.log('Storing quiz data for user:', session.user.id, 'Is retake:', isRetake);
 
-    // Insert data into style-quiz-v2 table
-    const { data: quizInsertData, error: quizError } = await supabase
-      .from('style-quiz-v2')
-      .insert([{
-        ...quizData,
-        user_id: session.user.id,
-        created_at: new Date().toISOString()
-      }])
-      .select()
-      .single();
+    let quizInsertData;
 
-    if (quizError) {
-      console.error('Error inserting quiz data:', quizError);
-      throw quizError;
+    if (isRetake) {
+      // For retakes, update the existing quiz record
+      const { data: updateData, error: updateError } = await supabase
+        .from('style-quiz-v2')
+        .update({
+          ...quizData
+        })
+        .eq('user_id', session.user.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('Error updating quiz data:', updateError);
+        throw updateError;
+      }
+
+      quizInsertData = updateData;
+      console.log('Quiz data successfully updated in style-quiz-v2:', quizInsertData);
+    } else {
+      // For new quiz, insert data into style-quiz-v2 table
+      const { data: insertData, error: insertError } = await supabase
+        .from('style-quiz-v2')
+        .insert([{
+          ...quizData,
+          user_id: session.user.id,
+          created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('Error inserting quiz data:', insertError);
+        throw insertError;
+      }
+
+      quizInsertData = insertData;
+      console.log('Quiz data successfully stored in style-quiz-v2:', quizInsertData);
     }
 
-    console.log('Quiz data successfully stored in style-quiz-v2:', quizInsertData);
-
-    // Update users_updated table to mark quiz as completed
+    // Update users_updated table to ensure user record exists
+    // Note: Removed style_quiz_id reference due to table mismatch (style-quiz-v2 vs style-quiz-updated)
     const { data: userUpdateData, error: userUpdateError } = await supabase
       .from('users_updated')
       .upsert([{
         user_id: session.user.id,
-        style_quiz_id: quizInsertData.id, // Link to the quiz data
-        quiz_completed: true,
-        quiz_completed_at: new Date().toISOString(),
+        email_address: session.user.email || null,
+        created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }], {
         onConflict: 'user_id'
       })
-      .select()
-      .single();
+      .select();
 
     if (userUpdateError) {
       console.error('Error updating users_updated table:', userUpdateError);
+      console.error('Error details:', JSON.stringify(userUpdateError, null, 2));
       // Don't throw here - quiz data is already stored, just log the error
-      console.warn('Quiz data stored but failed to update user record:', userUpdateError.message);
+      console.warn('Quiz data stored but failed to update user record:', userUpdateError.message || 'Unknown error');
     } else {
       console.log('User record successfully updated:', userUpdateData);
     }
@@ -491,22 +497,21 @@ export const syncQuizDataWithUser = async () => {
       return { success: false, error: 'No quiz data found' };
     }
 
-    // Check if users_updated has the correct style_quiz_id
+    // Ensure user record exists in users_updated table
     const { data: userData, error: userError } = await supabase
       .from('users_updated')
-      .select('style_quiz_id')
+      .select('user_id')
       .eq('user_id', session.user.id)
       .maybeSingle();
 
-    if (!userError && (!userData?.style_quiz_id || userData.style_quiz_id !== quizData.id)) {
-      // Update users_updated table
+    if (!userData) {
+      // Create users_updated record
       const { error: updateError } = await supabase
         .from('users_updated')
         .upsert([{
           user_id: session.user.id,
-          style_quiz_id: quizData.id,
-          quiz_completed: true,
-          quiz_completed_at: quizData.created_at,
+          email_address: session.user.email || null,
+          created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         }], {
           onConflict: 'user_id'
@@ -516,7 +521,7 @@ export const syncQuizDataWithUser = async () => {
         return { success: false, error: updateError.message };
       }
 
-      return { success: true, message: 'Quiz data synced successfully' };
+      return { success: true, message: 'User record created successfully' };
     }
 
     return { success: true, message: 'Quiz data already synced' };

@@ -15,6 +15,15 @@ interface EditLookBookProps {
     color?: string;
     avatarSticker?: string;
     visibility?: number; // 0 = private, 1 = public
+    // Enhanced fields
+    customAvatarUrl?: string;
+    creatorType?: 'user' | 'influencer' | 'celebrity';
+    verificationBadge?: 'verified' | 'gold' | 'diamond' | null;
+    isPremium?: boolean;
+    priceTier?: 'free' | 'premium' | 'exclusive';
+    bio?: string;
+    socialLinks?: { instagram?: string; tiktok?: string; youtube?: string };
+    featuredUntil?: string;
   };
   onClose: () => void;
   onSave?: (lookbookId: string, updatedData: {
@@ -23,6 +32,15 @@ interface EditLookBookProps {
     title: string;
     selectedCharacter: any;
     visibility: number;
+    // Enhanced fields
+    customAvatarUrl?: string;
+    creatorType: 'user' | 'influencer' | 'celebrity';
+    verificationBadge?: 'verified' | 'gold' | 'diamond' | null;
+    isPremium: boolean;
+    priceTier: 'free' | 'premium' | 'exclusive';
+    bio: string;
+    socialLinks: { instagram?: string; tiktok?: string; youtube?: string };
+    featuredUntil?: string;
   }) => void;
 }
 
@@ -33,6 +51,16 @@ const EditLookBook = ({ item, onClose, onSave }: EditLookBookProps) => {
   const [showSave, setShowSave] = useState(false);
   const [loading, setloading] = useState(false);
   const [isPublic, setIsPublic] = useState(item.visibility === 1);
+  
+  // Enhanced fields state
+  const [customAvatarUrl, setCustomAvatarUrl] = useState(item.customAvatarUrl || '');
+  const [creatorType, setCreatorType] = useState<'user' | 'influencer' | 'celebrity'>(item.creatorType || 'user');
+  const [verificationBadge, setVerificationBadge] = useState<'verified' | 'gold' | 'diamond' | null>(item.verificationBadge || null);
+  const [isPremium, setIsPremium] = useState(item.isPremium || false);
+  const [priceTier, setPriceTier] = useState<'free' | 'premium' | 'exclusive'>(item.priceTier || 'free');
+  const [bio, setBio] = useState(item.bio || '');
+  const [socialLinks, setSocialLinks] = useState(item.socialLinks || { instagram: '', tiktok: '', youtube: '' });
+  const [featuredUntil, setFeaturedUntil] = useState(item.featuredUntil || '');
   const presetColors = [
     "#ff0000",
     "#ff8000",

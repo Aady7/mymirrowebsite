@@ -40,49 +40,49 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
         id: 'casual',
         name: 'Casual',
         image: '/assets/newstylequizimages/menSwipe/menCasual.svg',
-        category: 'Casual'
+        category: 'CASUAL'
       },
       {
         id: 'streetwear',
         name: 'Streetwear',
         image: '/assets/newstylequizimages/menSwipe/menStreetWear.svg',
-        category: 'Streetwear'
+        category: 'CHIC'
       },
       {
         id: 'formal',
         name: 'Formal',
         image: '/assets/newstylequizimages/menSwipe/menformal.svg',
-        category: 'Formal'
+        category: 'FORMAL'
       },
       {
         id: 'business-casual',
         name: 'Business Casual',
         image: '/assets/newstylequizimages/menSwipe/menBusinessCasual.svg',
-        category: 'Business'
+        category: 'BIZ CASUAL'
       },
       {
         id: 'athleisure',
         name: 'Athleisure',
         image: '/assets/newstylequizimages/menSwipe/menAthleisure.svg',
-        category: 'Athletic'
+        category: 'ACTIVEWEAR'
       },
       {
         id: 'high-street-casual',
         name: 'High Street Casual',
         image: '/assets/newstylequizimages/menSwipe/menHighStreenCasual.svg',
-        category: 'High Street'
+        category: 'HIGH STREET'
       },
       {
         id: 'resort-look',
         name: 'Resort Look',
         image: '/assets/newstylequizimages/menSwipe/menResortLook.svg',
-        category: 'Resort'
+        category: 'RESORT'
       },
       {
         id: 'oversized',
         name: 'Oversized',
         image: '/assets/newstylequizimages/menSwipe/menoversized.svg',
-        category: 'Oversized'
+        category: 'OVERSIZED'
       }
     ]
 
@@ -91,43 +91,43 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
         id: 'casual',
         name: 'Casual',
         image: '/assets/newstylequizimages/womenSwipe/casual.svg',
-        category: 'Casual'
+        category: 'CASUAL'
       },
       {
         id: 'formal',
         name: 'Formal',
         image: '/assets/newstylequizimages/womenSwipe/formal.svg',
-        category: 'Formal'
+        category: 'FORMAL'
       },
       {
         id: 'business-casual',
         name: 'Business Casual',
         image: '/assets/newstylequizimages/womenSwipe/businessCasual.svg',
-        category: 'Business'
+        category: 'BIZ CASUAL'
       },
       {
         id: 'athleisure',
         name: 'Athleisure',
         image: '/assets/newstylequizimages/womenSwipe/athleisure.svg',
-        category: 'Athletic'
+        category: 'ACTIVEWEAR'
       },
       {
         id: 'high-street',
         name: 'High Street',
         image: '/assets/newstylequizimages/womenSwipe/highStreet.svg',
-        category: 'High Street'
+        category: 'HIGH STREET'
       },
       {
         id: 'summer-dress',
         name: 'Summer Dress',
         image: '/assets/newstylequizimages/womenSwipe/summerDress.svg',
-        category: 'Summer'
+        category: 'SUMMER DRESS'
       },
       {
         id: 'little-black-dress',
         name: 'Little Black Dress',
         image: '/assets/newstylequizimages/womenSwipe/littleBlackDress.svg',
-        category: 'Evening'
+        category: 'LITTLE BLACK DRESS'
       },
       {
         id: 'desi-core',

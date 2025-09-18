@@ -3,6 +3,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import LookBookCard from "@/app/components/look-book/lookBooklookCard";
+import EnhancedLookBookCard from "@/app/components/look-book/EnhancedLookBookCard";
+import { useLookbookEngagement } from "@/lib/hooks/useLookbookEngagement";
 import DashboardStyleOutfit from "@/app/components/look-book/DashboardStyleOutfit";
 import LookBookProduct from "@/app/components/look-book/lookBookProduct";
 import PrivacyToggle from "@/app/components/look-book/PrivacyToggle";
@@ -22,6 +24,16 @@ interface LookbookData {
   products: string | null; // JSON string of product IDs
   shareUrl: string | null;
   created_at: string;
+  // Enhanced fields
+  likes_count?: number;
+  views_count?: number;
+  custom_avatar_url?: string;
+  creator_type?: string;
+  verification_badge?: string;
+  is_premium?: boolean;
+  price_tier?: string;
+  bio?: string;
+  social_links?: string;
 }
 
 interface OutfitData {
@@ -55,6 +67,19 @@ const LookbookPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   const [privacyLoading, setPrivacyLoading] = useState(false);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  // Add engagement hook
+  const { 
+    likesCount, 
+    viewsCount, 
+    isLiked, 
+    toggleLike, 
+    recordView 
+  } = useLookbookEngagement({ 
+    lookbookId: parseInt(id as string), 
+    userId: currentUser?.id 
+  });
 
   useEffect(() => {
     const fetchLookbookData = async () => {
@@ -70,6 +95,10 @@ const LookbookPage = () => {
         const currentUserId = session?.session?.user?.id || 
                              session?.user?.id || 
                              directSession?.user?.id;
+        
+        // Set current user for engagement
+        const user = session?.session?.user || session?.user || directSession?.user;
+        setCurrentUser(user);
 
         // Fetch lookbook data from Supabase
         const { data: lookbook, error: lookbookError } = await supabase
@@ -230,6 +259,11 @@ const LookbookPage = () => {
         }
 
         setLoading(false);
+        
+        // Record view after successful fetch
+        if (user) {
+          await recordView();
+        }
         
       } catch (error: any) {
         console.error("Error fetching lookbook data:", error);

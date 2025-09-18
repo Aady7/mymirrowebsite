@@ -182,7 +182,8 @@ const OtpVerification: React.FC<OtpVerificationProps> = ({
       if (isLatestVersion) {
         console.log('Storing data in style-quiz-v2 table...');
         const transformedData = transformQuizDataForV2(completeQuizData);
-        const { data: storedData, error: storageError } = await storeQuizDataInSupabase(transformedData);
+        const isRetake = completeQuizData.isRetake || false;
+        const { data: storedData, error: storageError } = await storeQuizDataInSupabase(transformedData, isRetake);
         
         if (storageError) {
           console.error('Failed to store quiz data:', storageError);
