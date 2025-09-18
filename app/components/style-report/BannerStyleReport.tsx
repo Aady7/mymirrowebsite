@@ -24,6 +24,7 @@ const BannerStyleReport: React.FC<BannerStyleReportProps> = ({ name }) => {
         fill
         className="object-cover"
         priority
+        unoptimized={true}
       />
       
       {/* Content Overlay */}
