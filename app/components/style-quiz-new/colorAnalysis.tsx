@@ -18,14 +18,14 @@ export interface ColorAnalysisData {
 
 // Skin tone colors matching the design
 const SKIN_TONES = [
-  { hex: "#F5E6D3", name: "Very Light" },
-  { hex: "#E8C3B6", name: "Light" },
-  { hex: "#E5BBB4", name: "Light Medium" },
-  { hex: "#DCBAB3", name: "Medium Light" },
-  { hex: "#C68B6A", name: "Medium" },
-  { hex: "#BA8578", name: "Medium Tan" },
-  { hex: "#B58578", name: "Medium Deep" },
-  { hex: "#955D3B", name: "Deep" },
+  { hex: "#FBEFEA", name: "Very Light" },
+  { hex: "#FAD9C8", name: "Light" },
+  { hex: "#FDD4C2", name: "Light Medium" },
+  { hex: "#EBBCA0", name: "Medium Light" },
+  { hex: "#EDBC9A", name: "Medium" },
+  { hex: "#E8B892", name: "Medium Tan" },
+  { hex: "#DBA46C", name: "Medium Deep" },
+  { hex: "#DC9C6E", name: "Deep" },
 ];
 
 const ColorAnalysis: React.FC<ColorAnalysisProps> = ({
