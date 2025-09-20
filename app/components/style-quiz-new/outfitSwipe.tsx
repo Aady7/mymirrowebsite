@@ -133,6 +133,7 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
         id: 'desi-core',
         name: 'Desi Core',
         image: '/assets/newstylequizimages/womenSwipe/desiCore.svg',
+
         category: 'Traditional'
       },
       {
