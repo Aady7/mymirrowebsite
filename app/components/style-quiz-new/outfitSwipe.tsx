@@ -133,8 +133,16 @@ const OutfitSwipe: React.FC<OutfitSwipeProps> = ({
         id: 'desi-core',
         name: 'Desi Core',
         image: '/assets/newstylequizimages/womenSwipe/desiCore.svg',
-        category: 'DESI CORE'
-      }
+
+        category: 'Traditional'
+      },
+      {
+        id:'chic',
+        name: 'Chic',
+        image: '/assets/newstylequizimages/womenSwipe/female_chic.svg',
+        category: 'Chic'
+      },
+     
     ]
 
     // Return outfits based on gender
